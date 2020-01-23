@@ -1,3 +1,5 @@
+// Copyright Cheat Engine. All Rights Reserved.
+
 unit disassembler;
 
 {$MODE Delphi}
@@ -11,6 +13,12 @@ uses unixporthelper, sysutils, byteinterpreter, symbolhandler, NewKernelHandler,
 
 {$ifdef windows}
 uses windows, imagehlp,sysutils,LCLIntf,byteinterpreter, symbolhandler, symbolhandlerstructs,
+  CEFuncProc, NewKernelHandler, ProcessHandlerUnit, LastDisassembleData, disassemblerarm,
+  commonTypeDefs, maps, math,vextypedef;
+{$endif}
+
+{$ifdef darwin}
+uses LCLIntf, LCLType, macport, macportdefines, sysutils,byteinterpreter, symbolhandler, symbolhandlerstructs,
   CEFuncProc, NewKernelHandler, ProcessHandlerUnit, LastDisassembleData, disassemblerarm,
   commonTypeDefs, maps, math,vextypedef;
 {$endif}
@@ -85,6 +93,7 @@ type
     fsyntaxhighlighting: boolean;
     fOnDisassembleOverride: TDisassembleEvent;
     fOnPostDisassemble: TDisassembleEvent;
+    faggressivealignment: boolean;
 
 
     modrmposition: TMRPos;
@@ -166,9 +175,11 @@ type
     property syntaxhighlighting: boolean read fsyntaxhighlighting write setSyntaxHighlighting;
     property OnDisassembleOverride: TDisassembleEvent read fOnDisassembleOverride write fOnDisassembleOverride;
     property OnPostDisassemble: TDisassembleEvent read fOnPostDisassemble write fOnPostDisassemble;
+    property aggressivealignment: boolean read faggressivealignment write faggressivealignment;
   end;
 
 
+  {$ifdef windows}
   TCR3Disassembler=class(TDisassembler)
   private
     fcr3: QWORD;
@@ -179,6 +190,7 @@ type
     property CR3: QWORD read fCR3 write setCR3;
 
   end;
+  {$endif}
 
 
 
@@ -235,6 +247,13 @@ uses Assemblerunit,CEDebugger, debughelper, StrUtils, debuggertypedefinitions,
   BreakpointTypeDef;
 {$endif}
 
+{$ifdef darwin}
+uses Assemblerunit,CEDebugger, debughelper, StrUtils, debuggertypedefinitions,
+  Parsers, memoryQuery, (*binutils,*) LuaCaller, (*vmxfunctions, frmcodefilterunit, *)
+  BreakpointTypeDef;
+{$endif}
+
+
 
 function registerGlobalDisassembleOverride(m: TDisassembleEvent): integer;
 var i: integer;
@@ -258,7 +277,7 @@ procedure unregisterGlobalDisassembleOverride(id: integer);
 begin
   if id<length(GlobalDisassembleOverrides) then
   begin
-    {$ifndef unix}
+    {$ifndef jni}
     CleanupLuaCall(TMethod(GlobalDisassembleOverrides[id]));
     {$endif}
     GlobalDisassembleOverrides[id]:=nil;
@@ -1489,11 +1508,14 @@ begin
     end;
     debuggerthread.unlockbplist;
 
+    {$ifdef windows}
     if (frmCodeFilter<>nil) then frmcodefilter.isBreakpoint(address, b);
+    {$endif}
   end;
 
-
+  {$ifdef windows}
   dbvm_isbreakpoint(address,PA,BO,b);
+  {$endif}
 end;
 {$endif}
 
@@ -1502,6 +1524,7 @@ begin
   result:=defaultDisassembler.disassemble(offset,description);
 end;
 
+{$ifdef windows}
 procedure TCR3Disassembler.setCR3(c: QWORD);
 begin
   fcr3:=c and MAXPHYADDRMASKPB;
@@ -1513,7 +1536,7 @@ begin
   ReadProcessMemoryCR3(fcr3,pointer(address), destination, size, actualread);
   result:=actualread;
 end;
-
+ {$endif}
 
 function TDisassembler.readMemory(address: ptruint; destination: pointer; size: integer): integer;
 //reads the bytes at the given address and returns the number of bytes read
@@ -1525,14 +1548,22 @@ var
 begin
   actualread:=0;
 
+  {$ifdef windows}
   ReadProcessMemoryWithCloakSupport(processhandle,pointer(address),destination,size,actualread);
+  {$else}
+  ReadProcessMemory(processhandle,pointer(address),destination,size,actualread);
+  {$endif}
   if (actualread=0) and ((address+size and qword($fffffffffffff000))>(address and qword($fffffffffffff000))) then //did not read a single byte and overlaps a pageboundary
   begin
     p1:=0;
     repeat
       i:=min(size, integer(4096-(address and $fff)));
       actualread:=0;
+      {$ifdef windows}
       ReadProcessMemoryWithCloakSupport(processhandle,pointer(address),destination,i,actualread);
+      {$else}
+      ReadProcessMemory(processhandle,pointer(address),destination,i,actualread);
+      {$endif}
 
       inc(p1,actualread);
       address:=address+actualread;
@@ -1586,7 +1617,7 @@ begin
   LastDisassembleData.isfloat64:=false;
   LastDisassembleData.iscloaked:=false;
   LastDisassembleData.commentsoverride:='';
-  {$ifndef unix}
+  {$ifdef windows}
   if defaultBinutils<>nil then
   begin
     //use this
@@ -1735,13 +1766,15 @@ begin
 
   if actualread>0 then
   begin
-    //I HATE THESE...   (I propably will not add them all, but I'll see how far I get)
-
     {$ifndef jni}
     if debuggerthread<>nil then
       for i:=0 to actualread-1 do
         if memory[i]=$cc then
-          memory[i]:=debuggerthread.getrealbyte(offset+i);
+        begin
+          //memory[i]:=debuggerthread.getrealbyte(offset+i);
+
+          repairbreakbyte(offset+i, memory[i]);
+        end;
     {$endif}
 
 
@@ -1837,10 +1870,7 @@ begin
 
     end;
 
-    {$ifdef windows}
-    if (memory[0]=$cc) then //if it's a int3 breakpoint and there is a debugger attached check if it's a bp
-      repairbreakbyte(startoffset, memory[0]);
-    {$endif}
+
 
 
     prefixsize:=length(LastDisassembleData.bytes);
@@ -1942,7 +1972,9 @@ begin
 
     case memory[0] of  //opcode
       $00 : begin
-              if (memory[1]=$55) and (memory[2]=$89) and (memory[3]=$e5) then
+
+
+              if (aggressivealignment and (((offset) and $f)=0) and (memory[1]<>0) ) or ((memory[1]=$55) and (memory[2]=$89) and (memory[3]=$e5)) then
               begin
                 description:='Filler';
                 lastdisassembledata.opcode:='db';
@@ -2798,7 +2830,18 @@ begin
                           0:  begin
                                 description:='multibyte nop';
                                 lastdisassembledata.opcode:='nop';
-                                lastdisassembledata.parameters:=modrm(memory,prefix2,2,0,last);
+
+
+                                if Rex_W then
+                                  lastdisassembledata.parameters:=modrm(memory,prefix2,2,0,last,64)
+                                else
+                                begin
+                                  if $66 in prefix2 then
+                                    lastdisassembledata.parameters:=modrm(memory,prefix2,2,0,last,16)
+                                  else
+                                    lastdisassembledata.parameters:=modrm(memory,prefix2,2,0,last,32)
+                                end;
+
                                 inc(offset,last-1);
                               end;
                         end;
@@ -8694,7 +8737,7 @@ begin
 
                           lastdisassembledata.parametervaluetype:=dvtvalue;
                           lastdisassembledata.parametervalue:=memory[last];
-                          lastdisassembledata.parameters:=lastdisassembledata.parameters+inttohexs(lastdisassembledata.parametervalue,2);
+                          lastdisassembledata.parameters:=lastdisassembledata.parameters+','+inttohexs(lastdisassembledata.parametervalue,2);
                           inc(offset,last);
                         end
                         else
@@ -8708,7 +8751,7 @@ begin
                           lastdisassembledata.parameters:=xmm(memory[2])+modrm(memory,prefix2,2,4,last,128,0,mRight);
                           lastdisassembledata.parametervaluetype:=dvtvalue;
                           lastdisassembledata.parametervalue:=memory[last];
-                          lastdisassembledata.parameters:=lastdisassembledata.parameters+inttohexs(lastdisassembledata.parametervalue,2);
+                          lastdisassembledata.parameters:=lastdisassembledata.parameters+','+inttohexs(lastdisassembledata.parametervalue,2);
                           lastdisassembledata.datasize:=4;
                           inc(offset,last);
                         end
@@ -8724,7 +8767,7 @@ begin
                             lastdisassembledata.parameters:=xmm(memory[2])+modrm(memory,prefix2,2,4,last,128,0,mRight);
                             lastdisassembledata.parametervaluetype:=dvtvalue;
                             lastdisassembledata.parametervalue:=memory[last];
-                            lastdisassembledata.parameters:=lastdisassembledata.parameters+inttohexs(lastdisassembledata.parametervalue,2);
+                            lastdisassembledata.parameters:=lastdisassembledata.parameters+','+inttohexs(lastdisassembledata.parametervalue,2);
                             inc(offset,last);
                           end
                           else
@@ -8737,7 +8780,7 @@ begin
                             lastdisassembledata.parameters:=xmm(memory[2])+modrm(memory,prefix2,2,4,last,128,0,mRight);
                             lastdisassembledata.parametervaluetype:=dvtvalue;
                             lastdisassembledata.parametervalue:=memory[last];
-                            lastdisassembledata.parameters:=lastdisassembledata.parameters+inttohexs(lastdisassembledata.parametervalue,2);
+                            lastdisassembledata.parameters:=lastdisassembledata.parameters+','+inttohexs(lastdisassembledata.parametervalue,2);
                             lastdisassembledata.datasize:=4;
                             inc(offset,last);
                           end;
@@ -10558,8 +10601,16 @@ begin
 
             //prefix bytes need fixing
       $3f : begin  //aas
-              lastdisassembledata.opcode:='aas';
-              description:='ascii adjust al after subtraction';
+              if processhandler.is64bit then
+              begin
+                lastdisassembledata.opcode:='db';
+                lastdisassembledata.parameters:=inttohexs($3f,1);
+              end
+              else
+              begin
+                lastdisassembledata.opcode:='aas';
+                description:='ascii adjust al after subtraction';
+              end;
             end;
 
       $40..$47 :
@@ -11921,6 +11972,8 @@ begin
       $90 : begin
               description:='no operation';
               lastdisassembledata.opcode:='nop';
+              if prefixsize>0 then
+                lastdisassembledata.parameters:=inttohexs(prefixsize+1,1);
             end;
 
       $91..$97:
@@ -15213,6 +15266,7 @@ begin
         nop
         end;
         MessageBox(0,pchar(inttohex(startoffset,8)+'disassembler error 3'),'debug here',MB_OK);
+
       end;
     end;
 
@@ -15263,8 +15317,11 @@ begin
     LastDisassembleData.opcode:='??';
     inc(offset);
   end;
-
+{$ifdef windows}
   LastDisassembleData.iscloaked:=hasCloakedRegionInRange(LastDisassembleData.address, length(LastDisassembleData.Bytes), VA, PA);
+{$else}
+LastDisassembleData.iscloaked:=false;
+{$endif}
 
 
   if not dataonly then
@@ -15291,9 +15348,9 @@ begin
     end;
   end;
 
-  for i:=32 to 63 do
+{  for i:=32 to 63 do
     if _memory[i]<>$ce then
-      raise exception.create('Memory corruption in the disassembler');
+      raise exception.create('Memory corruption in the disassembler'); }
   except
     on e:exception do
     begin
@@ -15315,8 +15372,10 @@ begin
     if syntaxhighlighting and LastDisassembleData.iscloaked then
     begin
       //check if this byte is cloaked (due to pageboundaries)
+      {$ifdef windows}
       cloaked:=hasCloakedRegionInRange(LastDisassembleData.address+i, 1, VA, PA);
       if (cloaked) then result:=result+'{C00FF00}'; //green
+      {$endif}
     end;
 
     result:=result+inttohex(LastDisassembleData.Bytes[i],2);
@@ -15367,9 +15426,13 @@ var
   found: boolean;
   i: ptrUint;
 
+  aggressive: boolean;
 begin
   if d=nil then
     d:=defaultDisassembler;
+
+  aggressive:=d.aggressivealignment;
+  d.aggressivealignment:=true;
 
   x:=previousOpcodeHelp(d, address,80, result);
   if x<>address then
@@ -15405,6 +15468,8 @@ begin
       end;
     end;
   end;
+
+  d.aggressivealignment:=aggressive;
 end;
 
 

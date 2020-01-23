@@ -4,7 +4,15 @@ unit HotkeyHandler;
 
 interface
 
-uses windows, LCLIntf,classes,sysutils, SyncObjs,CEFuncProc,messages,genericHotkey, math,
+uses
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
+
+  LCLType,LCLIntf,classes,sysutils, SyncObjs,CEFuncProc,messages,genericHotkey, math,
   commonTypeDefs;
 
 type thotkeyitem=record
@@ -62,6 +70,8 @@ procedure hotkeyTargetWindowHandleChanged(oldhandle, newhandle: thandle);
 function IsKeyPressed(key: integer; nocache: boolean=false):boolean;
 
 
+procedure InitializeHotkeyHandler;
+
 var hotkeythread: THotkeythread;
     CSKeys: TCriticalSection;
 
@@ -69,16 +79,21 @@ var hotkeythread: THotkeythread;
     hotkeyPollInterval: integer=100;
     hotkeyIdletime: integer=100;
 
+const WM_HOTKEY2=$8000;
+
+
 implementation
 
-uses MemoryRecordUnit, xinput, winsapi, MainUnit;
+uses MemoryRecordUnit, {$ifdef windows}xinput,winsapi,{$endif} MainUnit;
 
 type tkeystate=(ks_undefined=0, ks_pressed=1, ks_notpressed=2);
 
 var
     keystate: array [0..255] of tkeystate;  //0=undefined, 1=pressed, 2-not pressed
     ksCS: TCriticalSection;
+    {$ifdef windows}
     ControllerState: XINPUT_STATE;
+    {$endif}
 
 function IsKeyPressed(key: integer; nocache: boolean=false):boolean;
 var
@@ -90,6 +105,7 @@ begin
   begin
     //anyhow, check if it is currently pressed
 
+    {$ifdef windows}
     if (key>=VK_PAD_A) and (key<=VK_PAD_RTHUMB_DOWNLEFT) then
     begin
       //controller key
@@ -145,6 +161,7 @@ begin
       end;
     end
     else
+    {$endif}
       result:=((word(getasynckeystate(key)) shr 15) and 1) = 1;
     exit;
   end;
@@ -198,7 +215,9 @@ begin
   for i:=0 to 255 do
     getasynckeystate(i); //clears the last call flag
 
+  {$ifdef windows}
   ControllerState.dwPacketNumber:=0;
+  {$endif}
   ksCS.leave;
 end;
 
@@ -221,13 +240,17 @@ end;
 var presuspendstate: THotkeyThreadState;
 procedure SuspendHotkeyHandler;
 begin
-  presuspendstate:=hotkeythread.state;
-  hotkeythread.state:=htsDisabled;
+  if hotkeythread<>nil then
+  begin
+    presuspendstate:=hotkeythread.state;
+    hotkeythread.state:=htsDisabled;
+  end;
 end;
 
 procedure ResumeHotkeyHandler;
 begin
-  hotkeythread.state:=presuspendstate;
+  if hotkeythread<>nil then
+    hotkeythread.state:=presuspendstate;
 end;
 
 procedure ClearHotkeylist;
@@ -444,7 +467,9 @@ begin
     end;
 
     //still here so not found, try windows
+    {$ifdef windows}
     result:=windows.UnregisterHotKey(hWnd,id)
+    {$endif}
 
   finally
     CSKeys.Leave;
@@ -551,14 +576,16 @@ begin
                 end
                 else
                 if tempHotkey.hotkeylistItem.generichotkey<>nil then
-                  sendmessage(a,integer(cefuncproc.WM_HOTKEY2),1,ptrUint(tempHotkey.hotkeylistItem.genericHotkey))
+                  sendmessage(a,integer(WM_HOTKEY2),1,ptrUint(tempHotkey.hotkeylistItem.genericHotkey))
                 else
-                  sendmessage(a,integer(cefuncproc.WM_HOTKEY2),b,0)
+                  sendmessage(a,integer(WM_HOTKEY2),b,0)
 
 
               end
+              {$ifdef windows}
               else
                 sendmessage(a,WM_HOTKEY,b,c);
+              {$endif}
             end;
           end;
 
@@ -581,14 +608,23 @@ begin
   end;
 end;
 
+procedure InitializeHotkeyHandler;
+begin
+  if hotkeythread=nil then
+    hotkeythread:=Thotkeythread.Create(false);
+end;
+
 initialization
   ksCS:=TCriticalSection.Create;
   clearkeystate;
 
   CSKeys:=TCriticalSection.Create;
 
+  InitializeHotkeyHandler;
 
-  hotkeythread:=Thotkeythread.Create(false);
+  {$ifdef windows}
+  //hotkeythread:=Thotkeythread.Create(false);
+  {$endif}
 
 finalization
   if hotkeythread<>nil then

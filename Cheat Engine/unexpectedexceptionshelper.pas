@@ -5,7 +5,13 @@ unit UnexpectedExceptionsHelper;
 interface
 
 uses
-  jwawindows, windows, Classes, SysUtils;
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  {$ifdef windows}
+  jwawindows, windows,
+  {$endif}
+  Classes, SysUtils;
 
 type
   TUnexpectedExceptionAction=(ueaIgnore, ueaBreak, ueaBreakIfInRegion);
@@ -231,6 +237,9 @@ var
   l: tstringlist;
   i: integer;
 begin
+  {$ifdef darwin}
+  macPortFixRegPath;
+  {$endif}
   reg:=Tregistry.Create;
   try
     if reg.OpenKey('\Software\Cheat Engine\Ignored Exceptions\',false) then

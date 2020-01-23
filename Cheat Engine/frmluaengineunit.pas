@@ -5,9 +5,15 @@ unit frmLuaEngineUnit;
 interface
 
 uses
-  windows, Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics,
+  {$ifdef darwin}
+  macport, LCLIntf, LCLProc, Unix, registry, xmlreg,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
+  Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics,
   Dialogs, StdCtrls, Menus, ExtCtrls, SynMemo, SynCompletion, SynEdit, lua,
-  lauxlib, lualib, LuaSyntax, luahandler, cefuncproc, sqldb, strutils,
+  lauxlib, lualib, LuaSyntax, luahandler, CEFuncProc, sqldb, strutils,
   InterfaceBase, ComCtrls, SynGutterBase, SynEditMarks, PopupNotifier, ActnList,
   SynEditHighlighter, AvgLvlTree, math, LazFileUtils, Types, LCLType, pluginexports;
 
@@ -20,9 +26,9 @@ type
     FindDialog1: TFindDialog;
     GroupBox1: TGroupBox;
     leImageList: TImageList;
-    MenuItem12: TMenuItem;
-    MenuItem13: TMenuItem;
-    MenuItem14: TMenuItem;
+    miDebug: TMenuItem;
+    miFind: TMenuItem;
+    miRedo: TMenuItem;
     MenuItem15: TMenuItem;
     N1: TMenuItem;
     miAutoComplete: TMenuItem;
@@ -39,16 +45,16 @@ type
     ilLuaDebug: TImageList;
     ilSyneditDebug: TImageList;
     MainMenu1: TMainMenu;
-    MenuItem10: TMenuItem;
+    miUndo: TMenuItem;
     MenuItem11: TMenuItem;
     MenuItem4: TMenuItem;
     MenuItem5: TMenuItem;
-    MenuItem6: TMenuItem;
+    miFindReplace: TMenuItem;
     miView: TMenuItem;
     cbShowOnPrint: TMenuItem;
-    MenuItem7: TMenuItem;
-    MenuItem8: TMenuItem;
-    MenuItem9: TMenuItem;
+    miCut: TMenuItem;
+    miCopy: TMenuItem;
+    miPaste: TMenuItem;
     mOutput: TMemo;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
@@ -66,25 +72,24 @@ type
     tbRun: TToolButton;
     tbSingleStep: TToolButton;
     procedure btnExecuteClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
     procedure cbShowOnPrintClick(Sender: TObject);
     procedure dlgReplaceFind(Sender: TObject);
     procedure dlgReplaceReplace(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure MenuItem10Click(Sender: TObject);
+    procedure miUndoClick(Sender: TObject);
     procedure MenuItem11Click(Sender: TObject);
-    procedure MenuItem13Click(Sender: TObject);
-    procedure MenuItem14Click(Sender: TObject);
+    procedure miFindClick(Sender: TObject);
+    procedure miRedoClick(Sender: TObject);
     procedure MenuItem15Click(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure MenuItem5Click(Sender: TObject);
-    procedure MenuItem6Click(Sender: TObject);
-    procedure MenuItem7Click(Sender: TObject);
-    procedure MenuItem8Click(Sender: TObject);
-    procedure MenuItem9Click(Sender: TObject);
+    procedure miFindReplaceClick(Sender: TObject);
+    procedure miCutClick(Sender: TObject);
+    procedure miCopyClick(Sender: TObject);
+    procedure miPasteClick(Sender: TObject);
     procedure miResizeOutputClick(Sender: TObject);
     procedure miSaveCurrentScriptAsClick(Sender: TObject);
     procedure miSetBreakpointClick(Sender: TObject);
@@ -138,7 +143,7 @@ implementation
 
 { TfrmLuaEngine }
 
-uses luaclass, SynEditTypes, globals, DPIHelper, frmSyntaxHighlighterEditor,
+uses LuaClass, SynEditTypes, globals, DPIHelper, frmSyntaxHighlighterEditor,
   frmautoinjectunit;
 
 resourcestring
@@ -200,6 +205,7 @@ begin
   if keychar='.' then
   begin
     value:=value+'.';
+
 //    TThread.Queue(nil, ContinueAutoComplete);
     t:=TTimer.Create(self);
     t.interval:=1;
@@ -1029,7 +1035,14 @@ begin
       end;
 
       if application.Terminated then
+      begin
+        {$ifdef windows}
         ExitProcess(UINT(-1)); //there's nothing to return to...
+        {$endif}
+        {$ifdef darwin}
+        KillThread(GetCurrentThreadId);
+        {$endif}
+      end;
 
       LuaDebugForm.mScript.ReadOnly:=false;
 
@@ -1265,11 +1278,7 @@ begin
   mScript.SetFocus;
 end;
 
-procedure TfrmLuaEngine.Button1Click(Sender: TObject);
-begin
 
-
-end;
 
 procedure TfrmLuaEngine.cbShowOnPrintClick(Sender: TObject);
 begin
@@ -1371,6 +1380,15 @@ begin
         miAutoComplete.checked:=x[3]=1;
     end;
   end;
+  {$ifdef darwin}
+  miCut.ShortCut:=TextToShortCut('Meta+X');
+  miCopy.ShortCut:=TextToShortCut('Meta+C');
+  miPaste.ShortCut:=TextToShortCut('Meta+V');
+  miUndo.ShortCut:=TextToShortCut('Meta+Z');
+  miRedo.ShortCut:=TextToShortCut('Shift+Meta+X');
+  miFind.ShortCut:=TextToShortCut('Meta+F');
+  miCut.ShortCut:=TextToShortCut('Meta+X');
+  {$endif}
 end;
 
 procedure TfrmLuaEngine.FormDestroy(Sender: TObject);
@@ -1407,7 +1425,7 @@ begin
 end;
 
 
-procedure TfrmLuaEngine.MenuItem10Click(Sender: TObject);
+procedure TfrmLuaEngine.miUndoClick(Sender: TObject);
 begin
   mscript.Undo;
 end;
@@ -1421,12 +1439,12 @@ begin
   f.show;
 end;
 
-procedure TfrmLuaEngine.MenuItem13Click(Sender: TObject);
+procedure TfrmLuaEngine.miFindClick(Sender: TObject);
 begin
   finddialog1.Execute;
 end;
 
-procedure TfrmLuaEngine.MenuItem14Click(Sender: TObject);
+procedure TfrmLuaEngine.miRedoClick(Sender: TObject);
 begin
   mscript.redo;
 end;
@@ -1456,7 +1474,7 @@ end;
 procedure TfrmLuaEngine.MenuItem2Click(Sender: TObject);
 begin
   if OpenDialog1.Execute then
-    mscript.Lines.LoadFromFile(opendialog1.filename, true);
+    mscript.Lines.LoadFromFile(opendialog1.filename{$if FPC_FULLVERSION>=030200}, true{$endif});
 
 end;
 
@@ -1473,22 +1491,22 @@ begin
   moutput.Clear;
 end;
 
-procedure TfrmLuaEngine.MenuItem6Click(Sender: TObject);
+procedure TfrmLuaEngine.miFindReplaceClick(Sender: TObject);
 begin
   dlgReplace.Execute;
 end;
 
-procedure TfrmLuaEngine.MenuItem7Click(Sender: TObject);
+procedure TfrmLuaEngine.miCutClick(Sender: TObject);
 begin
   mscript.CutToClipboard;
 end;
 
-procedure TfrmLuaEngine.MenuItem8Click(Sender: TObject);
+procedure TfrmLuaEngine.miCopyClick(Sender: TObject);
 begin
   mscript.CopyToClipboard;
 end;
 
-procedure TfrmLuaEngine.MenuItem9Click(Sender: TObject);
+procedure TfrmLuaEngine.miPasteClick(Sender: TObject);
 begin
   mscript.PasteFromClipboard;
 end;
@@ -1626,8 +1644,9 @@ begin
   begin
     if key='.' then
     begin
-
+      {$ifdef windows} //perhaps fixed in laz 2.0.6 which I use for mac , or just a cocoa thing where the char is inserted first
       mscript.InsertTextAtCaret('.');
+      {$endif}
       p:=mscript.RowColumnToPixels(point(mscript.CaretX,mscript.CaretY+1));
       p2:=mscript.ClientToScreen(point(0,0));
       scLuaCompleter.Execute('.',p2+p);

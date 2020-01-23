@@ -29,6 +29,7 @@ var
   Scan_MEM_MAPPED: boolean=false;
 
   repeatDelay: integer=0;
+  delayAfterDebuggerAttach: dword=0;
 
   scan_dirtyonly: boolean=true;
   scan_pagedonly: boolean=true;
@@ -160,6 +161,9 @@ var
 
   allocsAddToUnexpectedExceptionList: boolean;
 
+  {$ifdef darwin}
+  speedhack_HookMachAbsoluteTime:boolean;
+  {$endif}
 
 
 

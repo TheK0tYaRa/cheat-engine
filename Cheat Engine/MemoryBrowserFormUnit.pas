@@ -5,14 +5,20 @@ unit MemoryBrowserFormUnit;
 interface
 
 uses
-  jwawindows, windows, LCLProc, LCLIntf, Messages, SysUtils, Classes, Graphics,
+  {$ifdef darwin}
+  macport, LCLType,
+  {$endif}
+  {$ifdef windows}
+  jwawindows, windows,imagehlp,
+  {$endif}
+  LCLProc, LCLIntf, Messages, SysUtils, Classes, Graphics,
   Controls, Forms, Dialogs, frmMemoryAllocHandlerUnit, math, StdCtrls, Spin,
   ExtCtrls,CEFuncProc,symbolhandler,Clipbrd, Menus,plugin,CEDebugger,KernelDebugger,
-  Assemblerunit,disassembler,addressparser, Buttons,imagehlp, Contnrs,
-  disassemblerviewunit, peinfofunctions ,dissectcodethread,stacktrace2,
+  Assemblerunit,disassembler,addressparser, Buttons, Contnrs,
+  disassemblerviewunit, PEInfoFunctions ,DissectCodeThread,stacktrace2,
   NewKernelHandler, ComCtrls, LResources, byteinterpreter, StrUtils, hexviewunit,
   debughelper, debuggertypedefinitions,frmMemviewPreferencesUnit, registry,
-  scrollboxex, disassemblercomments, multilineinputqueryunit, frmMemoryViewExUnit,
+  ScrollBoxEx, disassemblerComments, multilineinputqueryunit, frmMemoryViewExUnit,
   LastDisassembleData, ProcessHandlerUnit, commonTypeDefs, binutils,
   fontSaveLoadRegistry, LazFileUtils;
 
@@ -40,6 +46,9 @@ type
     ESPlabel: TLabel;
     FSlabel: TLabel;
     GSlabel: TLabel;
+    MenuItem4: TMenuItem;
+    copyBytesAndOpcodesAndComments: TMenuItem;
+    miFollowInHexview: TMenuItem;
     miSetSpecificBreakpoint: TMenuItem;
     miWatchBPHardware: TMenuItem;
     miWatchBPException: TMenuItem;
@@ -283,7 +292,7 @@ type
     Copytoclipboard1: TMenuItem;
     copyBytes: TMenuItem;
     copyOpcodes: TMenuItem;
-    CopyBytesAndOpcodes: TMenuItem;
+    copyBytesAndOpcodes: TMenuItem;
     DissectPEheaders1: TMenuItem;
     Back1: TMenuItem;
     Showvaluesofstaticaddresses1: TMenuItem;
@@ -329,6 +338,7 @@ type
     procedure MenuItem14Click(Sender: TObject);
     procedure DBVMFindoutwhataddressesthisinstructionaccessesClick(Sender: TObject);
     procedure MenuItem4Click(Sender: TObject);
+    procedure miFollowInHexviewClick(Sender: TObject);
     procedure miSetSpecificBreakpointClick(Sender: TObject);
     procedure miSetBreakpointClick(Sender: TObject);
     procedure miCodeFilterClick(Sender: TObject);
@@ -359,6 +369,7 @@ type
     procedure miShowRelativeClick(Sender: TObject);
     procedure miSVCopyClick(Sender: TObject);
     procedure miUnexpectedExceptionBreakOptionClick(Sender: TObject);
+    procedure pmRegistersPopup(Sender: TObject);
     procedure pmStacktracePopup(Sender: TObject);
     procedure SetBookmarkClick(Sender: TObject);
     procedure miTextEncodingClick(Sender: TObject);
@@ -478,7 +489,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure Newwindow1Click(Sender: TObject);
     procedure Follow1Click(Sender: TObject);
-    procedure CopyBytesAndOpcodesClick(Sender: TObject);
+    procedure copyBytesAndOpcodesClick(Sender: TObject);
     procedure DissectPEheaders1Click(Sender: TObject);
     procedure Back1Click(Sender: TObject);
     procedure Showvaluesofstaticaddresses1Click(Sender: TObject);
@@ -584,6 +595,7 @@ type
     overridebreakpointmethod: boolean;
     preferedF5BreakpointMethod: TBreakpointMethod;
 
+    followRegister: integer;
     procedure SetStacktraceSize(size: integer);
     procedure setShowDebugPanels(state: boolean);
     function getShowValues: boolean;
@@ -596,6 +608,7 @@ type
     procedure hexviewKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure setContextValueByTag(value: ptruint; tag: integer);
     function  getContextValueByTag(tag: integer): ptruint;
+    procedure ApplyFollowRegister;
   public
     { Public declarations }
     FSymbolsLoaded: Boolean;
@@ -689,7 +702,7 @@ uses Valuechange, MainUnit, debugeventhandler, findwindowunit,
   AccessedMemory, Parsers, GnuAssembler, frmEditHistoryUnit, frmWatchlistUnit,
   vmxfunctions, frmstructurecompareunit, globals, UnexpectedExceptionsHelper,
   frmExceptionRegionListUnit, frmExceptionIgnoreListUnit, frmcodefilterunit,
-  frmDBVMWatchConfigUnit, DBK32functions, DPIHelper, debuggerinterface,
+  frmDBVMWatchConfigUnit, DBK32functions, DPIHelper, DebuggerInterface,
   DebuggerInterfaceAPIWrapper, BreakpointTypeDef;
 
 
@@ -1073,7 +1086,7 @@ begin
   miWatchBPHardware.enabled:=(CurrentDebuggerInterface=nil) or (dbcHardwareBreakpoint in CurrentDebuggerInterface.DebuggerCapabilities);
   miWatchBPException.enabled:=(CurrentDebuggerInterface=nil) or (dbcSoftwareBreakpoint in CurrentDebuggerInterface.DebuggerCapabilities);
   miWatchBPDBVM.enabled:=(CurrentDebuggerInterface=nil) or (dbcExceptionBreakpoint in CurrentDebuggerInterface.DebuggerCapabilities);
-  miWatchBPDBVM.visible:=hasEPTSupport;
+  miWatchBPDBVM.visible:={$ifdef windows}hasEPTSupport{$else}false{$endif};
 
 end;
 
@@ -1123,6 +1136,20 @@ begin
   tbDebug.Tag:=-1;
 end;
 
+procedure TMemoryBrowser.ApplyFollowRegister;
+begin
+  if followRegister<>-1 then
+    hexview.address:=getContextValueByTag(followRegister);
+end;
+
+procedure TMemoryBrowser.miFollowInHexviewClick(Sender: TObject);
+begin
+  if miFollowInHexview.checked then
+    followRegister:=pmRegisters.PopupComponent.Tag
+  else
+    followRegister:=-1;
+end;
+
 procedure TMemoryBrowser.miSetSpecificBreakpointClick(Sender: TObject);
 begin
 
@@ -1164,6 +1191,7 @@ procedure TMemoryBrowser.miDBVMActivateCloakClick(Sender: TObject);
 var
   PA,VA: qword;
 begin
+  {$ifdef windows}
   if isRunningDBVM and hasEPTSupport and (not hasCloakedRegionInRange(disassemblerview.SelectedAddress,1,VA,PA)) then
   begin
     VA:=disassemblerview.SelectedAddress;
@@ -1171,13 +1199,16 @@ begin
     if GetPhysicalAddress(processhandle,pointer(VA),int64(PA)) then
       dbvm_cloak_activate(PA,VA);
   end;
+  {$endif}
 end;
 
 procedure TMemoryBrowser.miDBVMDisableCloakClick(Sender: TObject);
 var PA,VA: Qword;
 begin
+  {$ifdef windows}
   if isRunningDBVM and hasEPTSupport and (hasCloakedRegionInRange(disassemblerview.SelectedAddress,1,VA,PA)) then
     dbvm_cloak_deactivate(PA);
+  {$endif}
 end;
 
 procedure TMemoryBrowser.miHideToolbarClick(Sender: TObject);
@@ -1376,6 +1407,11 @@ begin
   end;
 end;
 
+procedure TMemoryBrowser.pmRegistersPopup(Sender: TObject);
+begin
+  miFollowInHexview.checked:=(followRegister<>-1) and (pmRegisters.PopupComponent<>nil) and (pmRegisters.PopupComponent.Tag=followRegister);
+end;
+
 procedure TMemoryBrowser.pmStacktracePopup(Sender: TObject);
 var
   i: integer;
@@ -1517,7 +1553,6 @@ end;
 procedure TMemoryBrowser.SetBookmarkClick(Sender: TObject);
 var
   id: integer;
-  mi: TModuleInfo;
 begin
   if (sender=nil) or (not (sender is TMenuItem)) then exit;
   id:=TMenuItem(Sender).Tag;
@@ -2150,7 +2185,8 @@ begin
   try
     if reg.OpenKey('\Software\Cheat Engine\Disassemblerview '+inttostr(screen.PixelsPerInch)+'\',true) then
     begin
-      reg.WriteBinaryData('colors', disassemblerview.colors, sizeof(disassemblerview.colors));
+      reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('colors', {$ifndef windows}bintohexs({$endif}disassemblerview.colors, sizeof(disassemblerview.colors)){$ifndef windows}){$endif};
+
       reg.WriteInteger('jlCallColor', integer(disassemblerview.jlCallColor));
       reg.WriteInteger('jlUnconditionalJumpColor', integer(disassemblerview.jlUnconditionalJumpColor));
       reg.WriteInteger('jlConditionalJumpColor', integer(disassemblerview.jlconditionalJumpColor));
@@ -2329,7 +2365,13 @@ begin
     if reg.OpenKey('\Software\Cheat Engine\Disassemblerview '+inttostr(screen.PixelsPerInch)+'\',false) then
     begin
       if reg.ValueExists('colors') then
+      begin
+        {$ifdef windows}
         reg.ReadBinaryData('colors', disassemblerview.colors, sizeof(disassemblerview.colors));
+        {$else}
+        HexToBin(pchar(reg.ReadString('colors')),pchar(@disassemblerview.colors),sizeof(disassemblerview.colors));
+        {$endif}
+      end;
 
 
       if reg.ValueExists('jlCallColor') then
@@ -2463,7 +2505,7 @@ begin
   scrollbox1.OnVScroll:=Scrollboxscroll;
 
   disassemblerview.reinitialize;
-
+  followRegister:=-1;
 end;
 
 procedure TMemoryBrowser.Scrollboxscroll(sender: TObject);
@@ -2569,26 +2611,30 @@ var codelength: dword;
 begin
   a:=disassemblerview.SelectedAddress;
 
-  for i:=0 to AdvancedOptions.numberofcodes-1 do
+  for i:=0 to AdvancedOptions.count-1 do
   begin
-    a2:=symhandler.getAddressFromName(AdvancedOptions.code[i].symbolname,false,e);
-    if not e then
+    if AdvancedOptions.code[i]<>nil then
     begin
-      if InRangeX(disassemblerview.SelectedAddress, a2, a2+length(AdvancedOptions.code[i].actualopcode)-1 ) then
+      a2:=symhandler.getAddressFromName(AdvancedOptions.code[i].symbolname,false,e);
+      if not e then
       begin
-        for j:=0 to AdvancedOptions.Codelist2.Items.count-1 do
-          AdvancedOptions.Codelist2.Items[j].Selected:=false;
+        if InRangeX(disassemblerview.SelectedAddress, a2, a2+length(AdvancedOptions.code[i].actualopcode)-1 ) then
+        begin
+          for j:=0 to AdvancedOptions.count-1 do
+            AdvancedOptions.Selected[j]:=false;
 
-        AdvancedOptions.Codelist2.Items[i].Selected:=true;
-        AdvancedOptions.Codelist2.ItemIndex:=i;
+          AdvancedOptions.Selected[i]:=true;
+          AdvancedOptions.lvCodelist.ItemIndex:=i;
 
-        if AdvancedOptions.code[i].changed then
-          AdvancedOptions.miRestoreWithOriginal.OnClick(AdvancedOptions.miRestoreWithOriginal)
-        else
-          AdvancedOptions.miReplaceWithNops.onclick(AdvancedOptions.miReplaceWithNops);
+          if AdvancedOptions.code[i].changed then
+            AdvancedOptions.miRestoreWithOriginal.OnClick(AdvancedOptions.miRestoreWithOriginal)
+          else
+            AdvancedOptions.miReplaceWithNops.onclick(AdvancedOptions.miReplaceWithNops);
 
-        exit;
+          exit;
+        end;
       end;
+
     end;
   end;
 
@@ -2767,7 +2813,6 @@ end;
 
 procedure TMemoryBrowser.Gotoaddress1Click(Sender: TObject);
 var newaddress: string;
-    symbol :PImagehlpSymbol;
     oldoptions: dword;
     canceled: boolean;
     oldAddress: ptrUint;
@@ -3588,6 +3633,7 @@ var dll: string;
     dllList: tstringlist;
 begin
 
+  {$ifdef windows}
   functionname:='';
   dll:='';
 
@@ -3624,6 +3670,8 @@ begin
     symhandler.reinitialize(true);
     showmessage(rsDLLInjected);
   end;
+
+  {$endif}
 end;
 
 procedure TMemoryBrowser.AutoInject1Click(Sender: TObject);
@@ -3780,6 +3828,7 @@ var count: string;
     x: dword;
     s: string;
 begin
+  {$ifdef windows}
 {$ifndef net}
   count:='4096';
   if inputquery(rsAllocateMemory, rsHowMuchMemoryDoYouWishToAllocate, count) then
@@ -3802,6 +3851,7 @@ begin
     end;
   end;
   {$endif}
+  {$endif}
 end;
 
 procedure TMemoryBrowser.Getaddress1Click(Sender: TObject);
@@ -3810,6 +3860,7 @@ var p: pointer;
     ws: widestring;
     pws: pwidechar;
 begin
+  {$ifdef windows}
   if inputquery(rsGetKernelAddress, rsGiveTheNameOfTheFunctionYouWantToFindCaseSensitive, s) then
   begin
     ws:=s;
@@ -3818,6 +3869,7 @@ begin
 
     disassemblerview.SelectedAddress:=ptrUint(p);
   end;
+  {$endif}
 end;
 
 procedure TMemoryBrowser.Findmemory1Click(Sender: TObject);
@@ -3968,6 +4020,7 @@ var x: ptrUint;
   b: byte;
   dbvmbp: boolean;
 begin
+
   Breakandtraceinstructions1.Enabled:=processhandle<>0;
   miTogglebreakpoint.Enabled:=processhandle<>0;
   Changestateofregisteratthislocation1.Enabled:=processhandle<>0;
@@ -3981,10 +4034,10 @@ begin
   miConditionalBreak.enabled:=(debuggerthread<>nil) and (debuggerthread.isBreakpoint(disassemblerview.SelectedAddress)<>nil);
   miConditionalBreak.visible:=miConditionalBreak.enabled;
 
-  miDBVMActivateCloak.visible:=isRunningDBVM and hasEPTSupport and (not hasCloakedRegionInRange(disassemblerview.SelectedAddress, 1, VA,PA));
+  miDBVMActivateCloak.visible:={$ifdef windows}isRunningDBVM and hasEPTSupport and (not hasCloakedRegionInRange(disassemblerview.SelectedAddress, 1, VA,PA)){$else}false{$endif};
   miDBVMActivateCloak.enabled:=miDBVMActivateCloak.visible and DBKLoaded;
 
-  miDBVMDisableCloak.visible:=isRunningDBVM and hasEPTSupport and (hasCloakedRegionInRange(disassemblerview.SelectedAddress, 1, VA,PA));
+  miDBVMDisableCloak.visible:={$ifdef windows}isRunningDBVM and hasEPTSupport and (hasCloakedRegionInRange(disassemblerview.SelectedAddress, 1, VA,PA)){$else}false{$endif};
   miDBVMDisableCloak.enabled:=miDBVMDisableCloak.visible and DBKLoaded;
 
   miTogglebreakpoint.visible:=(not ischild);
@@ -4036,27 +4089,30 @@ begin
 
   inadvancedoptions:=false;
 
-  for i:=0 to AdvancedOptions.numberofcodes-1 do
+  for i:=0 to AdvancedOptions.count-1 do
   begin
-    a:=symhandler.getAddressFromName(AdvancedOptions.code[i].symbolname,false,e);
-    if not e then
+    if AdvancedOptions.code[i]<>nil then
     begin
-      if InRangeX(disassemblerview.SelectedAddress, a, a+length(AdvancedOptions.code[i].actualopcode)-1 ) then
+      a:=symhandler.getAddressFromName(AdvancedOptions.code[i].symbolname,false,e);
+      if not e then
       begin
-        inadvancedoptions:=true;
+        if InRangeX(disassemblerview.SelectedAddress, a, a+length(AdvancedOptions.code[i].actualopcode)-1 ) then
+        begin
+          inadvancedoptions:=true;
 
-        if AdvancedOptions.code[i].changed then
-          begin
-            miReplacewithnops.caption:=rsRestoreWithOrginalCode;
-            miReplacewithnops.imageindex:=44;
-          end
-        else
-          begin
-            miReplacewithnops.caption:=rsReplaceWithCodeThatDoesNothing;
-            miReplacewithnops.imageindex:=42;
-          end;
+          if AdvancedOptions.code[i].changed then
+            begin
+              miReplacewithnops.caption:=rsRestoreWithOrginalCode;
+              miReplacewithnops.imageindex:=44;
+            end
+          else
+            begin
+              miReplacewithnops.caption:=rsReplaceWithCodeThatDoesNothing;
+              miReplacewithnops.imageindex:=42;
+            end;
 
-        break;
+          break;
+        end;
       end;
     end;
   end;
@@ -4066,7 +4122,7 @@ begin
 
   miAddToTheCodelist.visible:=not inadvancedoptions;
 
-  DBVMFindoutwhataddressesthisinstructionaccesses.visible:=isIntel and isDBVMCapable and miSetSpecificBreakpoint.visible;
+  DBVMFindoutwhataddressesthisinstructionaccesses.visible:={$ifdef windows}isIntel and isDBVMCapable and miSetSpecificBreakpoint.visible{$else}false{$endif};
   DBVMFindoutwhataddressesthisinstructionaccesses.enabled:=DBVMFindoutwhataddressesthisinstructionaccesses.visible and DBKLoaded;
 
   //
@@ -4075,7 +4131,7 @@ begin
   miSetBreakpointPE.enabled:=((CurrentDebuggerInterface=nil) and (not formsettings.cbKDebug.Checked)) or ((CurrentDebuggerInterface<>nil) and (dbcExceptionBreakpoint in CurrentDebuggerInterface.DebuggerCapabilities));
   miSetBreakpointDBVMExec.enabled:=((CurrentDebuggerInterface=nil) and (formsettings.cbKDebug.Checked)) or ((CurrentDebuggerInterface<>nil) and (dbcDBVMBreakpoint in CurrentDebuggerInterface.DebuggerCapabilities));
 
-  miSetBreakpointDBVMExec.visible:=hasEPTSupport;
+  miSetBreakpointDBVMExec.visible:={$ifdef windows}hasEPTSupport{$else}false{$endif};
 
 
 end;
@@ -4204,14 +4260,14 @@ end;
 
 
 
-procedure TMemoryBrowser.CopyBytesAndOpcodesClick(Sender: TObject);
+procedure TMemoryBrowser.copyBytesAndOpcodesClick(Sender: TObject);
 var a,b: ptrUint;
     _tag: integer;
 begin
 
 
   _tag:=(sender as tmenuitem).Tag;
-
+  if _tag=0 then raise exception.create('Build environment corrupted');
 
   with tfrmSavedisassembly.create(self) do
   begin
@@ -4224,10 +4280,10 @@ begin
     edit2.Text:=inttohex(b-1,8);
     copymode:=true;
 
-
-    cbAddress.checked:=_tag<>3;
-    cbBytes.checked:=(_tag=0) or (_tag=1) or (_tag=3);
-    cbOpcode.checked:=(_tag=0) or (_tag=2);
+    cbAddress.checked:=_tag<>4;
+    cbBytes.checked:=(_tag=1) or (_tag=2) or (_tag=4) or (_tag=6);
+    cbOpcode.checked:=(_tag=1) or (_tag=3) or (_tag=6);
+    cbComment.checked:=(_tag=1);
     
     button1.click;
     waittilldone;
@@ -4362,6 +4418,7 @@ var
   procbased1flags: dword;
   i: integer;
 begin
+  {$ifdef windows}
   LoadDBK32;
   canuseept:=false;
   if isDriverLoaded(nil) then
@@ -4476,6 +4533,7 @@ begin
 
 
   end;
+  {$endif}
 end;
 
 procedure TMemoryBrowser.Findoutwhataddressesthisinstructionaccesses1Click(
@@ -5773,6 +5831,8 @@ begin
 
   if _debuggerthread<>nil then _debuggerthread.execlocation:=41313;
 
+
+  ApplyFollowRegister;
   {for i:=0 to 4095 do
   begin
     if pbyte(ptruint(laststack)+stacktracesize+i)^<>$ce then

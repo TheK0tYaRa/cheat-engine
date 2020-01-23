@@ -5,11 +5,16 @@ unit frmautoinjectunit;
 interface
 
 uses
-  windows, LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  {$ifdef darwin}
+  macport, LCLProc,
+  {$else}
+  windows,
+  {$endif}
+  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls, ExtCtrls, Menus, MemoryRecordUnit, commonTypeDefs, customtypehandler,
   disassembler, symbolhandler, symbolhandlerstructs, SynEdit, SynHighlighterCpp,
   SynHighlighterAA, LuaSyntax, SynPluginMultiCaret, SynEditSearch, tablist,
-  SynGutterBase, SynEditMarks;
+  SynGutterBase, SynEditMarks, math;
 
 
 type TCallbackRoutine=procedure(memrec: TMemoryRecord; script: string; changed: boolean) of object;
@@ -84,7 +89,7 @@ type
     File1: TMenuItem;
     menuAOBInjection: TMenuItem;
     menuFullInjection: TMenuItem;
-    MenuItem1: TMenuItem;
+    miReplace: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
     miRedo: TMenuItem;
@@ -116,7 +121,7 @@ type
     Inject1: TMenuItem;
     Injectincurrentprocess1: TMenuItem;
     Injectintocurrentprocessandexecute1: TMenuItem;
-    Find1: TMenuItem;
+    miFind: TMenuItem;
     miPaste: TMenuItem;
     miCopy: TMenuItem;
     miCut: TMenuItem;
@@ -131,7 +136,7 @@ type
     procedure Load1Click(Sender: TObject);
     procedure menuAOBInjectionClick(Sender: TObject);
     procedure menuFullInjectionClick(Sender: TObject);
-    procedure MenuItem1Click(Sender: TObject);
+    procedure miReplaceClick(Sender: TObject);
     procedure MenuItem2Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
     procedure mifindNextClick(Sender: TObject);
@@ -166,7 +171,7 @@ type
     procedure miCutClick(Sender: TObject);
     procedure miCopyClick(Sender: TObject);
     procedure miPasteClick(Sender: TObject);
-    procedure Find1Click(Sender: TObject);
+    procedure miFindClick(Sender: TObject);
     procedure FindDialog1Find(Sender: TObject);
     procedure AAPref1Click(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -246,7 +251,7 @@ implementation
 
 
 uses frmAAEditPrefsUnit,MainUnit,memorybrowserformunit,APIhooktemplatesettingsfrm,
-  Globals, Parsers, MemoryQuery, GnuAssembler, LuaCaller, SynEditTypes, CEFuncProc,
+  Globals, Parsers, MemoryQuery, {$ifdef windows}GnuAssembler,{$endif} LuaCaller, SynEditTypes, CEFuncProc,
   StrUtils, types, ComCtrls, LResources, NewKernelHandler, MainUnit2, Assemblerunit,
   autoassembler,  registry, luahandler, memscan, foundlisthelper, ProcessHandlerUnit,
   frmLuaEngineUnit, frmSyntaxHighlighterEditor;
@@ -549,9 +554,12 @@ begin
       end;
     end;
 
+
     smGnuAssembler:
     begin
+      {$ifdef windows}
       GnuAssemble(assemblescreen.lines);
+      {$endif}
 
     end;
 
@@ -577,7 +585,7 @@ end;
 procedure TfrmAutoInject.loadFile(filename: string);
 begin
   assemblescreen.Lines.Clear;
-  assemblescreen.Lines.LoadFromFile(filename, true);
+  assemblescreen.Lines.LoadFromFile(filename{$if FPC_FULLVERSION >= 030200}, true{$endif});
   savedialog1.FileName:=filename;
   assemblescreen.AfterLoadFromFile;
 
@@ -1862,6 +1870,17 @@ begin
     addTemplate(i);
 
 {$endif}
+
+{$ifdef darwin}
+  miCut.ShortCut:=TextToShortCut('Meta+X');
+  miCopy.ShortCut:=TextToShortCut('Meta+C');
+  miPaste.ShortCut:=TextToShortCut('Meta+V');
+  miUndo.ShortCut:=TextToShortCut('Meta+Z');
+  miRedo.ShortCut:=TextToShortCut('Shift+Meta+X');
+  miFind.ShortCut:=TextToShortCut('Meta+F');
+  mifindNext.ShortCutKey2:=TextToShortcut('Meta+G');
+{$endif}
+
 end;
 
 procedure TfrmAutoInject.TabControl1Change(Sender: TObject);
@@ -2106,7 +2125,7 @@ begin
   assemblescreen.PasteFromClipboard;
 end;
 
-procedure TfrmAutoInject.Find1Click(Sender: TObject);
+procedure TfrmAutoInject.miFindClick(Sender: TObject);
 begin
   finddialog1.Options:=finddialog1.Options-[frFindNext];
   if finddialog1.Execute then
@@ -2446,7 +2465,7 @@ begin
     generateFullInjectionScript(assemblescreen.Lines, address);
 end;
 
-procedure TfrmAutoInject.MenuItem1Click(Sender: TObject);
+procedure TfrmAutoInject.miReplaceClick(Sender: TObject);
 begin
   ReplaceDialog1.execute;
 end;

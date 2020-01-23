@@ -44,7 +44,7 @@
 #include <signal.h>
 
 #ifndef __x86_64__
-#include <asm/signal.h>
+//#include <asm/signal.h>
 #endif
 
 
@@ -60,7 +60,7 @@
 
 #ifndef __x86_64__
 #include <linux/elf.h>
-#include <linux/uio.h>
+//#include <linux/uio.h>
 #endif
 
 
@@ -2174,7 +2174,10 @@ int WriteProcessMemoryDebug(HANDLE hProcess, PProcessData p, void *lpAddress, vo
         debug_log("Still some bytes left: %d\n", size-offset);
         //still a few bytes left
         long int oldvalue=safe_ptrace(PTRACE_PEEKDATA, p->pid,  (void *)(uintptr_t)lpAddress+offset, (void*)0);
-
+        #ifdef __x86_64__
+          //Even with 64 bits, peek_data can read only 4 bytes.
+          oldvalue += safe_ptrace(PTRACE_PEEKDATA, p->pid,  (void *)(uintptr_t)lpAddress+offset+4, (void*)0)*0x100000000;
+        #endif
         unsigned char *oldbuf=(unsigned char *)&oldvalue;
         unsigned char *newmem=(unsigned char *)address;
         int i;
@@ -2317,7 +2320,10 @@ int WriteProcessMemory(HANDLE hProcess, void *lpAddress, void *buffer, int size)
         	printf("Still some bytes left: %d\n", size-offset);
           //still a few bytes left
           long int oldvalue=safe_ptrace(PTRACE_PEEKDATA, pid,  (void *)(uintptr_t)lpAddress+offset, (void*)0);
-
+          #ifdef __x86_64__
+            //Even with 64 bits, peek_data can read only 4 bytes.
+            oldvalue += safe_ptrace(PTRACE_PEEKDATA, p->pid,  (void *)(uintptr_t)lpAddress+offset+4, (void*)0)*0x100000000;
+          #endif
           unsigned char *oldbuf=(unsigned char *)&oldvalue;
           unsigned char *newmem=(unsigned char *)address;
           int i;
@@ -3651,5 +3657,3 @@ void initAPI()
   sem_init(&sem_DebugThreadEvent, 0, 0); //locked by default
 
 }
-
-

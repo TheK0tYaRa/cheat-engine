@@ -5,11 +5,16 @@ unit formsettingsunit;
 interface
 
 uses
-  windows, win32proc, LCLProc, LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  {$ifdef darwin}
+  macport, macexceptiondebuggerinterface,
+  {$endif}
+  {$ifdef windows}
+  windows, win32proc,
+  {$endif}LCLProc, LCLIntf, LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls,registry, Menus,ComCtrls,CEFuncProc,ExtCtrls,{tlhelp32,}CheckLst,
   Buttons, LResources, frameHotkeyConfigUnit, math,
 
-  kerneldebugger,plugin,NewKernelHandler,CEDebugger,hotkeyhandler, debugHelper,
+  KernelDebugger,plugin,NewKernelHandler,CEDebugger,hotkeyhandler, debugHelper,
   formhotkeyunit, debuggertypedefinitions, FileUtil, IniFiles;
 
 
@@ -141,6 +146,9 @@ type
     miUnexpectedBreakpointsIgnore: TRadioButton;
     miUnexpectedBreakpointsBreak: TRadioButton;
     miUnexpectedBreakpointsBreakWhenInsideRegion: TRadioButton;
+    rbMacDebugThreadLevel: TRadioButton;
+    cbUseMacDebugger: TRadioButton;
+    rbMacDebugTaskLevel: TRadioButton;
     rbDebugAsBreakpoint: TRadioButton;
     rbgDebuggerInterface: TRadioGroup;
     rbInt3AsBreakpoint: TRadioButton;
@@ -156,6 +164,7 @@ type
     spbDown: TSpeedButton;
     spbUp: TSpeedButton;
     Languages: TTabSheet;
+    tsMacDebuggerInterface: TTabSheet;
     tsLua: TTabSheet;
     tsSigning: TTabSheet;
     tsKernelDebugConfig: TTabSheet;
@@ -290,8 +299,14 @@ type
 
     unexpectedExceptionHandlerChanged: boolean;
 
+    hasNoteAboutDebuggerInterfaces: boolean;
+
     procedure SetAssociations;
     procedure LanguageMenuItemClick(Sender: TObject);
+    {$ifdef darwin}
+    procedure FixUpsideDownTreeview;
+    procedure FixUpsideDownTreeviewTimer(sender: TObject);
+    {$endif}
   public
     { Public declarations }
     
@@ -312,6 +327,7 @@ type
                           end;
 
     procedure cleanupLanguageList;
+    procedure setNoteAboutDebuggerInterfaces;
     procedure ScanForLanguages;
 
   published
@@ -354,6 +370,15 @@ begin
   end;
 end;
 
+
+procedure TFormSettings.setNoteAboutDebuggerInterfaces;
+begin
+  if hasNoteAboutDebuggerInterfaces=false then
+  begin
+    rbgDebuggerInterface.caption:=rbgDebuggerInterface.caption+' '+ rsWontHaveAnyEffectUntilYouOpenANewProcess;
+    hasNoteAboutDebuggerInterfaces:=true;
+  end;
+end;
 
 procedure TFormSettings.SetAssociations; //obsolete, done from installer
 begin
@@ -458,11 +483,13 @@ begin
 
   {$ifndef net}
 
+    {$ifdef windows}
     if cbProcessWatcher.checked and (frmprocesswatcher=nil) then
     begin
       loaddbk32;
       frmprocesswatcher:=tfrmprocesswatcher.Create(mainform); //start the process watcher
     end;
+    {$endif}
 
 
   {$endif}
@@ -662,7 +689,8 @@ begin
           denylist:=tempdenylist;
           denylistglobal:=tempdenylistglobal;
 
-          reg.WriteBinaryData('Module List',ModuleList^,modulelistsize);
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Module List',{$ifndef windows}bintohexs({$endif}ModuleList^,modulelistsize){$ifndef windows}){$endif};
+
           reg.writeInteger('modulelistsize',modulelistsize);
           reg.WriteBool('Global Denylist',DenyListGlobal);
           reg.WriteBool('ModuleList as Denylist',DenyList);
@@ -687,22 +715,22 @@ begin
 
 
 
+
           //save the hotkeylist
-          reg.WriteBinaryData('Attach to foregroundprocess Hotkey',frameHotkeyConfig.newhotkeys[0][0],10);
-          reg.WriteBinaryData('Show Cheat Engine Hotkey',frameHotkeyConfig.newhotkeys[1][0],10);
-          reg.WriteBinaryData('Pause process Hotkey',frameHotkeyConfig.newhotkeys[2][0],10);
-          reg.WriteBinaryData('Toggle speedhack Hotkey',frameHotkeyConfig.newhotkeys[3][0],10);
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Attach to foregroundprocess Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[0][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Show Cheat Engine Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[1][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Pause process Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[2][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Toggle speedhack Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[3][0],10){$ifndef windows}){$endif};
 
-
-          reg.WriteFloat('Speedhack 1 speed',frameHotkeyConfig.newspeedhackspeed1.speed);
+          reg.{$ifdef windows}WriteFloat{$else}WriteString{$endif}('Speedhack 1 speed',{$ifndef windows}FloatToStr({$endif}frameHotkeyConfig.newspeedhackspeed1.speed{$ifndef windows}){$endif});
           reg.WriteBool('Speedhack 1 disablewhenreleased',frameHotkeyConfig.newspeedhackspeed1.disablewhenreleased);
-          reg.WriteFloat('Speedhack 2 speed',frameHotkeyConfig.newspeedhackspeed2.speed);
+          reg.{$ifdef windows}WriteFloat{$else}WriteString{$endif}('Speedhack 2 speed',{$ifndef windows}FloatToStr({$endif}frameHotkeyConfig.newspeedhackspeed2.speed{$ifndef windows}){$endif});
           reg.WriteBool('Speedhack 2 disablewhenreleased',frameHotkeyConfig.newspeedhackspeed2.disablewhenreleased);
-          reg.WriteFloat('Speedhack 3 speed',frameHotkeyConfig.newspeedhackspeed3.speed);
+          reg.{$ifdef windows}WriteFloat{$else}WriteString{$endif}('Speedhack 3 speed',{$ifndef windows}FloatToStr({$endif}frameHotkeyConfig.newspeedhackspeed3.speed{$ifndef windows}){$endif});
           reg.WriteBool('Speedhack 3 disablewhenreleased',frameHotkeyConfig.newspeedhackspeed3.disablewhenreleased);
-          reg.WriteFloat('Speedhack 4 speed',frameHotkeyConfig.newspeedhackspeed4.speed);
+          reg.{$ifdef windows}WriteFloat{$else}WriteString{$endif}('Speedhack 4 speed',{$ifndef windows}FloatToStr({$endif}frameHotkeyConfig.newspeedhackspeed4.speed{$ifndef windows}){$endif});
           reg.WriteBool('Speedhack 4 disablewhenreleased',frameHotkeyConfig.newspeedhackspeed4.disablewhenreleased);
-          reg.WriteFloat('Speedhack 5 speed',frameHotkeyConfig.newspeedhackspeed5.speed);
+          reg.{$ifdef windows}WriteFloat{$else}WriteString{$endif}('Speedhack 5 speed',{$ifndef windows}FloatToStr({$endif}frameHotkeyConfig.newspeedhackspeed5.speed{$ifndef windows}){$endif});
           reg.WriteBool('Speedhack 5 disablewhenreleased',frameHotkeyConfig.newspeedhackspeed5.disablewhenreleased);
 
           mainunit2.speedhackspeed1:=frameHotkeyConfig.newspeedhackspeed1;
@@ -711,43 +739,45 @@ begin
           mainunit2.speedhackspeed4:=frameHotkeyConfig.newspeedhackspeed4;
           mainunit2.speedhackspeed5:=frameHotkeyConfig.newspeedhackspeed5;
 
-          reg.WriteBinaryData('Set Speedhack speed 1 Hotkey',frameHotkeyConfig.newhotkeys[4][0],10);
-          reg.WriteBinaryData('Set Speedhack speed 2 Hotkey',frameHotkeyConfig.newhotkeys[5][0],10);
-          reg.WriteBinaryData('Set Speedhack speed 3 Hotkey',frameHotkeyConfig.newhotkeys[6][0],10);
-          reg.WriteBinaryData('Set Speedhack speed 4 Hotkey',frameHotkeyConfig.newhotkeys[7][0],10);
-          reg.WriteBinaryData('Set Speedhack speed 5 Hotkey',frameHotkeyConfig.newhotkeys[8][0],10);
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Set Speedhack speed 1 Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[4][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Set Speedhack speed 2 Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[5][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Set Speedhack speed 3 Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[6][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Set Speedhack speed 4 Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[7][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Set Speedhack speed 5 Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[8][0],10){$ifndef windows}){$endif};
 
-          reg.WriteBinaryData('Increase Speedhack speed',frameHotkeyConfig.newhotkeys[9][0],10);
-          reg.WriteFloat('Increase Speedhack delta',frameHotkeyConfig.speedupdelta);
 
-          reg.WriteBinaryData('Decrease Speedhack speed',frameHotkeyConfig.newhotkeys[10][0],10);
-          reg.WriteFloat('Decrease Speedhack delta',frameHotkeyConfig.slowdowndelta);
+
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Increase Speedhack speed',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[9][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteFloat{$else}WriteString{$endif}('Increase Speedhack delta',{$ifndef windows}FloatToStr({$endif}frameHotkeyConfig.speedupdelta{$ifndef windows}){$endif});
+
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Decrease Speedhack speed',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[10][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteFloat{$else}WriteString{$endif}('Decrease Speedhack delta',{$ifndef windows}FloatToStr({$endif}frameHotkeyConfig.slowdowndelta{$ifndef windows}){$endif});
 
           mainunit2.speedupdelta:=frameHotkeyConfig.speedupdelta;
           mainunit2.slowdowndelta:=frameHotkeyConfig.slowdowndelta;
 
-          reg.WriteBinaryData('Binary Hotkey',frameHotkeyConfig.newhotkeys[11][0],10);
-          reg.WriteBinaryData('Byte Hotkey',frameHotkeyConfig.newhotkeys[12][0],10);
-          reg.WriteBinaryData('2 Bytes Hotkey',frameHotkeyConfig.newhotkeys[13][0],10);
-          reg.WriteBinaryData('4 Bytes Hotkey',frameHotkeyConfig.newhotkeys[14][0],10);
-          reg.WriteBinaryData('8 Bytes Hotkey',frameHotkeyConfig.newhotkeys[15][0],10);
-          reg.WriteBinaryData('Float Hotkey',frameHotkeyConfig.newhotkeys[16][0],10);
-          reg.WriteBinaryData('Double Hotkey',frameHotkeyConfig.newhotkeys[17][0],10);
-          reg.WriteBinaryData('Text Hotkey',frameHotkeyConfig.newhotkeys[18][0],10);
-          reg.WriteBinaryData('Array of Byte Hotkey',frameHotkeyConfig.newhotkeys[19][0],10);
-          reg.WriteBinaryData('New Scan Hotkey',frameHotkeyConfig.newhotkeys[20][0],10);
-          reg.WriteBinaryData('New Scan-Exact Value',frameHotkeyConfig.newhotkeys[21][0],10);
-          reg.WriteBinaryData('Unknown Initial Value Hotkey',frameHotkeyConfig.newhotkeys[22][0],10);
-          reg.WriteBinaryData('Next Scan-Exact Value',frameHotkeyConfig.newhotkeys[23][0],10);
-          reg.WriteBinaryData('Increased Value Hotkey',frameHotkeyConfig.newhotkeys[24][0],10);
-          reg.WriteBinaryData('Decreased Value Hotkey',frameHotkeyConfig.newhotkeys[25][0],10);
-          reg.WriteBinaryData('Changed Value Hotkey',frameHotkeyConfig.newhotkeys[26][0],10);
-          reg.WriteBinaryData('Unchanged Value Hotkey',frameHotkeyConfig.newhotkeys[27][0],10);
-          reg.WriteBinaryData('Same as first scan Hotkey',frameHotkeyConfig.newhotkeys[28][0],10);
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Binary Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[11][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Byte Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[12][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('2 Bytes Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[13][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('4 Bytes Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[14][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('8 Bytes Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[15][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Float Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[16][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Double Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[17][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Text Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[18][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Array of Byte Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[19][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('New Scan Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[20][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('New Scan-Exact Value',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[21][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Unknown Initial Value Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[22][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Next Scan-Exact Value',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[23][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Increased Value Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[24][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Decreased Value Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[25][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Changed Value Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[26][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Unchanged Value Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[27][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Same as first scan Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[28][0],10){$ifndef windows}){$endif};
 
-          reg.WriteBinaryData('Undo Last scan Hotkey',frameHotkeyConfig.newhotkeys[29][0],10);
-          reg.WriteBinaryData('Cancel scan Hotkey',frameHotkeyConfig.newhotkeys[30][0],10);
-          reg.WriteBinaryData('Debug->Run Hotkey',frameHotkeyConfig.newhotkeys[31][0],10);
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Undo Last scan Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[29][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Cancel scan Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[30][0],10){$ifndef windows}){$endif};
+          reg.{$ifdef windows}WriteBinaryData{$else}WriteString{$endif}('Debug->Run Hotkey',{$ifndef windows}bintohexs({$endif}frameHotkeyConfig.newhotkeys[31][0],10){$ifndef windows}){$endif};
 
 
           //apply these hotkey changes
@@ -810,6 +840,12 @@ begin
 
         waitafterguiupdate:=cbWaitAfterGuiUpdate.checked;
         reg.WriteBool('Wait After Gui Update', waitafterguiupdate);
+
+        {$ifdef darwin}
+        reg.WriteBool('Use TaskLevel debugger', rbMacDebugTaskLevel.checked);
+
+        useTaskLevelDebug:=rbMacDebugTaskLevel.checked;
+        {$endif}
 
 
         if miUnexpectedBreakpointsIgnore.checked then i:=0;
@@ -1188,8 +1224,13 @@ begin
   begin
     rbDebugAsBreakpoint.checked:=true;
     pcDebugConfig.ActivePageIndex:=2;
+  end
+  else
+  if cbUseMacDebugger.checked then
+  begin
+    pcDebugConfig.ActivePageIndex:=3;
+    pcDebugConfig.TabIndex:=3;
   end;
-
 
   rbPageExceptions.enabled:=not cbKDebug.checked; //currently the kerneldebugger doesn't handle pageexceptions yet (can be added, but not right now)
   if rbPageExceptions.checked and not rbPageExceptions.enabled then
@@ -1263,6 +1304,27 @@ begin
   SaveFormPosition(self);
 end;
 
+{$ifdef darwin}
+procedure TformSettings.FixUpsideDownTreeviewTimer(sender: TObject);
+begin
+  //trigger a gui update so it stops being upside down
+  tvMenuSelection.Showroot:=true;
+  tvMenuSelection.Showroot:=false;
+
+  ttimer(sender).free;
+end;
+
+procedure TformSettings.FixUpsideDownTreeview;
+var t: TTimer;
+begin
+  t:=ttimer.create(self);
+  t.Interval:=1;
+  t.OnTimer:=FixUpsideDownTreeviewTimer;
+end;
+
+{$endif}
+
+
 procedure TformSettings.FormShow(Sender: TObject);
   function CheckAssociation(ext: string):boolean;
   var  reg: TRegistry;
@@ -1297,6 +1359,9 @@ procedure TformSettings.FormShow(Sender: TObject);
 
   fd: TFontData;
 begin
+  {$ifdef darwin}
+  FixUpsideDownTreeview;
+  {$endif}
 
 
   tempstatepopuphide:=laststatePopupHide;
@@ -1349,9 +1414,11 @@ begin
   tvMenuSelection.Width:=j;
 
 
+  {$ifdef windows}
   if WindowsVersion>=wvVista then
     m:=sendmessage(edtStacksize.Handle, EM_GETMARGINS, 0,0)
   else
+  {$endif}
     m:=0;
 
 
@@ -1612,7 +1679,9 @@ end;
 
 procedure TformSettings.FormCreate(Sender: TObject);
 var i: integer;
+  {$ifdef windows}
   osVerInfo: TOSVersionInfo;
+  {$endif}
 
   reg: Tregistry;
   v,m: integer;
@@ -1635,7 +1704,7 @@ begin
   tvMenuSelection.Items[10].Data:=tsSigning;
 
   tvMenuSelection.Items[6].Visible:=false;
-  tvMenuSelection.Items[10].Visible:=cansigntables;
+  tvMenuSelection.Items[10].Visible:={$ifdef windows}cansigntables{$else}false{$endif};
 
   pcSetting.ShowTabs:=false;
 
@@ -1749,7 +1818,7 @@ begin
 
 
 
-    cbKdebug.Enabled:=isRunningDBVM or isDBVMCapable;
+    cbKdebug.Enabled:={$ifdef windows}isRunningDBVM or isDBVMCapable{$else}false{$endif};
 
     cbKdebug.Caption:=cbKdebug.Caption+' '+rsRequiresDBVM;
     if not cbKdebug.Enabled then
@@ -1757,6 +1826,7 @@ begin
   end;
 
 
+  {$ifdef windows}
   if NtQuerySystemInformation(196, @KVAShadowInfo,4,@rl)=0 then
   begin
     //it knows this classID..
@@ -1766,6 +1836,7 @@ begin
       btnMakeKernelDebugPossible.visible:=true;
     end;
   end;
+  {$endif}
 
   //check if it should be disabled
   reg:=tregistry.create;
@@ -1801,6 +1872,7 @@ begin
   end;
 
   //make the tabs invisible
+  {$ifdef windows}
   for i:=0 to pcSetting.PageCount-1 do
     pcSetting.Pages[i].TabVisible:=false;
 
@@ -1808,6 +1880,9 @@ begin
 
   for i:=0 to pcDebugConfig.PageCount-1 do
     pcDebugConfig.Pages[i].TabVisible:=false;
+  {$else}
+  pcDebugConfig.ShowTabs:=false;
+  {$endif}
 
 
 
@@ -1823,6 +1898,21 @@ begin
 
   if LoadFormPosition(self) then
     autosize:=false;
+
+
+
+  {$ifdef darwin}
+  cbUseVEHDebugger.enabled:=false;
+  cbUseVEHDebugger.visible:=false;
+  cbUseWindowsDebugger.enabled:=false;
+  cbUseWindowsDebugger.visible:=false;
+  cbKDebug.enabled:=false;
+  cbKDebug.visible:=false;
+  panel11.visible:=false;
+
+  cbUseMacDebugger.checked:=true;
+
+  {$endif}
 end;
 
 procedure TformSettings.cbKernelQueryMemoryRegionClick(Sender: TObject);
@@ -1833,6 +1923,7 @@ begin
     cbKernelOpenProcess.Enabled:=false;
   end
   else cbKernelOpenProcess.Enabled:=true;
+
 
 end;
 
@@ -1938,12 +2029,20 @@ begin
     w:=max(groupbox2.Width, w);
     h:=max(groupbox2.Height, h);
 
-    cbDebuggerInterfaceChange(nil);
+    {$ifdef darwin}
+    pcDebugConfig.PageIndex:=3;
+    w:=max(groupbox2.Width, w);
+    h:=max(groupbox2.Height, h);
+
+    {$endif}
 
     groupbox2.AutoSize:=false;
 
+    cbDebuggerInterfaceChange(nil);
+
     groupbox2.Width:=w;
     groupbox2.Height:=h;
+
   end;
 end;
 

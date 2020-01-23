@@ -4,19 +4,29 @@ unit symbolhandler;
 
 interface
 
-{$ifdef windows}
 
-uses jwawindows, windows, classes,LCLIntf,imagehlp,{psapi,}sysutils, cefuncproc,
-  newkernelhandler,syncobjs, SymbolListHandler, fgl, typinfo, cvconst, PEInfoFunctions,
-  DotNetPipe, DotNetTypes, commonTypeDefs, math, LazUTF8, contnrs, LazFileUtils,
-  db, sqldb, sqlite3dyn, sqlite3conn, registry, symbolhandlerstructs, forms, controls,
-  AvgLvlTree;
-{$endif}
-
-{$ifdef unix}
+{$ifdef jni}
 uses unixporthelper, Classes, sysutils, NewKernelHandler, syncobjs, SymbolListHandler,
   fgl, typinfo, cvconst, DotNetPipe, DotNetTypes, commonTypeDefs, math;
+{$else}
+uses
+  {$ifdef darwin}
+  macport, coresymbolication,
+  {$endif}
+
+  {$ifdef windows}
+  jwawindows, windows,
+  {$endif}
+  classes,LCLIntf{$ifdef windows},imagehlp{$endif},sysutils, CEFuncProc,
+  NewKernelHandler,syncobjs, SymbolListHandler, fgl, typinfo, cvconst, PEInfoFunctions,
+  DotNetPipe, DotNetTypes, commonTypeDefs, math, LazUTF8, contnrs, LazFileUtils,
+  db, sqldb, sqlite3dyn, sqlite3conn, registry, symbolhandlerstructs, forms, controls,
+  AvgLvlTree
+  {$ifdef darwin}
+  ,macportdefines
+  {$endif};
 {$endif}
+
 
 {$ifdef windows}
 Procedure Free (P : pointer); cdecl; external 'msvcrt' name 'free';
@@ -92,18 +102,27 @@ type
     skipList: TStringMap;
     notfoundlist: TStringMap;
 
+    {$ifdef windows}
     modulelist: record
       withdebuginfo: array of {$ifdef cpu32}IMAGEHLP_MODULE{$else}IMAGEHLP_MODULE64{$endif};
       withoutdebuginfo: array of {$ifdef cpu32}IMAGEHLP_MODULE{$else}IMAGEHLP_MODULE64{$endif};
     end;
+    {$endif}
 
     symbolscleaned: boolean;
     pdbonly: boolean; //tells enummodules to skip modules without pdb info
     searchpdb: boolean;
 
+    {$ifdef darwin}
+
+    function loadSymbolsWithSymbolicator: boolean;
+    {$endif}
+
     procedure processThreadEvents; //in case another thread is in a hurry and doesn't want to wait
 
+    {$IFDEF windows}
     procedure EnumerateStructures;
+    {$ENDIF}
     procedure EnumerateExtendedDebugSymbols;
 
     procedure LoadDriverSymbols(loadpdb: boolean);
@@ -123,6 +142,9 @@ type
     dllsymbols: boolean;
     searchpath: string;
 
+    {$ifdef darwin}
+    cs: CSSymbolicatorRef;
+    {$endif}
     symbollist: TSymbolListHandler;
 
     debugpart: integer;
@@ -191,13 +213,13 @@ type
 
     SymbolsLoadedNotification: array of TNotifyEvent;
 
+    {$ifdef windows}
     dotNetDataCollector: TDotNetPipe;
-
-
     dotnetModuleSymbolList: array of TDotNetModuleSymbols;
     dotnetModuleSymbolListMREW: TMultiReadExclusiveWriteSynchronizer; //MREW for adding/removing modules to the list
 
     symbolDataBase: TSQLite3Connection;
+    {$endif}
 
     function OpenDatabaseIfNeeded:boolean;
 
@@ -357,7 +379,7 @@ type TSTACKFRAME_EX = record
      end;
 
   PStackframe_ex=^TSTACKFRAME_EX;
-
+{$endif}
 
 type
   TSymFromName=function(hProcess: HANDLE; Name: LPSTR; Symbol: PSYMBOL_INFO): BOOL; stdcall;
@@ -368,6 +390,7 @@ type
   TSymSearch=function(hProcess: THANDLE; BaseOfDLL: ULONG64; Index: DWORD; SymTag: DWORD; Mask: PCHAR; Address: DWORD64; callback: TSymEnumeratesymbolsCallback; userContext: pointer; Options: DWORD): BOOL; stdcall;
 
 
+  {$ifdef windows}
 
 var SymFromName: TSymFromName;
     SymFromAddr: TSymFromAddr;
@@ -376,23 +399,24 @@ var SymFromName: TSymFromName;
     StackWalkEx:function(MachineType:dword; hProcess:THANDLE; hThread:THANDLE; StackFrame:PStackframe_ex; ContextRecord:pointer; ReadMemoryRoutine:TREAD_PROCESS_MEMORY_ROUTINE64; FunctionTableAccessRoutine:TFUNCTION_TABLE_ACCESS_ROUTINE64; GetModuleBaseRoutine:TGET_MODULE_BASE_ROUTINE64; TranslateAddress:TTRANSLATE_ADDRESS_ROUTINE64; flags: dword):bool;stdcall;
     SymLoadModuleEx:function(hProcess:THANDLE; hFile:THANDLE; ImageName:PSTR; ModuleName:PSTR; BaseOfDll:dword64; DllSize:dword; Data:pointer; Flags:dword):dword64;stdcall;
 
-
-{$endif}
+    {$endif}
 
 procedure symhandlerInitialize;
 
 implementation
 
-{$ifdef windows}
-uses assemblerunit, driverlist, LuaHandler, lualib, lua, lauxlib,
+
+{$ifdef jni}
+uses networkInterface, networkInterfaceApi, ProcessHandlerUnit, Globals, Parsers;
+{$else}
+uses Assemblerunit, driverlist, LuaHandler, lualib, lua, lauxlib,
   disassemblerComments, StructuresFrm2, networkInterface, networkInterfaceApi,
-  processhandlerunit, Globals, Parsers, MemoryQuery, LuaCaller,
+  ProcessHandlerUnit, Globals, Parsers, MemoryQuery, LuaCaller,
   UnexpectedExceptionsHelper, frmSymbolEventTakingLongUnit;
 {$endif}
 
-{$ifdef unix}
-uses networkInterface, networkInterfaceApi, ProcessHandlerUnit, Globals, Parsers;
-{$endif}
+
+
 
 resourcestring
   rsSymbolloaderthreadHasCrashed = 'Symbolloaderthread has crashed';
@@ -415,7 +439,7 @@ const
   SLMFLAG_NO_SYMBOLS=4;
 
 
-{$IFNDEF UNIX}
+{$IFNDEF JNI}
 type TEnumProcessModulesEx=function(hProcess: HANDLE; lphModule: PHMODULE; cb: DWORD; var lpcbNeeded: DWORD; dwFilterFlag: DWORD): BOOL; stdcall;
 type TEnumProcessModules=function(hProcess: HANDLE; lphModule: PHMODULE; cb: DWORD; var lpcbNeeded: DWORD): BOOL; stdcall;
 type TGetModuleFileNameEx=function(hProcess: HANDLE; hModule: HMODULE; lpFilename: pchar; nSize: DWORD): DWORD; stdcall;
@@ -423,7 +447,7 @@ type TGetModuleFileNameEx=function(hProcess: HANDLE; hModule: HMODULE; lpFilenam
 
 
 var
-  {$IFNDEF UNIX}
+  {$IFNDEF JNI}
   EnumProcessModulesEx: TEnumProcessModulesEx;
   EnumProcessModules:   TEnumProcessModules;
   GetModuleFileNameEx:  TGetModuleFilenameEx;
@@ -556,6 +580,7 @@ begin
         //spawn a TfrmSymboleventtakinglong form that uses a timer to check the TSymbolLoaderThreadEvent event
 
         waitingfrm:=TfrmSymbolEventTakingLong.Create(application);
+        waitingfrm.slevent:=self;
 
         if self is  TGetAddressFromSymbolThreadEvent then
         begin
@@ -591,6 +616,10 @@ begin
             abandoned:=true;
           end;
           break;
+        end
+        else
+        asm
+        nop
         end;
       end;
     end;
@@ -616,21 +645,15 @@ end;
 
 function EnumProcessModulesExNotImplemented(hProcess: HANDLE; lphModule: PHMODULE; cb: DWORD; var lpcbNeeded: DWORD; dwFilterFlag: DWORD): BOOL; stdcall;
 begin
-{$ifndef unix}
+{$ifndef jni}
   result:=EnumProcessModules(hProcess,lphModule,cb,lpcbNeeded);
 {$else}
   result:=false;
 {$endif}
 end;
 
-
-function cb(filename:PSTR; context:pointer):bool;stdcall;
-begin
-  result:=false;
-end;
-
-
 procedure TSymbolloaderthread.LoadDLLSymbols(loadPDB: boolean; loadmodule: boolean);
+{$IFDEF windows}
 var need:dword;
     x: PPointerArray;
     i: integer;
@@ -642,8 +665,9 @@ var need:dword;
     offset: integer;
 
     path: pchar;
+{$ENDIF}
 begin
-  {$ifndef unix}
+  {$ifdef windows}
   need:=0;
 
   modulelisttype:=LIST_MODULES_ALL;
@@ -701,6 +725,7 @@ begin
 end;
 
 procedure TSymbolloaderthread.LoadDriverSymbols(loadpdb: boolean);
+{$IFDEF windows}
 var need:dword;
     x: PPointerArray;
     i,c: integer;
@@ -717,8 +742,9 @@ var need:dword;
     path: pchar;
     size: dword;
     is64bit: boolean;
+{$ENDIF}
 begin
-  {$IFNDEF UNIX}
+  {$IFDEF WINDOWS}
   EnumDevicedrivers(nil,0,need);
   getmem(x,need*2);
   try
@@ -773,20 +799,8 @@ begin
 
 
               //srv*c:\DownstreamStore*https://msdl.microsoft.com/download/symbols
-              //srv*c:\DownstreamStore
-              {
-              SymSetSearchPath(thisprocesshandle, 'srv*c:\DownstreamStore*https://msdl.microsoft.com/download/symbols');
 
-              if mi.SymType<>SymPdb then
-              begin
-                getmem(path,512);
-                if SymFindFileInPath(thisprocesshandle,pchar(searchpath),@mi.LoadedPdbName[0],@mi.PdbSig70,mi.PdbAge,0,SSRVOPT_GUIDPTR,path, cb,nil) then
-                begin
-                  OutputDebugString(pchar('Loaded symbols for '+pchar(mi.LoadedImageName[0])+'+ at '+path));
-                  mi.Symtype:=SymPdb;
-                end;
-                freemem(path);
-              end; }
+
 
               if mi.SymType in [SymExport, SymNone] then
               begin
@@ -843,7 +857,7 @@ LPIMAGEHLP_STACK_FRAME = PIMAGEHLP_STACK_FRAME;
 function symflagsToString(symflags: dword): string;
 var s: string;
 begin
-  {$IFNDEF UNIX}
+  {$IFDEF WINDOWS}
   s:='';
   if (symFlags and SYMFLAG_VALUEPRESENT)>0 then
     s:=s+'VALUEPRESENT ';
@@ -881,7 +895,7 @@ var x: dword;
     type_symtag: TSymTagEnum;
     name: PWCHAR;
 begin
-  {$IFNDEF UNIX}
+  {$IFDEF WINDOWS}
   result:='';
   if infinitycheck<0 then exit;
 
@@ -1036,6 +1050,8 @@ var addressString: string;
 begin
   result:='';
 
+
+  {$IFDEF windows}
   //try to figure out whee it is stored (register/ offset, etc...)
   result:=RegToString(pSymInfo.reg);
   if (pSymInfo.Address<>0) then
@@ -1057,6 +1073,7 @@ begin
 
 
   end;
+  {$ENDIF}
 end;
 
 function ES2(pSymInfo:PSYMBOL_INFO; SymbolSize:ULONG; UserContext:pointer):BOOL;stdcall;
@@ -1068,7 +1085,7 @@ var
 
   esde: TExtraSymbolDataEntry;
 begin
-  {$IFNDEF UNIX}
+  {$IFDEF WINDOWS}
   result:=false;
   if pSymInfo.NameLen=0 then
     exit;
@@ -1106,7 +1123,9 @@ var es2address: pointer=@es2;
 
 //var SES:function;
 
+{$IFDEF windows}
 var SES:function(hProcess:THANDLE; BaseOfDll:ULONG64; Mask:LPCSTR; EnumSymbolsCallback:TSYM_ENUMERATESYMBOLS_CALLBACK; UserContext:pointer):BOOL;stdcall; //external External_library name 'SymEnumSymbols';
+{$ENDIF}
 
 procedure TSymbolloaderthread.EnumerateExtendedDebugSymbols;
 var
@@ -1119,7 +1138,7 @@ var
   d: hmodule;
 
 begin
-  {$IFNDEF UNIX}
+  {$IFDEF WINDOWS}
 
   if not assigned(ses) then
   begin
@@ -1170,7 +1189,7 @@ begin
 end;
 
 
-
+{$ifdef windows}
 function ES(pSymInfo:PSYMBOL_INFO; SymbolSize:ULONG; UserContext:pointer):BOOL;stdcall;
 var
   self: TSymbolloaderthread;
@@ -1626,7 +1645,7 @@ begin
   self.fprogress:=ceil((self.enumeratedModules / self.modulecount) * 100);
   {$ENDIF}
 end;
-
+  {$endif}
 
 function TSymbolloaderthread.NetworkES(modulename: string; symbolname: string; address: ptruint; size: integer; secondary: boolean): boolean;
 begin
@@ -1639,12 +1658,15 @@ begin
     highestsymbol:=symbolname;
   end;
   }
-  if (GetCurrentThread=MainThreadID) and (waitingfrm<>nil) then exit(false);
+  if (GetCurrentThreadID=MainThreadID) and (waitingfrm<>nil) then exit(false);
 
   symbollist.AddSymbol(modulename, modulename+'.'+symbolname, Address, size, secondary);
   symbollist.AddSymbol(modulename, symbolname, Address, size,true);
   result:=not terminated;
 end;
+
+
+
 
 function TSymbolloaderthread.getAddressFromSymbol(symbol: string): ptruint;
 //called from other threads, NOT the symbolloader thread
@@ -1654,7 +1676,7 @@ begin
 
   if skipAllSymbols then exit(0);
   if (skipList<>nil) and (skipList.Values[symbol]) then exit(0);
-  if (GetCurrentThread=MainThreadID) and (waitingfrm<>nil) then exit(0);
+  if (GetCurrentThreadID=MainThreadID) and (waitingfrm<>nil) then exit(0);
   if trim(symbol)='' then exit(0);
   if (symbol[1] in ['#','(']) then exit(0);
   if (pos(' ',symbol)>0) then exit(0);
@@ -1704,6 +1726,7 @@ begin
   result:=sfate.symbolname;
 end;
 
+{$ifdef windows}
 function symbolsearch(pSymInfo: PSYMBOL_INFO; SymbolSize: ULONG; UserContext: Pointer): BOOL; stdcall;
 begin
   if (pSymInfo^.NameLen<>0) and (pSymInfo^.Address<>0) then
@@ -1715,6 +1738,7 @@ begin
     result:=true;
 
 end;
+{$endif}
 
 procedure TSymbolloaderthread.processThreadEvents;
 var
@@ -1732,6 +1756,12 @@ var
   skip: boolean;
 
   SearchResult: ptruint;
+
+  {$ifdef darwin}
+  sym: CSSymbolRef;
+  symname: pchar;
+  range: csRange;
+  {$endif}
 begin
 //  sleep(5000);
 
@@ -1796,6 +1826,21 @@ begin
 
         if (not skip) then
         begin
+          {$ifdef darwin}
+          if not CSIsNull(cs) then
+          begin
+            sym:=CSSymbolicatorGetSymbolWithNameAtTime(cs, pchar(te.symbolname),kCSNow);
+            if not CSIsNull(sym) then
+            begin
+              range:=CSSymbolGetRange(sym);
+              te.address:=range.location;
+            end;
+          end;
+
+          {$endif}
+
+          {$ifdef windows}
+
           if assigned(symsearch) and (length(modulelist.withdebuginfo)+length(modulelist.withoutdebuginfo)>5) then
           begin
             searchresult:=0;
@@ -1842,6 +1887,8 @@ begin
             if SymFromName(thisprocesshandle, pchar(te.symbolname), symbol) then
               te.address:=symbol.Address;
           end;
+          {$endif}
+
         end;
 
 
@@ -1849,6 +1896,31 @@ begin
       else
       begin
         //symbol from address
+        {$ifdef darwin}
+
+        if not CSIsNull(cs) then
+        begin
+          sym:=CSSymbolicatorGetSymbolWithAddressAtTime(cs, te.address,kCSNow);
+          if not CSIsNull(sym) then
+          begin
+            symname:=CSSymbolGetName(sym);
+
+            if (symname<>nil) and (symname[0]<>#0) then
+            begin
+              if symhandler.getmodulebyaddress(te.address,mi) then
+                te.symbolname:=ExtractFileNameOnly(mi.modulename)+'.';
+
+              te.symbolname:=te.symbolname+symname;
+
+              range:=CSSymbolGetRange(sym);
+              if range.location<te.address then
+                te.symbolname:=te.symbolname+'+'+inttohex(te.address-range.location,1);
+            end;
+          end;
+        end;
+        {$endif}
+
+        {$ifdef windows}
         symbol.address:=te.address;
         disp:=0;
 
@@ -1863,6 +1935,7 @@ begin
               te.symbolname:=te.symbolname+'+'+inttohex(disp,1);
           end;
 
+        {$endif}
       end;
 
       freemem(symbol);
@@ -1870,15 +1943,76 @@ begin
       symbolloaderthreadeventqueueCS.enter;
       queueindex:=symbolloaderthreadeventqueue.IndexOf(te);
       if queueindex<>-1 then
-        symbolloaderthreadeventqueue.Delete(queueindex)
-      else
-      asm
-      nop
-      end;
+        symbolloaderthreadeventqueue.Delete(queueindex);
+
       symbolloaderthreadeventqueueCS.leave;
     end;
   end;
 end;
+
+
+
+{$ifdef darwin}
+var count: integer;
+
+function ES(si: CSSymbolIterator; sym: CSSymbolRef): integer;  cdecl;
+var
+  self: TSymbolloaderthread;
+  symname: pchar;
+  range: CSRange;
+begin
+  self:=si.param;
+
+  symname:=CSSymbolGetName(sym);
+
+  if symname=nil then exit;
+  if symname[0]=#0 then exit;
+
+  range:=CSSymbolGetRange(sym);
+
+  self.symbollist.AddSymbol(self.currentModuleName, self.currentModuleName+'.'+symname, range.location, range.length);
+  self.symbollist.AddSymbol(self.currentModuleName, symname, range.location, range.length,true); //don't add it as a address->string lookup  , (this way it always shows modulename.symbol)
+  result:=0;
+
+  self.processThreadEvents;
+
+end;
+
+function EM(mi: CSSymbolOwnerIterator; so: CSSymbolOwnerRef): integer;  cdecl;
+var
+  self: TSymbolloaderthread;
+  si: CSSymbolIterator;
+begin
+  self:=mi.param;
+  self.currentModuleName:=CSSymbolOwnerGetName(so);
+
+  si:=createIterator(@es, self);
+  CSSymbolOwnerforEachSymbol(so, si);
+  freeIterator(si);
+
+  self.processThreadEvents;
+
+  result:=0;
+end;
+
+function TSymbolloaderthread.loadSymbolsWithSymbolicator: boolean;
+var mi: CSSymbolOwnerIterator;
+begin
+  result:=false;
+  cs:=CSSymbolicatorCreateWithPid(thisprocessid);
+
+  processThreadEvents;
+
+  if CSIsNull(cs)=false then
+  begin
+    mi:=createIterator(@em, self);
+    CSSymbolicatorForeachSymbolOwnerAtTime(cs, kCSNow, mi);
+    freeIterator(mi);
+    result:=true;
+  end;
+end;
+
+{$endif}
 
 procedure TSymbolloaderthread.execute;
 type
@@ -1914,7 +2048,7 @@ begin
 
       SymbolsLoaded:=false;
       symbollist.clear;
-
+      {$IFDEF windows}
       owner.dotnetModuleSymbolListMREW.Beginwrite;   //lock the list
       try
         for i:=0 to length(owner.dotnetModuleSymbolList)-1 do
@@ -1925,7 +2059,7 @@ begin
         owner.dotnetModuleSymbolListMREW.Endwrite;
       end;
 
-      {$IFDEF windows}
+
       if trim(searchpath)='' then
       begin
         s:='';
@@ -2133,8 +2267,11 @@ begin
 
 
 
-              processThreadEvents;
               isloading:=false;
+
+              while symbolloaderthreadeventqueue.Count>0 do
+                processThreadEvents;
+
 
               debugpart:=4;
               EnumerateExtendedDebugSymbols;
@@ -2159,9 +2296,24 @@ begin
           apisymbolsloaded:=true;
           dotnetsymbolsloaded:=true;
         end;
-        {$else}
-          end;
-        error:=true;
+        {$endif}
+        {$ifdef darwin}
+
+        if loadsymbolswithsymbolicator=false then
+        begin
+          //do it manually
+        end;
+
+        symbolscleaned:=true;
+        isloading:=false;
+
+        while symbolloaderthreadeventqueue.Count>0 do
+          processThreadEvents;
+
+        DLLSymbolsLoaded:=true;
+        apisymbolsloaded:=true;
+        dotnetsymbolsloaded:=true;
+
         {$endif}
       end
       else
@@ -2207,12 +2359,14 @@ begin
 
       if symbolscleaned=false then
       begin
+        {$ifdef windows}
         symbolloaderthreadcs.Enter;
         try
           Symcleanup(thisprocesshandle);
         finally
           symbolloaderthreadcs.Leave;
         end;
+        {$endif}
 
         symbolscleaned:=true;
       end;
@@ -2377,17 +2531,23 @@ end;
 
 function TSymhandler.getDotNetAccess: boolean;
 begin
+  {$IFDEF windows}
   result:=dotNetDataCollector.Attached;
+  {$ENDIF}
 end;
 
 function TSymhandler.getDotNetObjectList: TDOTNETObjectList;
 begin
+  {$IFDEF windows}
   result:=dotNetDataCollector.EnumAllObjects;
+  {$ENDIF}
 end;
 
 procedure TSymhandler.freeDotNetObjectList(list: TDOTNETObjectList);
 begin
+  {$IFDEF windows}
   dotNetDataCollector.freeNETObjectList(list);
+  {$ENDIF}
 end;
 
 function TSymhandler.getisloaded:boolean;
@@ -2458,6 +2618,7 @@ var
   size: dword;
 begin
 
+  {$IFDEF windows}
   if dotNetDataCollector.Attached then
   begin
     setlength(dotNetTypedefs, 0);
@@ -2501,6 +2662,7 @@ begin
       end;
     end;
   end;
+  {$ENDIF}
 
 
 end;
@@ -2518,6 +2680,7 @@ var
 
   sh: TSymbolListHandler;
 begin
+  {$IFDEF windows}
   dotNetDataCollector.disconnect;
   dotNetDataCollector.connect(processid, processhandler.is64Bit);
 
@@ -2563,6 +2726,7 @@ begin
 
   except
   end;
+  {$ENDIF}
 
 
 end;
@@ -2601,10 +2765,12 @@ begin
         symbolloadervalid.Endread;
       end;
 
+      {$IFDEF windows}
       dotNetDataCollector.disconnect;
 
       if not targetself then
         dotNetDataCollector.connect(processid, processhandler.is64Bit);
+      {$ENDIF}
 
       symbolloadervalid.BeginWrite;
       try
@@ -3059,6 +3225,7 @@ end;
 
 function TSymHandler.OpenDatabaseIfNeeded: boolean;
 begin
+  {$IFDEF windows}
   result:=true;
   try
     if symbolDataBase=nil then
@@ -3079,6 +3246,9 @@ begin
     end;
 
   end;
+  {$else}
+  result:=false;
+  {$ENDIF}
 end;
 
 procedure TSymHandler.getStructureElements(callbackid: integer; moduleid: integer; typeid: integer; list: TStringList);
@@ -3087,12 +3257,9 @@ var
   elementinfo: TDBElementInfo=nil;
   i: longint;
 begin
-  if symbolloaderthread.debugpart=0 then
-  begin
-    beep;
-  end;
   symbolloaderthread.debugpart:=110;
 
+  {$IFDEF windows}
   if callbackid=-1 then
   begin
     q:=TSQLQuery.Create(nil);
@@ -3165,6 +3332,7 @@ begin
 
   end
   else
+  {$ENDIF}
   begin
     StructureElementListCallbacks[callbackid].ElementListCallback(moduleid, typeid, list);
   end;
@@ -3203,6 +3371,7 @@ begin
   if moduleidstring='' then exit;
   if OpenDataBaseIfNeeded=false then exit;
 
+  {$IFDEF windows}
   q:=TSQLQuery.Create(nil);
   try
     //        q.SQL.Text:='create table structures(moduleid INTEGER NOT NULL, typeid INTEGER NOT NULL, tablename varchar(255) NOT NULL, length INTEGER NOT NULL, PRIMARY KEY (moduleid, typeid))';
@@ -3212,7 +3381,7 @@ begin
     q.Active:=true;
 
     q.First;
-    while (not q.EOF) and ((max=-1) or (list.count<max) ) do
+    while (not q.EOF){ and ((max=-1) or (list.count<max) ) }do
     begin
       structinfo:=TDBStructInfo.Create;
       structinfo.moduleid:=q.FieldByName('moduleid').AsInteger;
@@ -3228,6 +3397,7 @@ begin
   finally
     q.free;
   end;
+  {$ENDIF}
 end;
 
 function TSymHandler.hasDefinedStructures:boolean;
@@ -3256,6 +3426,7 @@ begin
   result:=false;
 
   //first check .net
+  {$IFDEF windows}
   if dotNetDataCollector.Attached then
   begin
     dotnetModuleSymbolListMREW.beginread;
@@ -3276,6 +3447,7 @@ begin
       dotnetModuleSymbolListMREW.endread;
     end;
   end;
+  {$ENDIF}
 
   //then check secondary symbollists
   symbollistsMREW.Beginread;
@@ -3318,6 +3490,7 @@ begin
   if getmodulebyaddress(address, mi) then
   begin
 
+    {$IFDEF windows}
     if dotNetDataCollector.Attached then
     begin
       //get the .net list if symbols for this module
@@ -3340,6 +3513,7 @@ begin
 
       dotnetModuleSymbolListMREW.endread;
     end;
+    {$ENDIF}
 
 
 
@@ -3652,6 +3826,7 @@ begin
         //if isloaded then
         begin
           si:=nil;
+          {$IFDEF windows}
           if dotNetDataCollector.Attached then
           begin
             dotnetModuleSymbolListMREW.beginread;
@@ -3663,6 +3838,7 @@ begin
 
             dotnetModuleSymbolListMREW.endread;
           end;
+          {$ENDIF}
 
           if si=nil then
           begin
@@ -4032,6 +4208,7 @@ begin
                 tokens[i]:=StringReplace(tokens[i],'!','.',[]);
 
                 si:=nil;
+                {$IFDEF windows}
                 if dotNetDataCollector.Attached then
                 begin
                   //check the dotnet list first. (if it's a .net process it's more likely the user wants .net stuff)
@@ -4044,6 +4221,7 @@ begin
 
                   dotnetModuleSymbolListMREW.Endread;
                 end;
+                {$ENDIF}
 
                 if si=nil then
                 begin
@@ -4406,6 +4584,7 @@ end;
 function TSymhandler.GetLayoutFromAddress(address: ptruint; var addressdata: TAddressData): boolean;
 begin
   result:=false;
+  {$IFDEF windows}
   if hasDotNetAccess then
   begin
     try
@@ -4417,6 +4596,7 @@ begin
       freeandnil(dotNetDataCollector);
     end;
   end;
+  {$ENDIF}
 end;
 
 function TSymhandler.loadmodulelist: boolean;  //todo: change to a quicker lookup kind of storage (tree)
@@ -4523,6 +4703,10 @@ begin
 
                 if not processhandler.isNetwork then
                 begin
+                  {$ifdef darwin}
+                  newmodulelist[newmodulelistpos].is64bitmodule:=me32.is64bit; //I own this struct now so yes...
+                  {$endif}
+
                   {$ifdef windows}
                   if peinfo_is64bitfile(x, newmodulelist[newmodulelistpos].is64bitmodule)=false then
                   begin
@@ -4608,7 +4792,7 @@ begin
   end;
 
 
-{$ifndef unix}
+{$ifndef jni}
   if result then
     reinitializeDisassemblerComments; //the comments list is depending on the modulelist since it is written using modulename+offset
 
@@ -4626,7 +4810,7 @@ var
 begin
   result:=false;
 
-  {$IFNDEF UNIX}
+  {$IFNDEF jni}
   i:=pos('.', s); //check for the .
   if i>0 then
   begin
@@ -4855,7 +5039,7 @@ begin
 
     commonModuleList.Clear;  
     try
-      commonModuleList.LoadFromFile(s,true);
+      commonModuleList.LoadFromFile(s{$if FPC_FULLVERSION>=030200},true{$endif});
 
       for i:=commonModuleList.Count-1 downto 0 do
       begin
@@ -4967,8 +5151,11 @@ begin
   setlength(modulelist,0);
 
 
+
+  {$IFDEF windows}
   if symbolDataBase<>nil then
     freeandnil(symbolDataBase);
+  {$ENDIF}
 
 end;
 
@@ -4981,10 +5168,12 @@ begin
   userdefinedsymbolsCS:=TCriticalSection.create;
   symbollistsMREW:=TMultiReadExclusiveWriteSynchronizer.Create;
 
+  {$IFDEF windows}
   dotnetModuleSymbolListMREW:=TMultiReadExclusiveWriteSynchronizer.create;
 
  // log('TSymhandler.create 1');
   dotNetDataCollector:=TDotNetPipe.create;
+  {$ENDIF}
 
   //log('TSymhandler.create 2');
   //setlength(internalsymbols,4);
@@ -5008,14 +5197,13 @@ begin
   symbolloaderthreadcs:=TCriticalSection.Create;
 
   symhandler:=tsymhandler.create;
-  {$ifdef windows}
   if selfsymhandler=nil then
   begin
     selfsymhandler:=Tsymhandler.create;
     selfsymhandler.targetself:=true;
     selfsymhandler.reinitialize;
   end;
-  {$endif}
+
 
 {$ifdef windows}
 {$ifdef cpu32}

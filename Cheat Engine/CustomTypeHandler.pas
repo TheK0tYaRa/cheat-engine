@@ -7,17 +7,19 @@ This class is used as a wrapper for different kinds of custom types
 
 interface
 
-{$ifdef windows}
-uses
-  dialogs, Classes, SysUtils,cefuncproc, autoassembler, lua, lauxlib, lualib,
-  math, commonTypeDefs;
-{$endif}
 
-{$ifdef unix} //not yet implemented, but the interface is available
+
+
+
+{$ifdef jni} //not yet implemented, but the interface is available
 uses
   Classes, SysUtils, math;
 
 type PLua_state=pointer;
+{$else}
+uses
+  dialogs, Classes, SysUtils,cefuncproc, lua, lauxlib, lualib,
+  math, commonTypeDefs;
 {$endif}
 
 type TConversionRoutine=function(data: pointer):integer; stdcall;
@@ -45,7 +47,7 @@ type
     reverseroutine: pointer;
 
 
-    {$ifndef unix}
+    {$ifndef jni}
     c: TCEAllocArray;
     ce: TCEExceptionListArray;
     {$endif}
@@ -110,8 +112,8 @@ var customTypes: TList; //list holding all the custom types
 
 implementation
 
-{$ifdef windows}
-uses mainunit, LuaHandler, LuaClass;
+{$ifndef jni}
+uses mainunit, LuaHandler, LuaClass,autoassembler;
 {$endif}
 
 resourcestring
@@ -190,7 +192,7 @@ var
   r: integer;
   c,b: integer;
 begin
-{$ifndef unix}
+{$ifndef jni}
   l:=LuaVM;
 
   if lua_valuetobytesfunctionid=-1 then
@@ -252,7 +254,7 @@ var
   L: PLua_State;
   i: integer;
 begin
-  {$IFNDEF UNIX}
+  {$IFNDEF jni}
   l:=LuaVM;
 
 
@@ -330,7 +332,7 @@ var
   r: integer;
   c,b: integer;
 begin
-  {$IFNDEF UNIX}
+  {$IFNDEF jni}
   l:=LuaVM;
 
     if lua_valuetobytesfunctionid=-1 then
@@ -393,7 +395,7 @@ var
   L: PLua_State;
   i: integer;
 begin
-  {$IFNDEF UNIX}
+  {$IFNDEF jni}
   l:=LuaVM;
 
 
@@ -472,7 +474,7 @@ end;
 
 procedure TCustomType.unloadscript;
 begin
-  {$IFNDEF UNIX}
+  {$IFNDEF jni}
   if fCustomTypeType=cttAutoAssembler then
   begin
     routine:=nil;
@@ -510,12 +512,12 @@ var i: integer;
   newreverseroutine, oldreverseroutine: pointer;
   newbytesize, oldbytesize: integer;
 
-{$IFNDEF UNIX}
+{$IFNDEF jni}
   oldallocarray: TCEAllocArray;
 {$ENDIF}
 begin
 
-  {$IFNDEF UNIX}
+  {$IFNDEF jni}
   oldname:=fname;
   oldfunctiontypename:=ffunctiontypename;
   oldroutine:=routine;
@@ -735,7 +737,7 @@ procedure TCustomType.showDebugInfo;
 var x,y: pointer;
 begin
 
-  {$IFNDEF UNIX}
+  {$IFNDEF jni}
   x:=@routine;
   y:=@reverseroutine;
   ShowMessage(format('routine=%p reverseroutine=%p',[x, y]));
@@ -762,7 +764,7 @@ var
 
   ct: TCustomType;
 begin
-  {$IFNDEF UNIX}
+  {$IFNDEF jni}
   result:=0;
   parameters:=lua_gettop(L);
   if parameters>=4 then
@@ -855,7 +857,7 @@ var
   s: TStringList;
   i: integer;
 begin
-  {$IFNDEF UNIX}
+  {$IFNDEF jni}
   result:=0;
   bytecount:=1;
   parameters:=lua_gettop(L);

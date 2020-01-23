@@ -4,8 +4,11 @@ unit VEHDebugger;
 
 interface
 
+{$ifdef windows}
 uses
-  jwaNtStatus, Windows, Classes, SysUtils,symbolhandler, symbolhandlerstructs,
+
+  jwaNtStatus, Windows,
+  Classes, SysUtils,symbolhandler, symbolhandlerstructs,
   VEHDebugSharedMem,cefuncproc, autoassembler,newkernelhandler,DebuggerInterface,
   Clipbrd;
 
@@ -53,9 +56,11 @@ type
     constructor create;
   end;
 
+{$endif}
 
 implementation
 
+{$ifdef windows}
 uses ProcessHandlerUnit, Globals, dialogs;
 
 resourcestring
@@ -397,6 +402,10 @@ begin
         {$ifdef cpu64}
         if is64bit then
         begin
+
+
+
+
           lpDebugEvent.Exception.ExceptionRecord.ExceptionCode:=VEHDebugView.Exception64.ExceptionCode;
           lpDebugEvent.Exception.ExceptionRecord.ExceptionFlags:=VEHDebugView.Exception64.ExceptionFlags;
           lpDebugEvent.Exception.ExceptionRecord.ExceptionRecord:=pointer(VEHDebugView.Exception64.ExceptionRecord);
@@ -530,6 +539,7 @@ begin
 
     Heartbeat:=THeartBeat.Create(true);
     THeartBeat(Heartbeat).owner:=self;
+    HeartBeat.Priority:=tpHighest;
     HeartBeat.Start;
 
     VEHDebugView.ThreadWatchMethod:=0; //vehthreadwatchmethod;
@@ -721,6 +731,7 @@ begin
 
   lastthreadpoll:=GetTickCount64;
 end;
+{$endif}
 
 end.
 

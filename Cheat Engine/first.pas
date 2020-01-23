@@ -4,11 +4,14 @@ unit first;
 
 interface
 
+{$ifdef windows}
 uses
   betterDLLSearchPath, Classes, SysUtils;
+{$endif}
 
 implementation
 
+{$ifdef windows}
 uses windows, registry, Win32Int;
 
 
@@ -96,6 +99,9 @@ initialization
     r.free;
     r:=nil;
   end;
+{$endif}
+
+
 
 
 end.

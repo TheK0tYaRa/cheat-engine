@@ -5,8 +5,14 @@ unit frmExeTrainerGeneratorUnit;
 interface
 
 uses
-  windows, Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics,
-  ExtCtrls, dialogs, StdCtrls, ComCtrls, Menus, cefuncproc, IconStuff, zstream,
+  {$ifdef darwin}
+  macport, math, LCLIntf,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
+  Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics,
+  ExtCtrls, dialogs, StdCtrls, ComCtrls, Menus, CEFuncProc, IconStuff, zstream,
   registry, MainUnit2, symbolhandler, lua, lualib, lauxlib;
 
 
@@ -100,7 +106,7 @@ implementation
 
 { TfrmExeTrainerGenerator }
 
-uses MainUnit,ceguicomponents, opensave, Globals, LuaHandler;
+uses MainUnit,ceguicomponents, OpenSave, Globals, LuaHandler;
 
 resourcestring
   rsSaving = 'Saving...';
@@ -155,7 +161,7 @@ var
 
   size: dword;
   i: qword;
-  block: integer;
+  block: qword;
 begin
   folder:=trim(folder);
   if (folder<>'') and ((folder[1]='\') or (folder[1]='/')) then
@@ -187,7 +193,7 @@ begin
     i:=f.size;
     while i>0 do
     begin
-      block:=min(256*1024, i);
+      block:=min(qword(256*1024), i);
       archive.CopyFrom(f, block);
       dec(i,block);
 
@@ -225,7 +231,7 @@ var DECOMPRESSOR: TMemorystream;
   relpath: string;
 
 begin
-
+  {$ifdef windows}
   addedfiles:=tstringlist.create;
 
   tiny:=cbTiny.Checked;
@@ -516,6 +522,9 @@ begin
     if addedfiles<>nil then
       freeandnil(addedfiles);
   end;
+  {$else}
+  raise exception.create('not implemented yet');
+  {$endif}
 end;
 
 procedure TfrmExeTrainerGenerator.addDirToList(dir: string);
@@ -705,7 +714,9 @@ end;
 procedure TfrmExeTrainerGenerator.FormShow(Sender: TObject);
 var
   i,s:integer;
+  {$ifdef windows}
   cbi: TComboboxInfo;
+  {$endif}
   extrasize: integer;
 begin
   i:=max(max(button3.Width, btnAddFile.Width), btnRemoveFile.Width);
@@ -715,10 +726,12 @@ begin
   btnRemoveFile.Width:=i;
   groupbox3.Constraints.MinHeight:=panel1.height;
 
+  {$ifdef windows}
   cbi.cbSize:=sizeof(cbi);
   if GetComboBoxInfo(comboCompression.handle, @cbi) then
     extrasize:=cbi.rcButton.Right-cbi.rcButton.Left+cbi.rcItem.Left
   else
+  {$endif}
     extrasize:=16;
 
   s:=0;

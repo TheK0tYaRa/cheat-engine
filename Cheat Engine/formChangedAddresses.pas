@@ -5,7 +5,13 @@ unit formChangedAddresses;
 interface
 
 uses
-  windows, LCLIntf, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
+  LCLIntf, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls,CEFuncProc, ExtCtrls, ComCtrls, Menus, NewKernelHandler, LResources,
   disassembler, symbolhandler, byteinterpreter, CustomTypeHandler, maps, math, Clipbrd,
   addressparser, commonTypeDefs, DBK32functions, vmxfunctions;
@@ -31,6 +37,7 @@ type
   { TfrmChangedAddresses }
   TfrmChangedAddresses=class;
 
+  {$ifdef windows}
   TDBVMWatchExecutePollThread=class(TThread)
   private
     results: PPageEventListDescriptor;
@@ -43,6 +50,7 @@ type
     fca: TfrmChangedAddresses;
     procedure execute; override;
   end;
+  {$endif}
 
   TfrmChangedAddresses = class(TForm)
     caImageList: TImageList;
@@ -50,6 +58,8 @@ type
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
+    miSetFilter: TMenuItem;
+    N1: TMenuItem;
     miCommonalitiesSubgroup: TMenuItem;
     miMarkAsGroup1: TMenuItem;
     miMarkAsGroup2: TMenuItem;
@@ -77,6 +87,7 @@ type
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
     procedure MenuItem1Click(Sender: TObject);
     procedure MenuItem3Click(Sender: TObject);
+    procedure miSetFilterClick(Sender: TObject);
     procedure miGroupClearClick(Sender: TObject);
     procedure miMarkAsGroupClick(Sender: TObject);
     procedure miDeleteSelectedEntriesClick(Sender: TObject);
@@ -102,7 +113,16 @@ type
     defaultcolor: TColor;
 
     fdbvmwatchid: integer;
+    {$ifdef windows}
     dbvmwatchpollthread: TDBVMWatchExecutePollThread;
+    {$endif}
+
+    currentFilter: string;
+    currentFilterFunc: integer;
+    filterExtraRegs: boolean;
+    function checkFilter(entry: TaddressEntry): boolean;
+    procedure rebuildListWithFilter;
+
     procedure stopdbvmwatch;
     procedure refetchValues(specificaddress: ptruint=0;countonly: boolean=false);
     procedure setAddress(a: ptruint);
@@ -114,6 +134,7 @@ type
 
     dbvmwatch_unlock: qword;
 
+    procedure clearFilter;
     procedure AddRecord;
     property address: ptruint read fAddress write setAddress;
     property dbvmwatchid: integer read fdbvmwatchid write setdbvmwatchid;
@@ -125,8 +146,9 @@ implementation
 
 uses CEDebugger, MainUnit, frmRegistersunit, MemoryBrowserFormUnit, debughelper,
   debugeventhandler, debuggertypedefinitions, FoundCodeUnit, StructuresFrm2,
-  processhandlerunit, Globals, Parsers, frmStackViewUnit, frmSelectionlistunit,
-  frmChangedAddressesCommonalityScannerUnit, LastDisassembleData;
+  ProcessHandlerUnit, Globals, Parsers, frmStackViewUnit, frmSelectionlistunit,
+  frmChangedAddressesCommonalityScannerUnit, LastDisassembleData, lua, lauxlib,
+  lualib, luahandler;
 
 resourcestring
   rsStop='Stop';
@@ -145,6 +167,9 @@ resourcestring
     +'the code you selected';
   rsValueChange = 'Value Change';
   rsGiveTheNewValue = 'Give the new value';
+  rsFilter = 'Filter';
+  rsEnterLuaFormula = 'Enter a Lua formula to use to filter. E.g RCX==0x2301'
+    +'adc0.  Empty for no filter';
 
 
 
@@ -170,6 +195,7 @@ end;
 
 //-----------------------------
 
+{$IFDEF windows}
 procedure TDBVMWatchExecutePollThread.addEntriesToList;
 var
   c: TContext;
@@ -285,13 +311,17 @@ begin
         OutputDebugString('adding to the lists');
         s:=inttohex(address,8);
 
-        li:=fca.changedlist.Items.add;
-        li.caption:=s;
-        li.SubItems.Add('');
-        li.subitems.add('1');
-        li.Data:=x;
-
         fca.addresslist.Add(address, x);
+
+        if fca.checkFilter(x) then
+        begin
+          li:=fca.changedlist.Items.add;
+          li.caption:=s;
+          li.SubItems.Add('');
+          li.subitems.add('1');
+          li.Data:=x;
+        end;
+
         fca.refetchValues(x.address);
       end
       else
@@ -362,6 +392,7 @@ begin
   freememandnil(results);
   freeandnil(cr3disassembler);
 end;
+{$ENDIF}
 
 //-----------------------------
 
@@ -399,22 +430,22 @@ begin
 
       if (foundcodedialog=nil) or (changedlist.Items.Count<8) then
       begin
-        li:=changedlist.Items.add;
-        li.caption:=s;
-        li.SubItems.Add('');
-        li.subitems.add('1');
-
-
         x:=TAddressEntry.create;
         x.context:=currentthread.context^;
         x.address:=address;
         x.count:=1;
         x.savestack;
-
-
-        li.Data:=x;
-
         addresslist.Add(address, x);
+
+        if checkFilter(x) then
+        begin
+          li:=changedlist.Items.add;
+          li.caption:=s;
+          li.SubItems.Add('');
+          li.subitems.add('1');
+          li.Data:=x;
+        end;
+
         refetchValues(x.address);
 
         if foundcodedialog<>nil then
@@ -736,6 +767,111 @@ begin
     end;
   end;
 
+end;
+
+function TfrmChangedAddresses.checkFilter(entry: TaddressEntry): boolean;
+begin
+  if currentFilterFunc=-1 then exit(true);
+
+  LUA_SetCurrentContextState(0,@entry.context, filterExtraRegs);
+  lua_rawgeti(LuaVM, LUA_REGISTRYINDEX, currentFilterFunc);
+  if lua_pcall(LuaVM,0,1,0)=0 then
+  begin
+    result:=lua_toboolean(LuaVM,-1);
+    lua_pop(LuaVM,1);
+  end
+  else
+  begin
+    lua_settop(LuaVM,0);
+    result:=false;
+  end;
+
+end;
+
+procedure TfrmChangedAddresses.rebuildListWithFilter;
+var
+  mi: TMapIterator;
+  entry: TaddressEntry;
+  address: ptruint;
+  li: TListItem;
+begin
+  changedlist.Clear; //don't delete the data
+
+  mi:=tmapiterator.Create(addresslist);
+  mi.First;
+  while not mi.eom do
+  begin
+    mi.GetData(entry);
+
+    if checkFilter(entry) then
+    begin
+      mi.GetID(address);
+
+      li:=changedlist.Items.add;
+      li.caption:=inttohex(address,8);
+      li.SubItems.Add('');
+      li.subitems.add(inttostr(entry.count));
+      li.Data:=entry;
+    end;
+
+    mi.Next;
+  end;
+
+  refetchValues;
+end;
+
+
+procedure TfrmChangedAddresses.clearFilter;
+begin
+  if currentFilterFunc<>-1 then
+  begin
+    luaL_unref(luaVM, LUA_REGISTRYINDEX, currentFilterFunc);
+    currentFilterFunc:=-1;
+  end;
+  currentFilter:='';
+  miSetFilter.Caption:=rsFilter;
+end;
+
+procedure TfrmChangedAddresses.miSetFilterClick(Sender: TObject);
+var
+    f: string;
+    i: integer;
+begin
+  f:=currentFilter;
+  if InputQuery(rsFilter, rsEnterLuaFormula, f) then
+  begin
+    if trim(f)<>'' then
+    begin
+      //parse it
+      if luaL_loadstring(LuaVM,pchar('return '+f))=0 then
+      begin
+        clearfilter;
+
+        filterExtraRegs:=(pos('XMM',f)>0);
+        if filterExtraRegs=false then
+        begin
+          i:=pos('FP',f);
+          filterExtraRegs:=(i>0) and (i+2<=length(f)) and (f[i+2] in ['0'..'7']);
+        end;
+
+
+        currentFilterFunc:=luaL_ref(LuaVM,LUA_REGISTRYINDEX);
+        currentFilter:=f;
+
+        miSetFilter.Caption:=rsFilter+' : '+currentFilter;
+
+
+      end
+      else
+        MessageDlg('"'+f+'" is invalid',mtError,[mbOK],0);
+
+      lua_settop(LuaVM,0);
+    end
+    else
+      clearfilter;
+
+    rebuildlistwithfilter;
+  end;
 end;
 
 procedure TfrmChangedAddresses.miGroupClearClick(Sender: TObject);
@@ -1116,6 +1252,7 @@ var x: array of integer;
     i: integer;
 begin
   fdbvmwatchid:=-1;
+  currentFilterFunc:=-1;
   okbutton.caption:=rsStop;
 
   setlength(x, 0);
@@ -1140,6 +1277,7 @@ end;
 
 procedure TfrmChangedAddresses.stopdbvmwatch;
 begin
+  {$IFDEF windows}
   if dbvmwatchpollthread<>nil then
   begin
     dbvmwatchpollthread.Terminate;
@@ -1158,10 +1296,12 @@ begin
     UnlockMemory(dbvmwatch_unlock);
     dbvmwatch_unlock:=0;
   end;
+  {$ENDIF}
 end;
 
 procedure TfrmChangedAddresses.setdbvmwatchid(id: integer);
 begin
+  {$IFDEF windows}
   fdbvmwatchid:=id;
 
   if id<>-1 then
@@ -1174,6 +1314,7 @@ begin
     dbvmwatchpollthread.fca:=self;
     dbvmwatchpollthread.Start;
   end;
+  {$ENDIF}
 end;
 
 initialization

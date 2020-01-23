@@ -5,10 +5,16 @@ unit hexviewunit;
 interface
 
 uses
-  windows, Classes, SysUtils, forms, controls, StdCtrls, ExtCtrls, comctrls, graphics,
-  lmessages, menus,commctrl, symbolhandler, symbolhandlerstructs, cefuncproc, newkernelhandler, math,
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  {$ifdef windows}
+  windows, commctrl,
+  {$endif}
+  Classes, SysUtils, forms, controls, StdCtrls, ExtCtrls, comctrls, graphics,
+  lmessages, menus, symbolhandler, symbolhandlerstructs, cefuncproc, newkernelhandler, math,
   Clipbrd,dialogs, changelist, DebugHelper, debuggertypedefinitions, maps, contnrs,
-  strutils, byteinterpreter, commonTypeDefs, lazutf8, lazutf16, lcltype;
+  strutils, byteinterpreter, commonTypeDefs, lazutf8, lazutf16, lcltype, LCLIntf;
 
 type
   TDisplayType = (dtByte, dtByteDec, dtWord, dtWordDec, dtDword, dtDwordDec, dtQword, dtQwordDec, dtSingle, dtDouble);
@@ -942,7 +948,9 @@ begin
     end;
 
   end;
-  RefocusIfNeeded;
+
+  if (key<VK_SHIFT) or (key>VK_MENU) then
+    RefocusIfNeeded;
 
   inherited KeyDown(key,shift);
 end;
@@ -1076,9 +1084,18 @@ fromAddress, toAddress: ptrUint;
 begin
   if isEditing or fhasSelection then
   begin
+
     s:=clipboard.AsText;
-    fromAddress:=MinX(selected,selected2);
-    toAddress:=MaxX(selected,selected2);
+    if isediting then
+    begin
+      fromAddress:=selected;
+      toaddress:=selected;
+    end
+    else
+    begin
+      fromAddress:=MinX(selected,selected2);
+      toAddress:=MaxX(selected,selected2);
+    end;
 
 
     try
@@ -1138,6 +1155,9 @@ begin
 
         inc(i);
         inc(fromaddress);
+
+        if isediting then
+          selected:=selected+1;
       end;
 
     end;
@@ -1149,27 +1169,30 @@ begin
 end;
 
 procedure THexView.ChangeSelected;
-var unreadable: boolean;
+var
+  unreadable: boolean;
+  vcf: Tvaluechangeform;
 begin
   if isEditing or fhasSelection then
   begin
     getByte(selected,unreadable);
     if unreadable then exit;
 
-    with Tvaluechangeform.Create(application) do
-    begin
-      address:=selected;
-
-      case fDisplayType of
-        dtByte, dtByteDec: VarType:=vtByte;
-        dtWord, dtWordDec: Vartype:=vtWord;
-        dtDword, dtDwordDec: Vartype:=vtDword;
-        dtQword, dtQwordDec: vartype:=vtQword;
-        dtSingle: vartype:=vtSingle;
-        dtDouble: vartype:=vtDouble;
-      end;
-      ShowModal;
+    vcf:=Tvaluechangeform.Create(application);
+    vcf.address:=selected;
+    case fDisplayType of
+      dtByte, dtByteDec: vcf.VarType:=vtByte;
+      dtWord, dtWordDec: vcf.Vartype:=vtWord;
+      dtDword, dtDwordDec: vcf.Vartype:=vtDword;
+      dtQword, dtQwordDec: vcf.vartype:=vtQword;
+      dtSingle: vcf.vartype:=vtSingle;
+      dtDouble: vcf.vartype:=vtDouble;
     end;
+
+    if fdisplaytype in [dtWord, dtDword, dtQword] then
+       vcf.unicode:=true;
+
+    vcf.ShowModal;
     update;
   end;
 end;
@@ -1184,10 +1207,9 @@ var
   baserangestop: integer;
   mbi: TMEMORYBASICINFORMATION;
 begin
-  changeSelected;
-
   p:=mouse.CursorPos;
   p:=ScreenToClient(p);
+
   //doubleclick doesn't happen often, so can be slow
   if p.y<mbCanvas.Canvas.GetTextHeight(memoryInfo) then
   begin
@@ -1213,7 +1235,9 @@ begin
       exit;
     end;
 
-  end;
+  end
+  else
+    changeSelected;
 
 end;
 
@@ -1503,8 +1527,10 @@ begin
 
     memoryinfo:=memoryinfo+' '+rsSize+'='+IntTohex(mbi.RegionSize, 1);
 
+    {$ifdef windows}
     if (formsettings<>nil) and assigned(GetPhysicalAddress) and formsettings.cbKernelOpenProcess.checked and GetPhysicalAddress(processhandle,pointer(fAddress),a64) then
       memoryInfo:=memoryInfo+' '+rsPhysicalAddress+'='+IntToHex(a64, 8);
+    {$endif}
 
 
     if symhandler.getmodulebyaddress(fAddress,mi) then

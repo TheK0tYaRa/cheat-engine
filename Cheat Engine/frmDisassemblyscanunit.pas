@@ -5,7 +5,13 @@ unit frmDisassemblyscanunit;
 interface
 
 uses
-  windows, LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
+  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
   Dialogs,disassembler,{$ifndef net}NewKernelHandler,{$endif}CEFuncProc, ExtCtrls, StdCtrls,
   ComCtrls, LResources, LCLProc, Menus, strutils, OldRegExpr, RegExpr, Clipbrd;
 
@@ -91,6 +97,7 @@ begin
   inherited create(suspended);
 
   disassembler:=TDisassembler.Create;
+  disassembler.aggressivealignment:=true;
 end;
 
 destructor TDisassemblerthread.destroy;
@@ -115,6 +122,9 @@ var ok: boolean;
    d: string;
    y: string;
 
+   ignore: string;
+   opcode: string;
+
    i,j: integer;
    matchpos,offset: integer;
    address: ptruint;
@@ -127,6 +137,11 @@ begin
 
     //disassemble
     d:=uppercase(disassembler.disassemble(x,y));
+
+    //make sure to isolate the opcodes for the scan
+    splitDisassembledString(d,false,ignore,ignore,opcode,ignore);
+
+
     if i=0 then
     begin
       foundline:=d;
@@ -138,7 +153,8 @@ begin
     matchpos:=0;
     offset:=1;
 
-    ok:=regexpressions[i].Exec(d);
+    //ok:=regexpressions[i].Exec(d); //address + bytes + opcodes + special
+    ok:=regexpressions[i].Exec(opcode); //opcodes only
 
     if (not ok) or (regexpressions[i].MatchPos[0]=0) then exit;
 
@@ -258,7 +274,12 @@ begin
       stringstofind.Delete(i)
     else
     begin
-      stringstofind[i]:=StringReplace(EscapeStringForRegEx(stringstofind[i]), '\*','.*',[rfReplaceAll]);
+      s:=EscapeStringForRegEx(stringstofind[i]);
+      s:=StringReplace(s, '\*','.*',[rfReplaceAll]); //zero or more chars
+      s:=StringReplace(s, '\^','^',[rfReplaceAll]);  //start of line
+      s:=StringReplace(s, '\$','$',[rfReplaceAll]);  //end of line
+      s:=StringReplace(s, '\?','.',[rfReplaceAll]);  //exactly one char
+      stringstofind[i]:=s;
       inc(i);
     end;
   end;

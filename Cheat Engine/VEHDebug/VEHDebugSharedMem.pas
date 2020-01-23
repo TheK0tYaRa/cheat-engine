@@ -7,13 +7,14 @@ This unit it used by both CE and the VEHDebug project
 
 interface
 
+{$IFDEF windows}
 uses
   windows, Classes, SysUtils;
 
 
 const
   TPOLL_TCREATEREALCONTEXT=$00000001;
-  VEHVERSION=3;
+  VEHVERSION=4;
 
 type TVEHDebugSharedMem=packed record
   CurrentContext: array [0..8191] of byte; //should be enough for a context...
@@ -46,6 +47,7 @@ type TVEHDebugSharedMem=packed record
 
 end;
 type PVEHDebugSharedMem=^TVEHDebugSharedMem;
+{$ENDIF}
 
 
 

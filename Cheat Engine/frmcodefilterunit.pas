@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ComCtrls, ExtCtrls, maps, Menus, syncobjs, newkernelhandler,
   ProcessHandlerUnit, CodeFilterCallOrAllDialog, PEInfoFunctions, PEInfounit,
-  lua, lualib, lauxlib, luaform, LuaClass;
+  lua, lualib, lauxlib, LuaForm, LuaClass{$ifdef darwin},macport{$endif};
 
 type
 
@@ -24,7 +24,7 @@ type
     btnShowList: TButton;
     btnStart: TButton;
     btnStop: TButton;
-    Button1: TButton;
+    btnFromUnwindInfo: TButton;
     frmLaunchBranchMapper: TButton;
     GroupBox1: TGroupBox;
     cfImageList: TImageList;
@@ -56,7 +56,7 @@ type
     procedure btnShowListClick(Sender: TObject);
     procedure btnStartClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
+    procedure btnFromUnwindInfoClick(Sender: TObject);
     procedure frmLaunchBranchMapperClick(Sender: TObject);
     procedure Button7Click(Sender: TObject);
     procedure FilterClick(Sender: TObject);
@@ -839,6 +839,9 @@ begin
     scanner.show;
     btnLoadAddressesByDisassembling.enabled:=false;
   end;
+
+
+  freeandnil(sellist);
 end;
 
 procedure TfrmCodeFilter.btnLoadAddressesFromFileClick(Sender: TObject);
@@ -866,7 +869,7 @@ begin
     if ext='.txt' then
     begin
       l:=tstringlist.create;
-      l.LoadFromFile(opendialog.FileName,true);
+      l.LoadFromFile(opendialog.FileName{$if FPC_FULLVERSION>=030200},true{$endif});
       for i:=0 to l.count-1 do
         addAddress(symhandler.getAddressFromName(trim(l[i])));
 
@@ -924,9 +927,51 @@ begin
   disableAllBreakpoints;
 end;
 
-procedure TfrmCodeFilter.Button1Click(Sender: TObject);
-begin
+procedure TfrmCodeFilter.btnFromUnwindInfoClick(Sender: TObject);
+{$ifdef windows}
+var
+  sellist: TfrmSelectionList;
+  md: tmoduledata;
 
+  el: TExceptionList;
+  i: integer;
+
+  rte: TRunTimeEntry;
+{$endif}
+begin
+  {$ifdef windows}
+  if modulelist<>nil then
+    cleanModuleList(modulelist);
+
+  modulelist:=tstringlist.create;
+  GetModuleList(modulelist,true);
+
+
+  sellist:=TfrmSelectionList.Create(self, modulelist);
+  sellist.Caption:=rsCodeFilter;
+  sellist.SelectionToText:=ModuleListSelectionListSelToText;
+
+  if sellist.ShowModal=mrok then
+  begin
+    if sellist.itemindex<>-1 then
+    begin
+      md:=tmoduledata(modulelist.objects[sellist.itemindex]);
+      el:=peinfo_getExceptionList(md.moduleaddress);
+      if el<>nil then
+      begin
+        for i:=0 to el.Count-1 do
+          addAddress(md.moduleaddress+el[i].start);
+      end;
+    end;
+
+    lblAddressList.caption:=format(rsAddressList, [callmap.Count]);
+    btnShowList.Click;
+
+    btnStart.enabled:=callmap.count>0;
+  end;
+  {$else}
+  MessageDlg('Only for windows',mtError,[mbok],0);
+  {$endif}
 end;
 
 procedure TfrmCodeFilter.frmLaunchBranchMapperClick(Sender: TObject);
@@ -961,6 +1006,7 @@ begin
   end;
 
   dofilter;
+  count:=0;
 end;
 
 procedure TfrmCodeFilter.FormClose(Sender: TObject;

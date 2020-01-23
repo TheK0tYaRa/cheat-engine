@@ -1,3 +1,6 @@
+// Copyright Cheat Engine. All Rights Reserved.
+
+
 unit Assemblerunit;
 
 //todo: case
@@ -10,13 +13,12 @@ interface
 
 {$ifdef jni}
 uses  sysutils, ProcessHandlerUnit;
+{$else}
+uses
+  dialogs,LCLIntf,sysutils{$ifdef windows},imagehlp{$endif}, ProcessHandlerUnit,vextypedef;
 {$endif}
 
-{$ifdef windows}
-uses dialogs,LCLIntf,sysutils,imagehlp, ProcessHandlerUnit,vextypedef;
-{$endif}
-
-const opcodecount=1910;  //I wish there was a easier way than to handcount
+const opcodecount=1911;  //I wish there was a easier way than to handcount
   //1112
 
 
@@ -145,7 +147,7 @@ const opcodes: array [1..opcodecount] of topcode =(
 {ok}  (mnemonic:'AAD';opcode1:eo_ib;opcode2:eo_none;paramtype1:par_imm8;paramtype2:par_noparam;paramtype3:par_noparam;bytes:1;bt1:$d5;bt2:0;bt3:0),
 {ok}  (mnemonic:'AAM';opcode1:eo_none;paramtype1:par_noparam;bytes:2;bt1:$d4;bt2:$0a),
 {ok}  (mnemonic:'AAM';opcode1:eo_ib;paramtype1:par_imm8;bytes:1;bt1:$d4),
-{ok}  (mnemonic:'AAS';opcode1:eo_none;paramtype1:par_noparam;bytes:1;bt1:$3F),
+{ok}  (mnemonic:'AAS';opcode1:eo_none;paramtype1:par_noparam;bytes:1;bt1:$3F; invalidin64bit:true),
 {ok}  (mnemonic:'ADC';opcode1:eo_ib;paramtype1:par_AL;paramtype2:par_imm8;bytes:1;bt1:$14),
 {ok}  (mnemonic:'ADC';opcode1:eo_iw;paramtype1:par_AX;paramtype2:par_imm16;bytes:2;bt1:$66;bt2:$15),
 {ok}  (mnemonic:'ADC';opcode1:eo_id;paramtype1:par_EAX;paramtype2:par_imm32;bytes:1;bt1:$15),
@@ -991,6 +993,7 @@ const opcodes: array [1..opcodecount] of topcode =(
   (mnemonic:'NEG';opcode1:eo_reg3;paramtype1:par_rm32;bytes:1;bt1:$f7),
 
   (mnemonic:'NOP';bytes:1;bt1:$90),  //NOP nop Nop nOp noP NoP nOp NOp nOP
+  (mnemonic:'NOP';opcode1:eo_reg0;paramtype1:par_rm16;bytes:3;bt1:$66;bt2:$0f;bt3:$1f),
   (mnemonic:'NOP';opcode1:eo_reg0;paramtype1:par_rm32;bytes:2;bt1:$0f;bt2:$1f),
 
   (mnemonic:'NOT';opcode1:eo_reg2;paramtype1:par_rm8;bytes:1;bt1:$f6),
@@ -2710,6 +2713,7 @@ type TSingleLineAssembler=class
     relativeAddressLocation: integer; //index into the bytes array containing the start of th relative 4 byte address
     actualdisplacement: qword;
     needsAddressSwitchPrefix: boolean;
+    faddress: qword;
 
     function getRex_W: boolean;
     procedure setRex_W(state: boolean);
@@ -2758,12 +2762,15 @@ implementation
 
 {$ifdef jni}
 uses symbolhandler, assemblerArm, Parsers, NewKernelHandler;
-{$endif}
-
-{$ifdef windows}
-uses windows, {$ifndef autoassemblerdll}CEFuncProc,{$endif}symbolhandler, lua,
-luahandler, lualib, assemblerArm, Parsers, NewKernelHandler, LuaCaller, math,
-cpuidUnit, classes, controls;
+{$else}
+uses {$ifdef darwin}
+  macport,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
+  CEFuncProc, symbolhandler, lua, luahandler, lualib, assemblerArm, Parsers,
+  NewKernelHandler, LuaCaller, math, cpuidUnit, classes, controls;
 {$endif}
 
 resourcestring
@@ -2808,7 +2815,7 @@ procedure unregisterAssembler(id: integer);
 begin
   if id<length(ExtraAssemblers) then
   begin
-    {$ifndef unix}
+    {$ifndef jni}
     CleanupLuaCall(TMethod(ExtraAssemblers[id]));
     {$endif}
     ExtraAssemblers[id]:=nil;
@@ -3498,10 +3505,18 @@ begin
         if temp<>'' then
         begin
           setlength(tokens,length(tokens)+1);
-          if token[i]=' ' then temp:=temp+' ';
+          //if token[i]=' ' then temp:=temp+' ';
           tokens[length(tokens)-1]:=temp;
           temp:='';
         end;
+
+        if (length(tokens)>0) and (token[i] in ['+','-']) and (tokens[length(tokens)-1]=' ') then //relative offset ' +xxx'
+        begin
+          temp:=temp+token[i];
+          inc(i);
+          continue;
+        end;
+
         setlength(tokens,length(tokens)+1);
         tokens[length(tokens)-1]:=token[i];
         inc(i);
@@ -3522,10 +3537,9 @@ begin
 
   for i:=0 to length(tokens)-1 do
   begin
-    if (length(tokens[i])>=1) and (not (tokens[i][1] in ['[',']','+','-','*'])) then //3/16/2011: 11:15 (replaced or with and)
+    if (length(tokens[i])>=1) and (not (tokens[i][1] in ['[',']','+','-','*',' '])) then //3/16/2011: 11:15 (replaced or with and)
     begin
       val('$'+tokens[i],j,err);
-
       if (err<>0) and (getreg(tokens[i],false)=-1) then    //not a hexadecimal value and not a register
       begin
         temp:=inttohex(symhandler.getaddressfromname(tokens[i], true, haserror,nil),8);
@@ -4064,7 +4078,7 @@ begin
 
     if processhandler.is64Bit then
     begin
-      if disp<=$7FFFFFFF then
+      if (disp<=$7FFFFFFF) and (abs(int64(faddress-disp))>$7FFFFFF0) then //rough estimate
       begin
         //this can be solved with an 0x25 SIB byte
         setlength(modrm,2);
@@ -4558,6 +4572,7 @@ var tokens: ttokens;
 
     //cpuinfo: TCPUIDResult;
 begin
+  faddress:=address;
   VEXvvvv:=$f;
   needsAddressSwitchPrefix:=false;
 

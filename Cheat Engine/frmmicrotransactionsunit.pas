@@ -32,7 +32,9 @@ type
     procedure tShakerTimer(Sender: TObject);
   private
     shakedistance: integer;
+    {$IFDEF windows}
     internet: TWinInternet;
+    {$ENDIF}
     PreviousOnChangeBounds: TNotifyEvent;
     procedure MainFormChangeBounds(Sender: TObject);
   public
@@ -44,13 +46,14 @@ var
 
 implementation
 
-uses MainUnit, cheatecoins, windows;
+uses MainUnit, cheatecoins{$IFDEF windows} , windows {$ENDIF};
 
 { TfrmMicroTransactions }
 
 procedure TfrmMicroTransactions.MainFormChangeBounds(Sender: TObject);
 var bw: integer;
 begin
+  {$IFDEF windows}
   if assigned(PreviousOnChangeBounds) then
     PreviousOnChangeBounds(sender);
 
@@ -59,15 +62,17 @@ begin
 
   left:=mainform.left+mainform.Width+bw*2+8;
   top:=mainform.top;
+  {$ENDIF}
 end;
 
 procedure TfrmMicroTransactions.BitBtn1Click(Sender: TObject);
 var ss: TStringstream;
 begin
+  {$IFDEF windows}
   if internet=nil then
     internet:=TWinInternet.Create('Cheat Engine microtransaction system');
 
-  ss:=tstringstream.create;
+  ss:=tstringstream.create({$if FPC_FULLVERSION<030200}''{$endif});
   try
     try
       internet.getURL('https://cheatengine.org/microtransaction.php?action=buy&amount='+inttostr(tbitbtn(sender).Tag), ss);
@@ -84,6 +89,7 @@ begin
   finally
     ss.free;
   end;
+  {$ENDIF}
 
 end;
 
@@ -118,6 +124,7 @@ var
   red: single;
   green: single;
 begin
+  {$IFDEF windows}
   c:=checkCoinStatus;
 
   if c<0 then
@@ -159,6 +166,7 @@ begin
 
   tshaker.enabled:=c<=3;
   shakedistance:=3-c;
+  {$ENDIF}
 end;
 
 procedure TfrmMicroTransactions.tShakerTimer(Sender: TObject);

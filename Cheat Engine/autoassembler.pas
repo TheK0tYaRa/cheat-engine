@@ -1,3 +1,5 @@
+// Copyright Cheat Engine. All Rights Reserved.
+
 unit autoassembler;
 
 {$MODE Delphi}
@@ -8,15 +10,23 @@ interface
 {$ifdef jni}
 uses unixporthelper, Assemblerunit, classes, symbolhandler, sysutils,
      NewKernelHandler, ProcessHandlerUnit, commonTypeDefs;
+{$else}
+
+
+
+uses
+   {$ifdef darwin}
+   macport, math,
+   {$endif}
+   {$ifdef windows}
+   jwawindows, windows,
+   {$endif}
+   Assemblerunit, classes, LCLIntf,symbolhandler, symbolhandlerstructs,
+   sysutils,dialogs,controls, CEFuncProc, NewKernelHandler ,plugin,
+   ProcessHandlerUnit, lua, lualib, lauxlib, luaclass, commonTypeDefs, OpenSave;
+
+
 {$endif}
-
-{$ifdef windows}
-uses jwawindows, windows, Assemblerunit, classes, LCLIntf,symbolhandler, symbolhandlerstructs,
-     sysutils,dialogs,controls, CEFuncProc, NewKernelHandler ,plugin,
-     ProcessHandlerUnit, lua, lualib, lauxlib, luaclass, commonTypeDefs;
-{$endif}
-
-
 
 
 function getenableanddisablepos(code:tstrings;var enablepos,disablepos: integer): boolean;
@@ -44,15 +54,14 @@ implementation
 
 {$ifdef jni}
 uses strutils, memscan, disassembler, networkInterface, networkInterfaceApi,
-     Parsers, Globals, memoryQuery;
-{$endif}
+     Parsers, Globals, memoryQuery,types;
+{$else}
 
 
-{$ifdef windows}
-uses simpleaobscanner, StrUtils, LuaHandler, memscan, disassembler, networkInterface,
-     networkInterfaceApi, LuaCaller, SynHighlighterAA, Parsers, Globals, memoryQuery,
-     MemoryBrowserFormUnit, MemoryRecordUnit, vmxfunctions, autoassemblerexeptionhandler,
-     UnexpectedExceptionsHelper;
+uses simpleaobscanner, StrUtils, LuaHandler, memscan, disassembler{$ifdef windows}, networkInterface{$endif},
+     {$ifdef windows}networkInterfaceApi,{$endif} LuaCaller, SynHighlighterAA, Parsers, Globals, memoryQuery,
+     MemoryBrowserFormUnit, MemoryRecordUnit{$ifdef windows}, vmxfunctions{$endif}, autoassemblerexeptionhandler,
+     UnexpectedExceptionsHelper, types;
 {$endif}
 
 
@@ -183,7 +192,7 @@ begin
 
   if id<=length(prologues^) then
   begin
-    {$ifndef unix}
+    {$ifndef jni}
     CleanupLuaCall(TMethod(prologues^[id-1]));
     {$endif}
     prologues^[id-1]:=nil;
@@ -238,6 +247,32 @@ end;
 
 
 //----------------------------
+
+function lastChanceAllocPrefered(prefered: ptruint; size: integer; protection:dword): ptruint;
+var
+  starttime: ptruint;
+  distance: qword;
+  address: ptruint;
+begin
+  starttime:=gettickcount64;
+
+  address:=0;
+  distance:=0;
+  if prefered mod systeminfo.dwAllocationGranularity>0 then
+    prefered:=prefered-(prefered mod systeminfo.dwAllocationGranularity);
+
+  while (address=0) and (gettickcount64<starttime+10000) and (distance<$80000000) do
+  begin
+    address:=ptrUint(virtualallocex(processhandle,pointer(prefered+distance),size, MEM_RESERVE or MEM_COMMIT,protection));
+    if (address=0) and (distance>0) then
+      address:=ptrUint(virtualallocex(processhandle,pointer(prefered-distance),size, MEM_RESERVE or MEM_COMMIT,protection));
+
+    if address=0 then
+      inc(distance, systeminfo.dwAllocationGranularity);
+  end;
+
+  result:=address;
+end;
 
 procedure tokenize(input: string; tokens: tstringlist);
 var i: integer;
@@ -1337,12 +1372,17 @@ var i,j,k,l,e: integer;
     createthreadandwait: array of record
       name: string;
       position: integer; //after what position should the call happen (This is so that the exception handlers can be registered before the final hookcode is written)
+      timeout: integer;
     end;
 
 //    aoblist: array of TAOBEntry;
 
     a,b,c,d: integer;
     s1,s2,s3: string;
+
+    slist: TStringDynArray;
+    sli: integer; //slist iterator
+
     diff: ptruint;
 
 
@@ -1384,8 +1424,9 @@ var i,j,k,l,e: integer;
 
     potentiallabels: TStringlist;
 
-
+     {$ifdef windows}
     connection: TCEConnection;
+    {$endif}
 
     mi: TModuleInfo;
     aaid: longint;
@@ -1583,12 +1624,18 @@ begin
             if (a>0) and (b>0) then
             begin
               s1:=trim(copy(currentline,a+1,b-a-1));
+              slist:=s1.Split([',',' ']);
 
-              setlength(addsymbollist,length(addsymbollist)+1);
-              addsymbollist[length(addsymbollist)-1]:=s1;
+              for sli:=0 to length(slist)-1 do
+              begin
+                s1:=slist[sli];
 
-              if registeredsymbols<>nil then
-                registeredsymbols.Add(s1);
+                setlength(addsymbollist,length(addsymbollist)+1);
+                addsymbollist[length(addsymbollist)-1]:=s1;
+
+                if registeredsymbols<>nil then
+                  registeredsymbols.Add(s1);
+              end;
             end
             else raise exception.Create(rsSyntaxError);
 
@@ -1873,7 +1920,7 @@ begin
 
               include:=tstringlist.Create;
               try
-                include.LoadFromFile(s1, true);
+                include.LoadFromFile(s1{$if FPC_FULLVERSION >= 030200}, true{$endif});
                 removecomments(include);
                 unlabeledlabels(include);
 
@@ -1899,7 +1946,6 @@ begin
               if (a>0) and (b>0) then
               begin
                 s1:=trim(copy(currentline,a+1,b-a-1));
-
                 setlength(createthread,length(createthread)+1);
                 createthread[length(createthread)-1]:=s1;
 
@@ -1918,9 +1964,28 @@ begin
                 begin
                   s1:=trim(copy(currentline,a+1,b-a-1));
 
+                  slist:=s1.Split([',']);
+                  if length(slist)=2 then
+                  begin
+                    try
+                      j:=strtoint(trim(slist[1]));
+                    except
+                      raise exception.Create('Invalid timeout for createthreadandwait');
+                    end;
+                  end
+                  else
+                  begin
+                    if lastLoadedTableVersion<=30 then //when the current table was made with an older CE build and it uses  CREATETHREADANDWAIT
+                      j:=5000
+                    else
+                      j:=0;
+                  end;
+
+
                   setlength(createthreadandwait,length(createthreadandwait)+1);
                   createthreadandwait[length(createthreadandwait)-1].name:=s1;
                   createthreadandwait[length(createthreadandwait)-1].position:=length(assemblerlines)-1;
+                  createthreadandwait[length(createthreadandwait)-1].timeout:=j;
 
                   setlength(assemblerlines,length(assemblerlines)-1);
                   continue;
@@ -1950,12 +2015,16 @@ begin
               begin
                 s2:=extractfilename(s1);
 
+                {$ifdef windows}
                 if getConnection=nil then //no connection, so local. Check if the file can be found locally and if so, set the specific path
                 begin
+                {$endif}
                   if fileexists(cheatenginedir+s2) then s1:=cheatenginedir+s2 else
-                    if fileexists(getcurrentdir+'\'+s2) then s1:=getcurrentdir+'\'+s2 else
+                    if fileexists(getcurrentdir+ PathDelim+s2) then s1:=getcurrentdir+PathDelim+s2 else
                       if fileexists(cheatenginedir+s1) then s1:=cheatenginedir+s1;
+                {$ifdef windows}
                 end;
+                {$endif}
 
                 //else just hope it's in the dll searchpath
               end; //else direct file path
@@ -2129,8 +2198,13 @@ begin
             begin
               s1:=trim(copy(currentline,a+1,b-a-1));
 
-              setlength(deletesymbollist,length(deletesymbollist)+1);
-              deletesymbollist[length(deletesymbollist)-1]:=s1;
+              slist:=s1.Split([',',' ']);
+              for sli:=0 to length(slist)-1 do
+              begin
+                s1:=slist[sli];
+                setlength(deletesymbollist,length(deletesymbollist)+1);
+                deletesymbollist[length(deletesymbollist)-1]:=s1;
+              end;
             end
             else raise exception.Create(rsSyntaxError);
 
@@ -2183,49 +2257,56 @@ begin
             begin
               s1:=trim(copy(currentline,a+1,b-a-1));
 
+              slist:=s1.Split([',',' ']);
 
-              val('$'+s1,j,a);
-              if a=0 then raise exception.Create(Format(rsIsNotAValidIdentifier, [s1]));
-
-              varsize:=length(s1);
-
-              j:=0;
-              while (j<length(labels)) and (length(labels[j].labelname)>=varsize) do
+              for sli:=0 to length(slist)-1 do
               begin
-                if labels[j].labelname=s1 then
-                  raise exception.Create(Format(rsIsBeingRedeclared, [s1]));
-                inc(j);
-              end;
+                s1:=slist[sli];
+                val('$'+s1,j,a);
+                if a=0 then raise exception.Create(Format(rsIsNotAValidIdentifier, [s1]));
 
-              j:=length(labels);//quickfix
-              l:=j;
+                varsize:=length(s1);
 
-
-              //check for the line "labelname:"
-              ok1:=false;
-              for j:=0 to code.Count-1 do
-                if trim(code[j])=s1+':' then
+                j:=0;
+                while (j<length(labels)) and (length(labels[j].labelname)>=varsize) do
                 begin
-                  if ok1 then raise exception.Create(Format(rsLabelIsBeingDefinedMoreThanOnce, [s1]));
-                  ok1:=true;
+                  if labels[j].labelname=s1 then
+                    raise exception.Create(Format(rsIsBeingRedeclared, [s1]));
+                  inc(j);
                 end;
 
-              if not ok1 then raise exception.Create(Format(rsLabelIsNotDefinedInTheScript, [s1]));
+                j:=length(labels);//quickfix
+                l:=j;
 
 
-              //still here so ok
-              //insert it
-              setlength(labels,length(labels)+1);
-              for k:=length(labels)-1 downto j+1 do
-                labels[k]:=labels[k-1];
+                //check for the line "labelname:"
+                ok1:=false;
+                for j:=0 to code.Count-1 do
+                  if trim(code[j])=s1+':' then
+                  begin
+                    if ok1 then raise exception.Create(Format(rsLabelIsBeingDefinedMoreThanOnce, [s1]));
+                    ok1:=true;
+                  end;
+
+                if not ok1 then raise exception.Create(Format(rsLabelIsNotDefinedInTheScript, [s1]));
 
 
-              labels[l].labelname:=s1;
-              labels[l].defined:=false;
+                //still here so ok
+                //insert it
+                setlength(labels,length(labels)+1);
+                for k:=length(labels)-1 downto j+1 do
+                  labels[k]:=labels[k-1];
+
+
+                labels[l].labelname:=s1;
+                labels[l].defined:=false;
+
+                setlength(labels[l].references,0);
+                setlength(labels[l].references2,0);
+
+              end;
+
               setlength(assemblerlines,length(assemblerlines)-1);
-              setlength(labels[l].references,0);
-              setlength(labels[l].references2,0);
-
               continue;
             end else raise exception.Create(rsSyntaxError);
           end;
@@ -2244,13 +2325,20 @@ begin
               begin
                 s1:=trim(copy(currentline,a+1,b-a-1));
 
-                //find s1 in the ceallocarray
-                for j:=0 to length(ceallocarray)-1 do
+                slist:=s1.Split([',',' ']);
+
+                for sli:=0 to length(slist)-1 do
                 begin
-                  if uppercase(ceallocarray[j].varname)=uppercase(s1) then
+                  s1:=slist[sli];
+
+                  //find s1 in the ceallocarray
+                  for j:=0 to length(ceallocarray)-1 do
                   begin
-                    setlength(dealloc,length(dealloc)+1);
-                    dealloc[length(dealloc)-1]:=ceallocarray[j].address;
+                    if uppercase(ceallocarray[j].varname)=uppercase(s1) then
+                    begin
+                      setlength(dealloc,length(dealloc)+1);
+                      dealloc[length(dealloc)-1]:=ceallocarray[j].address;
+                    end;
                   end;
                 end;
               end;
@@ -2357,6 +2445,7 @@ begin
           {$ifndef net}
 
           //memory kalloc
+          {$ifdef windows}
           if uppercase(copy(currentline,1,7))='KALLOC(' then
           begin
             if not DBKReadWrite then raise exception.Create(rsNeedToUseKernelmodeReadWriteprocessmemory);
@@ -2406,10 +2495,12 @@ begin
               continue;
             end else raise exception.Create(rsWrongSyntaxKallocIdentifierSizeinbytes);
           end;
+          {$endif}
 
           {$endif}
 
           //replace KALLOC identifiers with values so the assemble error check doesnt crash on that
+          {$ifdef windows}
           if processhandler.is64bit then
           begin
             for j:=0 to length(kallocs)-1 do
@@ -2420,6 +2511,7 @@ begin
             for j:=0 to length(kallocs)-1 do
               currentline:=replacetoken(currentline,kallocs[j].varname,'00000000');
           end;
+          {$endif}
 
 
 
@@ -2814,10 +2906,15 @@ begin
               end;
 
               if allocs[j].address=0 then
+                allocs[j].address:=lastChanceAllocPrefered(prefered,x, protection);
+
+              if allocs[j].address=0 then
               begin
                 allocs[j].address:=ptrUint(virtualallocex(processhandle,nil,x, MEM_RESERVE or MEM_COMMIT,protection));
                 OutputDebugString(rsFailureToAllocateMemory+' 2');
               end;
+
+              if allocs[j].address=0 then raise EAssemblerException.create(rsFailureToAllocateMemory);
 
               //adjust the addresses of entries that are part of this block
               for k:=j+1 to i-1 do
@@ -2864,9 +2961,12 @@ begin
         end;
 
         if allocs[j].address=0 then
+          allocs[j].address:=lastChanceAllocPrefered(prefered,x, protection);
+
+        if allocs[j].address=0 then
           allocs[j].address:=ptrUint(virtualallocex(processhandle,nil,x, MEM_RESERVE or MEM_COMMIT,protection));
 
-        if allocs[j].address=0 then raise EAssemblerException.create(rsFailureToAllocateMemory+' 4');
+        if allocs[j].address=0 then raise EAssemblerException.create(rsFailureToAllocateMemory);
 
         for i:=j+1 to length(allocs)-1 do
           allocs[i].address:=allocs[i-1].address+allocs[i-1].size;
@@ -2875,6 +2975,7 @@ begin
       end;
     end;
 
+    {$ifdef windows}
     {$ifndef net}
     //kernel alloc
     if length(kallocs)>0 then
@@ -2888,6 +2989,7 @@ begin
       for i:=1 to length(kallocs)-1 do
         kallocs[i].address:=kallocs[i-1].address+kallocs[i-1].size;
     end;
+    {$endif}
     {$endif}
 
     //-----------------------2nd pass------------------------
@@ -3210,8 +3312,10 @@ begin
     begin
       virtualprotectex(processhandle,pointer(fullaccess[i].address),fullaccess[i].size,PAGE_EXECUTE_READWRITE,op);
 
+      {$ifdef windows}
       if (fullaccess[i].address>$80000000) and (DBKLoaded) then
         MakeWritable(fullaccess[i].address,(fullaccess[i].size div 4096)*4096,false);
+      {$endif}
     end;
 
     //load binaries
@@ -3289,10 +3393,11 @@ begin
       AutoAssemblerExceptionHandlerApplyChanges;
     end;
 
-
+    {$ifdef windows}
     connection:=getconnection;
     if connection<>nil then
       connection.beginWriteProcessMemory; //group all writes
+    {$endif}
 
     //combine assembly lines
     j:=0;
@@ -3326,7 +3431,7 @@ begin
       testptr:=assembled[i].address;
 
       vpe:=(SkipVirtualProtectEx=false) and virtualprotectex(processhandle,pointer(testptr),length(assembled[i].bytes),PAGE_EXECUTE_READWRITE,op);
-      ok1:=WriteProcessMemoryWithCloakSupport(processhandle, pointer(testptr),@assembled[i].bytes[0],length(assembled[i].bytes),x);
+      ok1:={$ifdef windows}WriteProcessMemoryWithCloakSupport{$else}WriteProcessMemory{$endif}(processhandle, pointer(testptr),@assembled[i].bytes[0],length(assembled[i].bytes),x);
       if vpe then
         virtualprotectex(processhandle,pointer(testptr),length(assembled[i].bytes),op,op2);
 
@@ -3347,12 +3452,20 @@ begin
 
             if ok2 then
             begin
+              {$ifdef windows}
               try
-                if WaitForSingleObject(threadhandle, 5000)<>WAIT_OBJECT_0 then
+                k:=createthreadandwait[j].timeout;
+                if k<=0 then y:=INFINITE else y:=k;
+
+                if WaitForSingleObject(threadhandle, y)<>WAIT_OBJECT_0 then
                   raise EAssemblerException.create('createthreadandwait did not execute properly');
               finally
                 closehandle(threadhandle);
               end;
+              {$else}
+              sleep(5000); //todo: implement proper wait
+              {$endif}
+
             end;
 
             createthreadandwait[j].position:=-1; //mark it as handled
@@ -3361,11 +3474,13 @@ begin
       end;
     end;
 
+    {$ifdef windows}
     if connection<>nil then  //group all writes
     begin
       if connection.endWriteProcessMemory=false then
         ok2:=false;
     end;
+    {$endif}
 
 
 
@@ -3540,7 +3655,7 @@ begin
           end;
         end;
 
-      {$IFNDEF UNIX}
+      {$IFNDEF jni}
       if popupmessages then
       begin
         testPtr:=0;
@@ -3612,7 +3727,7 @@ begin
     if tokens<>nil then
       freeandnil(tokens);
 
-    {$IFNDEF UNIX}
+    {$IFNDEF jni}
     pluginhandler.handleAutoAssemblerPlugin(@currentlinep, 3,aaid); //tell the plugins to free their data
 
     if targetself then

@@ -21,7 +21,11 @@ end
 function scanModuleForPatches(modulepath, loadedModuleBase)
 
   local original=createMemoryStream()
-  original.loadFromFile(modulepath)
+  r,e=original.loadFromFileNoError(modulepath)
+  if not r then
+    original.destroy()
+    return false,e
+  end
   original.Position=0
 
 

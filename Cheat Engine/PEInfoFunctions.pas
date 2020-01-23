@@ -10,7 +10,11 @@ This unit will contain all functions used for PE-header inspection
 
 interface
 
-uses windows, LCLIntf,SysUtils,classes, CEFuncProc,NewKernelHandler,filemapping, commonTypeDefs;
+uses
+  {$ifdef windows}
+  windows,
+  {$endif}
+  LCLIntf,SysUtils,classes, CEFuncProc,NewKernelHandler,filemapping, commonTypeDefs;
 
 
 const
@@ -84,6 +88,7 @@ const
 
 
 
+  {$ifdef windows}
 type
   _IMAGE_OPTIONAL_HEADER64 = packed record
     { Standard fields. }
@@ -123,7 +128,6 @@ type
   TImageOptionalHeader64 = _IMAGE_OPTIONAL_HEADER64;
   IMAGE_OPTIONAL_HEADER64 = _IMAGE_OPTIONAL_HEADER64;
   PImageOptionalHeader64 = ^TImageOptionalHeader64;
-
 
 
 type PUINT64=^UINT64;
@@ -248,11 +252,17 @@ type
 
 
     list: PRuntimeList;
+    function getEntry(index: integer): TRunTimeEntry;
+    function getCount: integer;
   public
     function getRunTimeEntry(address: ptruint): PRuntimeEntry;
     constructor create(modulebase: ptruint; ela: ptruint; els: integer);
     destructor destroy; override;
     property ModuleBase: ptruint read fModuleBase;
+    property Count: integer read getCount;
+    property Entry[index: integer]: TRunTimeEntry read getEntry; default;
+
+
   end;
 
 
@@ -264,11 +274,14 @@ function peinfo_is64bitfile(filename: string; var is64bit: boolean): boolean;
 function peinfo_getimagesizefromfile(filename: string; var size: dword): boolean;
 
 function peinfo_getExceptionList(modulebase: ptruint): TExceptionList;
+     {$endif}
 
 
 implementation
 
+{$ifdef windows}
 uses ProcessHandlerUnit;
+
 
 function peinfo_getImageDosHeader(headerbase: pointer):PImageDosHeader;
 {
@@ -378,6 +391,20 @@ begin
     if InRangeQ(address, list^[i].start, list^[i].stop-1) then
       exit(@list^[i]);
   end;
+end;
+
+
+function TExceptionList.getEntry(index: integer): TRunTimeEntry;
+begin
+  if index<count then
+    result:=list[index]
+  else
+    raise exception.create('Invalid index');
+end;
+
+function TExceptionList.getCount: integer;
+begin
+  result:=size div 12;
 end;
 
 constructor TExceptionList.create(modulebase: ptruint; ela: ptruint; els: integer);
@@ -668,6 +695,8 @@ begin
 
   end;
 end;
+
+{$endif}
 
 
 end.
