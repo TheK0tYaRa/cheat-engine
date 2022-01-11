@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <Version Value="12"/>
+    <BuildModes Active="Release linux x64_86"/>
+    <Units Count="9">
+      <Unit0>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <TopLine Value="4"/>
+        <CursorPos X="73" Y="20"/>
+        <UsageCount Value="20"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="/usr/lib/fpc/src/rtl/unix/cthreads.pp"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="10" Y="8"/>
+        <UsageCount Value="10"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="../Cheat Engine/first.pas"/>
+        <IsPartOfProject Value="True"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="20"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="../Cheat Engine/jvdesign/jvdesignimp.pas"/>
+        <UnitName Value="JvDesignImp"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="54" Y="22"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="../Cheat Engine/frmselectionlistunit.pas"/>
+        <UnitName Value="frmSelectionlistunit"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="201"/>
+        <CursorPos X="68" Y="217"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="../Cheat Engine/frmselectionlistunit.lrt"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="20"/>
+        <DefaultSyntaxHighlighter Value="None"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="../Cheat Engine/frmselectionlistunit.pas"/>
+        <HasResources Value="True"/>
+        <UnitName Value="frmSelectionlistunit"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="33"/>
+        <UsageCount Value="20"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="../Cheat Engine/frmstructuresconfigunit.pas"/>
+        <UnitName Value="frmStructuresConfigUnit"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="429"/>
+        <CursorPos X="4" Y="460"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="../Cheat Engine/frmselectionlistunit.pas"/>
+        <IsPartOfProject Value="True"/>
+        <HasResources Value="True"/>
+        <EditorIndex Value="-1"/>
+        <WindowIndex Value="-1"/>
+        <TopLine Value="-1"/>
+        <CursorPos X="-1" Y="-1"/>
+        <UsageCount Value="20"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit8>
+    </Units>
+    <JumpHistory Count="6" HistoryIndex="5">
+      <Position1>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="7" Column="7"/>
+      </Position1>
+      <Position2>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="381" Column="60" TopLine="361"/>
+      </Position2>
+      <Position3>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="18" Column="73"/>
+      </Position3>
+      <Position4>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="10" Column="51"/>
+      </Position4>
+      <Position5>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="12" Column="45"/>
+      </Position5>
+      <Position6>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="20" Column="73" TopLine="4"/>
+      </Position6>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>
