@@ -7,11 +7,11 @@
       <Unit0>
         <Filename Value="cheatengineLinux.lpr"/>
         <IsPartOfProject Value="True"/>
-        <IsVisibleTab Value="True"/>
         <TopLine Value="113"/>
         <CursorPos X="79" Y="124"/>
         <UsageCount Value="183"/>
         <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
         <Filename Value="fuckitcopypastedcode/anchoreditor.pas"/>
@@ -718,9 +718,11 @@
       </Unit89>
       <Unit90>
         <Filename Value="linux/uconst.pas"/>
-        <EditorIndex Value="-1"/>
+        <EditorIndex Value="2"/>
         <CursorPos X="52" Y="10"/>
         <UsageCount Value="11"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit90>
       <Unit91>
         <Filename Value="backup/LuaHandler.pas"/>
@@ -870,12 +872,12 @@
       </Unit110>
       <Unit111>
         <Filename Value="aboutunit.pas"/>
-        <ComponentName Value="About"/>
-        <HasResources Value="True"/>
-        <ResourceBaseClass Value="Form"/>
-        <EditorIndex Value="-1"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
         <CursorPos X="21" Y="12"/>
         <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit111>
       <Unit112>
         <Filename Value="frmMemoryAllocHandlerUnit.pas"/>
@@ -1118,7 +1120,7 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit143>
     </Units>
-    <JumpHistory Count="6" HistoryIndex="5">
+    <JumpHistory Count="11" HistoryIndex="10">
       <Position1>
         <Filename Value="cheatengineLinux.lpr"/>
         <Caret Line="95" Column="87" TopLine="79"/>
@@ -1143,6 +1145,26 @@
         <Filename Value="cheatengineLinux.lpr"/>
         <Caret Line="124" Column="79" TopLine="113"/>
       </Position6>
+      <Position7>
+        <Filename Value="aboutunit.pas"/>
+        <Caret Line="146" Column="3" TopLine="130"/>
+      </Position7>
+      <Position8>
+        <Filename Value="aboutunit.pas"/>
+        <Caret Line="12" Column="13"/>
+      </Position8>
+      <Position9>
+        <Filename Value="aboutunit.pas"/>
+        <Caret Line="147" Column="92"/>
+      </Position9>
+      <Position10>
+        <Filename Value="aboutunit.pas"/>
+        <Caret Line="140" Column="77" TopLine="136"/>
+      </Position10>
+      <Position11>
+        <Filename Value="linux/uconst.pas"/>
+        <Caret Line="10" Column="52"/>
+      </Position11>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
