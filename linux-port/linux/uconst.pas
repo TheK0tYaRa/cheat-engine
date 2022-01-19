@@ -7,6 +7,7 @@ interface
 const
   {SW}
   SW_NORMAL = 1;
+  SW_MAXIMIZE = 3;
 
   {WM}
   WM_KEYDOWN = 256;

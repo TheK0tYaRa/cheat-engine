@@ -8,10 +8,14 @@ uses
   {$ifdef darwin}
   macport,
   {$endif}
+  {$ifdef linux}
+  unixshell, uconst,
+  {$endif}
   {$ifdef windows}
   windows,shellapi,
-  {$endif}LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls, LResources, vmxfunctions, NewKernelHandler, betterControls;
+  {$endif}
+  LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  StdCtrls, ExtCtrls, LResources, vmxfunctions, NewKernelHandler, betterControls;
 
 type
 

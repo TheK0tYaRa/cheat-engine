@@ -160,12 +160,11 @@
         <ShowHints Value="False"/>
       </Verbosity>
       <WriteFPCLogo Value="False"/>
-      <CustomOptions Value="-dbenchmarkps
+      <CustomOptions Value="-vd
+-dbenchmarkps
 -dcemain
 -dNDEBUG
--dDBVMFORAMDISWORKING
-
--vd"/>
+-dDBVMFORAMDISWORKING"/>
     </Other>
   </CompilerOptions>
   <Debugging>
