@@ -5,7 +5,7 @@ unit UnixUI;
 interface
 
 uses
-  unixporthelper;
+  unixporthelper, unixhandles;
 
 type
   LPCSTR = {$IFDEF USE_DELPHI_TYPES} Windows.LPCSTR {$ELSE} PAnsiChar {$ENDIF};

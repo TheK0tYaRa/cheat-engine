@@ -145,7 +145,7 @@ begin
   result:=0;
   lf:=luaclass_getClassObject(L);
   mainform.LuaFiles.Remove(lf);
-  mainform.UpdateMenu;
+  //mainform.UpdateMenu;   { private procedure }  { #todo -cmainform.UpdateMenu :  }
   lf.Free;
   mainform.editedsincelastsave:=true;
 end;

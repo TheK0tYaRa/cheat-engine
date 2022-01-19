@@ -13,6 +13,9 @@ uses
   {$ifdef windows}
   windows,
   {$endif}
+  {$ifdef linux}
+  unixdebug, unixthreads,
+  {$endif}
   {$ifdef darwin}
   macport, macpipe,
   {$endif}

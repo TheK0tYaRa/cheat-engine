@@ -15,17 +15,20 @@ uses unixporthelper, Assemblerunit, classes, symbolhandler, sysutils,
 
 
 uses
-   {$ifdef darwin}
-   macport, math,
-   {$endif}
-   {$ifdef windows}
-   jwawindows, windows,
-   {$endif}
-   Assemblerunit, classes, LCLIntf,symbolhandler, symbolhandlerstructs,
-   sysutils,dialogs,controls, CEFuncProc, NewKernelHandler ,plugin,
-   ProcessHandlerUnit, lua, lualib, lauxlib, luaclass, commonTypeDefs, OpenSave,
-   SymbolListHandler, tcclib,
-   betterControls;
+  {$ifdef darwin}
+  macport, math,
+  {$endif}
+  {$ifdef linux}
+  uconst, unixdebug, mmap, unixmemory, math, unixthreads, unixhandles,
+  {$endif}
+  {$ifdef windows}
+  jwawindows, windows,
+  {$endif}
+  Assemblerunit, classes, LCLIntf,symbolhandler, symbolhandlerstructs,
+  sysutils,dialogs,controls, CEFuncProc, NewKernelHandler ,plugin,
+  ProcessHandlerUnit, lua, lualib, lauxlib, luaclass, commonTypeDefs, OpenSave,
+  SymbolListHandler, tcclib,
+  betterControls;
 
 
 {$endif}
@@ -79,10 +82,14 @@ uses strutils, memscan, disassembler, networkInterface, networkInterfaceApi,
 {$else}
 
 
-uses simpleaobscanner, StrUtils, LuaHandler, memscan, disassembler{$ifdef windows}, networkInterface{$endif},
-     {$ifdef windows}networkInterfaceApi,{$endif} LuaCaller, SynHighlighterAA, Parsers, Globals, memoryQuery,
-     MemoryBrowserFormUnit, MemoryRecordUnit{$ifdef windows}, vmxfunctions{$endif}, autoassemblerexeptionhandler,
-     UnexpectedExceptionsHelper, types, autoassemblercode;
+uses
+  {$ifdef windows}
+  networkInterfaceApi, networkInterface, vmxfunctions,
+  {$endif}
+  simpleaobscanner, StrUtils, LuaHandler, memscan, disassembler,
+  LuaCaller, Parsers, Globals, memoryQuery, SynHighlighterAA,
+  MemoryBrowserFormUnit, MemoryRecordUnit, autoassemblerexeptionhandler,
+  UnexpectedExceptionsHelper, types, autoassemblercode;
 {$endif}
 
 
@@ -240,7 +247,8 @@ begin
   c.callback:=callback;
   registeredAutoAssemblerCommands.Add(c);
 
-  aa_AddExtraCommand(pchar(command));
+  { #todo -cHKEY : make it .config }
+  //aa_AddExtraCommand(pchar(command));
   {$endif}
 end;
 
@@ -1464,7 +1472,7 @@ var i,j,k,l,e: integer;
 
     multilineinjection: tstringlist;
     include: tstringlist;
-    testdword,bw: dword;
+    testdword,bw: ^DWord;
     testPtr: ptrUint;
     binaryfile: tmemorystream;
 
@@ -2126,11 +2134,13 @@ begin
               end; //else direct file path
 
               try
+                {$ifdef linux}{$else}
                 if symhandler.getmodulebyname(extractfilename(s1), mi)=false then //check if it's already injected
                 begin
                   InjectDll(s1,'');
                   symhandler.reinitialize;
                 end;
+                {$endif}
                 symhandler.waitforsymbolsloaded;
               except
                 raise exception.create(Format(rsCouldNotBeInjected, [s1]));

@@ -4,12 +4,21 @@ unit LuaXMPlayer;
 
 interface
 
+{ #todo -cxmplayer : do it later }
+{$ifdef linux}
+{$else}
+
 uses
   Classes, SysUtils, xmplayer_defines, xmplayer_server, lua, lauxlib, lualib, luafile, LuaHandler;
 
 procedure initializeLuaXMPlayer;
+{$endif}
 
 implementation
+
+{ #todo -cxmplayer : do it later }
+{$ifdef linux}
+{$else}
 
 uses luaclass, LuaObject;
 
@@ -148,6 +157,8 @@ end;
 
 initialization
   luaclass_register(TXMPlayer, xmplayer_addMetaData);
+
+{$endif}
 
 end.
 

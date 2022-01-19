@@ -612,7 +612,8 @@ type TCEForm=class(TForm) //TCustomForm)
 
     procedure OnWriteMethod(Writer: TWriter; Instance: TPersistent; PropInfo: PPropInfo; const MethodValue, DefMethodValue: TMethod; var Handled: boolean);
     procedure WriteComponentAsBinaryToStreamWithMethods(Astream: TStream);
-    procedure setActive(state: boolean);
+    { #todo -cformdesigner :  }
+    //procedure setActive(state: boolean);
     function getActive: boolean;
 
     procedure SetMethodProperty(Reader: TReader; Instance: TPersistent; PropInfo: PPropInfo; const TheMethodName: string; var Handled: boolean);
@@ -635,8 +636,8 @@ type TCEForm=class(TForm) //TCustomForm)
     function getVisible:boolean;
     procedure setVisible(state: boolean);
     destructor destroy; override;
-
-    property  active: boolean read getActive write setActive;
+    { #todo -cformdesigner :  }
+    //property  active: boolean read getActive write setActive;
   published
     property Align;
     property AllowDropFiles;
@@ -1025,6 +1026,8 @@ begin
 
 end;
 
+{ #todo -cformdesigner : fuck me, another formdesigner use place }
+(*
 procedure TCEForm.setActive(state: boolean);
 var oldstate: boolean;
 begin
@@ -1080,6 +1083,7 @@ begin
 
 
 end;
+*)
 
 function TCEForm.getActive: boolean;
 begin
@@ -1157,7 +1161,8 @@ var wasactive: boolean;
   i: integer;
 begin
   wasactive:=active;
-  active:=false;
+  { #todo -cformdesigner : fuck me, another formdesigner use place }
+  //active:=false;
 
   if designsurface<>nil then
     freeandnil(designsurface);
@@ -1187,7 +1192,8 @@ begin
 
   end;
 
-  active:=wasactive;
+  { #todo -cformdesigner : fuck me, another formdesigner use place }
+  //active:=wasactive;
   ResyncWithLua;
 end;
 
@@ -1233,7 +1239,8 @@ begin
   end
   else
   begin
-    if active then active:=false;
+    { #todo -cformdesigner : fuck me, another formdesigner use place }
+    //if active then active:=false;
   end;
 
   if saveddesign=nil then
@@ -1307,7 +1314,8 @@ var s: string;
   a: TDOMNode;
 begin
   wasActive:=active;
-  active:=false;
+  { #todo -cformdesigner : fuck me, another formdesigner use place }
+  //active:=false;
 
 
   if saveddesign=nil then
@@ -1366,7 +1374,8 @@ begin
 
   RestoreToDesignState;
 
-  active:=wasActive;
+  { #todo -cformdesigner : fuck me, another formdesigner use place }
+  //  active:=wasActive;
 end;
 
 
@@ -1456,7 +1465,8 @@ var
   wasActive: boolean;
 begin
   wasActive:=active;
-  active:=false;
+  { #todo -cformdesigner : fuck me, another formdesigner use place }
+  //  active:=false;
 
   ms:=TMemoryStream.Create;
   ms.LoadFromFile(filename);
@@ -1464,7 +1474,8 @@ begin
   LRSObjectTextToBinary(ms,saveddesign);
   ms.Destroy;
 
-  active:=wasActive;
+  { #todo -cformdesigner : fuck me, another formdesigner use place }
+  //  active:=wasActive;
 
   if ShouldAppsUseDarkMode() then
     if color=clDefault then

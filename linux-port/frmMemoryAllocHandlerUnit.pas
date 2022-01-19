@@ -11,6 +11,9 @@ uses
   {$ifdef darwin}
   macport,
   {$endif}
+  {$ifdef linux}
+  unixmemory, unixdebug, unixhandles,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}

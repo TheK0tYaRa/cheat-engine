@@ -9,7 +9,7 @@ uses
   macport, LCLProc, math,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixmemory,
   {$endif}
   {$ifdef windows}
   win32proc, jwawindows, windows,

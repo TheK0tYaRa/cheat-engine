@@ -9,7 +9,7 @@ uses
   macport,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixhandles, unixthreads, unixmemory, uconst,
   {$endif}
   {$ifdef windows}
   jwawindows, windows,
@@ -302,7 +302,7 @@ end;
 
 procedure TfrmFindStatics.FormCreate(Sender: TObject);
 var ths: thandle;
-    me32: MODULEENTRY32;
+    me32: TMODULEENTRY32;
     x: pchar;
     first:boolean;
     diff: integer;

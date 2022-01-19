@@ -10,7 +10,7 @@ uses
   jwawindows, windows,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixmemory,
   {$endif}
   Classes, SysUtils,cefuncproc, newkernelhandler,
   DebuggerInterface, networkInterface, networkInterfaceApi, contnrs{$ifdef darwin},macport, macportdefines{$endif};

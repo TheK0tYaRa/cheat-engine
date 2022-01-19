@@ -6,9 +6,15 @@ unit tcclib;
 interface
 
 uses
-  {$ifdef windows}windows,{$endif}
-  {$ifdef linux}unixporthelper, {$endif}
-  {$ifdef darwin}macport, dl,macportdefines, {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
+  {$ifdef linux}
+  unixmemory,
+  {$endif}
+  {$ifdef darwin}
+  macport, dl,macportdefines,
+  {$endif}
   Classes, SysUtils, syncobjs, maps;
 
 
@@ -1204,7 +1210,7 @@ end;
 
 {$ifndef standalonetest}
 procedure MemoryWriter(userdata: tobject; address: ptruint; data: pointer; size: integer);  cdecl; //Writes directly to the target process memory
-var bw: size_t;
+var bw: QWord;
 begin
   WriteProcessMemory(processhandle,pointer(address),data,size,bw);
 end;

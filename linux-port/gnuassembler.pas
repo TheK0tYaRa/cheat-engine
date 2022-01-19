@@ -9,13 +9,12 @@ uses
   macport,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixmem, uconst,
   {$endif}
   {$ifdef windows}
   windows,
   {$endif}
-  Classes, SysUtils, NewKernelHandler, ProcessHandlerUnit, strutils,
-  dialogs, commonTypeDefs;
+  Classes, SysUtils, NewKernelHandler, ProcessHandlerUnit, strutils, dialogs, commonTypeDefs;
 
 {
       //scan for .extraparams_as <string>

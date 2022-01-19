@@ -5,13 +5,19 @@ unit frmstructurecompareunit;
 interface
 
 uses
-  {$ifdef darwin}macport,{$endif}
-  {$ifdef linux}unixporthelper,{$endif}
-  {$ifdef windows}windows,{$endif}
-  Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls, ComCtrls,
-  cefuncproc, newkernelhandler, frmStringMapUnit, MemFuncs, AvgLvlTree, Menus,
-  bigmemallochandler, math, maps, oldRegExpr, symbolhandler, commonTypeDefs,
-  pagemap, syncobjs2, syncobjs, Clipbrd, betterControls;
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper, unixdebug, unixmemory, mmap, uconst,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
+  Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs,
+  StdCtrls, ExtCtrls, ComCtrls, cefuncproc, newkernelhandler, frmStringMapUnit,
+  MemFuncs, AvgLvlTree, Menus, bigmemallochandler, math, maps, oldRegExpr,
+  symbolhandler, commonTypeDefs, pagemap, syncobjs2, syncobjs, Clipbrd, betterControls;
 
 const compareversion=1;
 

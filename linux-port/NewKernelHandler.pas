@@ -4,20 +4,18 @@ unit NewKernelHandler;
 
 interface
 
-{$ifdef darwin}
-uses SysUtils, MacOSAll, MacOSXPosix, macport;
-{$endif}
-
-{$ifdef linux}
-uses LCLIntf,sysutils, dialogs, classes, controls,
-     dbk32functions, vmxfunctions,debug, multicpuexecution, contnrs, Clipbrd, globals,
-     unixporthelper;
-{$endif}
-
-{$ifdef windows}
-uses jwawindows, windows,LCLIntf,sysutils, dialogs, classes, controls,
-     dbk32functions, vmxfunctions,debug, multicpuexecution, contnrs, Clipbrd, globals;
-{$endif}
+uses
+  {$ifdef darwin}
+  MacOSAll, MacOSXPosix, macport,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper, uconst, unixthreads, unixhandles,
+  {$endif}
+  {$ifdef windows}
+  jwawindows, windows,
+  {$endif}
+  LCLIntf,sysutils, dialogs, classes, controls, dbk32functions, vmxfunctions,
+  debug, multicpuexecution, contnrs, Clipbrd, globals;
 
 const dbkdll='DBK32.dll';
 
@@ -51,22 +49,7 @@ LPPROCESSENTRY32 = ^PROCESSENTRY32;
 TProcessEntry32 = PROCESSENTRY32;
 
 
-PMODULEENTRY32 = ^MODULEENTRY32;
-tagMODULEENTRY32 = record
-  dwSize: DWORD;
-  th32ModuleID: DWORD;       // This module
-  th32ProcessID: DWORD;      // owning process
-  GlblcntUsage: DWORD;       // Global usage count on the module
-  ProccntUsage: DWORD;       // Module usage count in th32ProcessID's context
-  modBaseAddr: LPBYTE;       // Base address of module in th32ProcessID's context
-  modBaseSize: DWORD;        // Size in bytes of module starting at modBaseAddr
-  hModule: HMODULE;          // The hModule of this module in th32ProcessID's context
-  szModule: array [0..MAX_MODULE_NAME32] of Char;
-  szExePath: array [0..MAX_PATH - 1] of Char;
-end;
-MODULEENTRY32 = tagMODULEENTRY32;
-LPMODULEENTRY32 = ^MODULEENTRY32;
-TModuleEntry32 = MODULEENTRY32;
+
 
 
 {$ifdef cpu32}
@@ -501,15 +484,15 @@ type TVirtualProtect=function(lpAddress: Pointer; dwSize, flNewProtect: DWORD; v
 type TVirtualProtectEx=function(hProcess: THandle; lpAddress: Pointer; dwSize, flNewProtect: DWORD; var OldProtect: DWORD): BOOL; stdcall;
 {$endif}
 type TVirtualQueryEx=function(hProcess: THandle; lpAddress: Pointer; var lpBuffer: TMemoryBasicInformation; dwLength: DWORD): DWORD; stdcall;
-{$ifdef linux}
+{$ifndef linux}
 type TVirtualAllocEx=function(hProcess: THandle; lpAddress: Pointer; dwSize, flAllocationType: DWORD; flProtect: DWORD): Pointer; stdcall;
-type TVirtualFreeEx=function(hProcess: HANDLE; lpAddress: LPVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL; stdcall;
+type TVirtualFreeEx=function(hProcess: THandle; lpAddress: LPVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL; stdcall;
 type TVirtualProtectEx=function(hProcess: THandle; lpAddress: Pointer; dwSize, flNewProtect: DWORD; var OldProtect: DWORD): BOOL; stdcall;
 type TOpenThread=function(dwDesiredAccess:DWORD;bInheritHandle:BOOL;dwThreadId:DWORD):THANDLE; stdcall;
 
 type TThread32First=function (hSnapshot: THandle; var lpte: TThreadEntry32): BOOL; stdcall;
 type TThread32Next=function (hSnapshot: THandle; var lpte: TThreadENtry32): BOOL; stdcall;
-type TModule32First=function (hSnapshot: THandle; var lpme: TModuleEntry32): BOOL; stdcall;
+//type TModule32First=function (hSnapshot: THandle; var lpme: TModuleEntry32): BOOL; stdcall;
 
 type TCreateToolhelp32Snapshot=function(dwFlags, th32ProcessID: DWORD): THandle; stdcall;
 {$endif}
@@ -725,18 +708,6 @@ var
   VirtualProtectEx      :TVirtualProtectEx;
 {$endif}
   VirtualQueryExActual  :TVirtualQueryEx;
-{$ifdef linux}
-  VirtualAllocEx        :TVirtualAllocEx;
-  VirtualFreeEx         :TVirtualFreeEx;
-  VirtualProtectEx      :TVirtualProtectEx;
-  OpenThread            :TOpenThread;
-
-  Thread32First         :TThread32First;
-  Thread32Next          :TThread32Next;
-  Module32First         :TModule32First;
-
-  CreateToolhelp32Snapshot: TCreateToolhelp32Snapshot;
-{$endif}
 {$ifdef windows}
   VirtualAllocEx        :TVirtualAllocEx;
   VirtualFreeEx         :TVirtualFreeEx;
@@ -846,9 +817,7 @@ var
   dbvm_read_physical_memory: Tdbvm_read_physical_memory;
   dbvm_write_physical_memory: Tdbvm_write_physical_memory; }
   {$endif}
-  {$ifdef linux}
-  closeHandle                 : function (hObject:HANDLE):WINBOOL; stdcall;
-  {$endif}
+
 var
 {$ifdef windows}
     WindowsKernel: Thandle;
@@ -902,9 +871,8 @@ resourcestring
   rsCouldnTBeOpened = '%s couldn''t be opened';
   rsDBVMIsNotLoadedThisFeatureIsNotUsable = 'DBVM is not loaded. This feature is not usable';
 
- {$ifndef JNI}
-  {$ifdef windows}
-
+{$ifndef JNI}
+{$ifdef windows}
 
 function pageEntryToProtection(entry: qword): dword;
 var r,w,x: boolean;
@@ -2366,16 +2334,16 @@ initialization
 
   getLBROffset;
   {$endif}
-  {$ifdef linux}
-  OpenThread:=GetProcAddress(WindowsKernel,'OpenThread');{ TODO -cNOT_UNIX : Fix this ASAP }
-  CloseHandle:=GetProcAddress(Windowskernel, 'CloseHandle');
-
-  Thread32First:=    GetProcAddress(WindowsKernel, 'Thread32First');
-  Thread32Next:=     GetProcAddress(WindowsKernel, 'Thread32Next');
-  Module32First:=    GetProcAddress(WindowsKernel, 'Module32First');
-
-  CreateToolhelp32Snapshot:=GetProcAddress(WindowsKernel, 'CreateToolhelp32Snapshot');
-  {$endif}
+  //{$ifdef linux}
+  //OpenThread:=GetProcAddress(WindowsKernel,'OpenThread');{ TODO -cNOT_UNIX : Fix this ASAP }
+  //CloseHandle:=GetProcAddress(Windowskernel, 'CloseHandle');
+  //
+  //Thread32First:=    GetProcAddress(WindowsKernel, 'Thread32First');
+  //Thread32Next:=     GetProcAddress(WindowsKernel, 'Thread32Next');
+  //Module32First:=    GetProcAddress(WindowsKernel, 'Module32First');
+  //
+  //CreateToolhelp32Snapshot:=GetProcAddress(WindowsKernel, 'CreateToolhelp32Snapshot');
+  //{$endif}
   initMaxPhysMask;
 
   {$ifdef darwin}

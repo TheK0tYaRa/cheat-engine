@@ -8,6 +8,9 @@ uses
   {$ifdef darwin}
   macport, LCLProc,
   {$endif}
+  {$ifdef linux}
+  unixthreads, unixmemory,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}
@@ -3117,7 +3120,9 @@ var
   frmHighlighterEditor: TfrmHighlighterEditor;
 begin
   frmHighlighterEditor:=TfrmHighlighterEditor.create(self);
+  {$ifdef linux}{$else}
   CPPHighlighter.loadFromRegistryDefault(HKEY_CURRENT_USER, '\Software\Cheat Engine\CPP Highlighter'+darkmodestring);
+  {$endif}
 
   frmHighlighterEditor.highlighter:=CPPHighlighter;
   if frmHighlighterEditor.showmodal=mrok then

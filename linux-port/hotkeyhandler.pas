@@ -8,10 +8,12 @@ uses
   {$ifdef darwin}
   macport, machotkeys,
   {$endif}
+  {$ifdef linux}
+  unixkeys, uconst, unixmemory, unixdebug,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}
-
   LCLType,LCLIntf,classes,sysutils, SyncObjs,CEFuncProc,messages,genericHotkey, math,
   commonTypeDefs;
 

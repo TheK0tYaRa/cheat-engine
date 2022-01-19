@@ -9,7 +9,7 @@ uses
   macport,macexceptiondebuggerinterface, LCLIntf,LCLType,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixdebug, xorg, unixmemory, mmap, uconst,
   {$endif}
   {$ifdef windows}
   Windows,  KernelDebuggerInterface, WindowsDebugger,
@@ -183,7 +183,7 @@ resourcestring
 implementation
 
 uses CEDebugger, KernelDebugger, formsettingsunit, FormDebugStringsUnit,
-     frmBreakpointlistunit, plugin, memorybrowserformunit, autoassembler,
+     frmBreakpointlistunit, plugin, MemoryBrowserFormUnit, autoassembler,
      pluginexports, networkInterfaceApi, ProcessHandlerUnit, Globals, LuaCaller,
      vmxfunctions, LuaHandler, frmDebuggerAttachTimeoutUnit, DBVMDebuggerInterface;
 
@@ -249,7 +249,7 @@ resourcestring
 
 procedure TDebuggerthread.Execute;
 var
-  debugEvent: _Debug_EVENT;
+  debugEvent: TDebugEvent;
   debugging: boolean;
   currentprocesid: dword;
   ContinueStatus: dword;
@@ -346,7 +346,8 @@ begin
         if CurrentDebuggerInterface.needsToAttach=false then
           OnAttachEvent.SetEvent; //no need to wait if the debufferinterface does not need to wait
 
-
+        { #note -cbroken :  }
+        (*
         if WaitForDebugEvent(debugEvent, 100) then
         begin
           ContinueStatus:=DBG_CONTINUE;
@@ -381,6 +382,7 @@ begin
           execlocation:=5;
           cleanupDeletedBreakpoints;
         end;
+        *)
 
 
       end;

@@ -9,7 +9,7 @@ uses
   Windows,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixmemory,
   {$endif}
   {$ifdef darwin}
   macport, dynlibs, mactypes,

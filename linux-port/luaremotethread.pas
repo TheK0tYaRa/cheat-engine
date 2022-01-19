@@ -13,15 +13,22 @@ uses
 implementation
 
 uses
-  {$ifdef darwin}macport,pthreads, macCreateRemoteThread, {$endif}
-  {$ifdef windows}windows,{$endif}
+  {$ifdef darwin}
+  macport, pthreads, macCreateRemoteThread,
+  {$endif}
+  {$ifdef linux}
+  unixthreads,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
   ProcessHandlerUnit, LuaClass, LuaObject, NewKernelHandler;
 
 type
   TRemoteThread=class
   private
     h: THandle;
-    tid: dword;
+    tid: ^dword;
   public
     function getResult: integer;
     function waitForThread(timeout: integer): integer;

@@ -14,10 +14,16 @@ uses
   {$ifdef darwin}
   macport,
   {$endif}
+  {$ifdef linux}
+  unixthreads, unixhandles,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}
-  {$ifndef jni}LCLIntf, {$endif}
+
+  {$ifndef jni}
+  LCLIntf,
+  {$endif}
   newkernelhandler, classes, sysutils;
 
 type

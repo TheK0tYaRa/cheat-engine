@@ -10,31 +10,36 @@ The old scanning routines will be moved out of cefuncproc and made object orient
 Special care should be taken to add multithreaded scanning routines
 }
 
-
-
 interface
 
-
-{$ifdef jni}
-uses sysutils, unixporthelper, customtypehandler, commonTypeDefs, classes,
-     syncobjs, math, groupscancommandparser, NewKernelHandler, strutils,
-     savedscanhandler;
-{$else}
 uses
-     {$ifdef darwin}
-     macport, macportdefines, LCLType,
-     {$endif}
-     {$ifdef windows}
-     windows,
-     {$endif}
-     FileUtil, LCLIntf,sysutils, classes,ComCtrls,dialogs, NewKernelHandler,math,
-     SyncObjs {$ifdef windows},windows7taskbar{$endif},SaveFirstScan, savedscanhandler, autoassembler,
-     symbolhandler, CEFuncProc{$ifdef windows},shellapi{$endif}, CustomTypeHandler, lua,lualib,lauxlib,
-     LuaHandler, {$ifdef windows}fileaccess,{$endif} groupscancommandparser, commonTypeDefs, LazUTF8,
-     forms, LazFileUtils, LCLProc, LCLVersion, AvgLvlTree, Laz_AVL_Tree;
-{$define customtypeimplemented}
-{$endif}
+  {$ifdef jni}
+  sysutils, unixporthelper, customtypehandler, commonTypeDefs, classes,
+  syncobjs, math, groupscancommandparser, NewKernelHandler, strutils,
+  savedscanhandler;
+  {$else}
+  {$ifdef darwin}
+  macport, macportdefines, LCLType,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper, unixdebug, unixmemory, uconst,
+  {$endif}
+  {$ifdef windows}
+  windows,windows7taskbar, shellapi, fileaccess,
+  {$endif}
+  FileUtil, LCLIntf,sysutils, classes,ComCtrls,dialogs, NewKernelHandler,math,
+  SyncObjs, SaveFirstScan, savedscanhandler, autoassembler,
+  symbolhandler, CEFuncProc, CustomTypeHandler, lua,lualib,lauxlib,
+  LuaHandler, groupscancommandparser, commonTypeDefs, LazUTF8,
+  forms, LazFileUtils, LCLProc, LCLVersion, AvgLvlTree, Laz_AVL_Tree;
+  {$define customtypeimplemented}
+  {$endif}
 
+{$ifdef linux}
+const
+  MB_OK = $0;
+  MB_ICONERROR = $10;
+{$endif}
 
 type
   TMemScanGuiUpdateRoutine=procedure(sender: TObject; totaladdressestoscan: qword; currentlyscanned: qword; foundcount: qword) of object;
@@ -6675,7 +6680,7 @@ begin
   if scan_dirtyonly and (scanWritable=scanInclude) then
     vqecacheflag:=vqecacheflag or VQE_DIRTYONLY;  //2
 
-  {$ifndef darwin}
+  {$if not defined (linux) and not defined (darwin)}
   VirtualQueryEx_StartCache(processhandle, vqecacheflag);
   {$endif}
 
@@ -6798,7 +6803,7 @@ begin
 
   end;
 
-  {$ifndef darwin}
+  {$if not defined(darwin) and not defined(linux)}
   VirtualQueryEx_EndCache(processhandle);
   {$endif}
     {

@@ -7,8 +7,14 @@ unit LuaDebug;
 interface
 
 uses
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper, unixdebug,
+  {$endif}
   Classes, SysUtils, newkernelhandler, debug, DebugHelper,
-  DebuggerInterfaceAPIWrapper, lua, lualib, lauxlib, LuaHandler{$ifdef darwin},macport{$endif};
+  DebuggerInterfaceAPIWrapper, lua, lualib, lauxlib, LuaHandler;
 
 procedure initializeLuaDebug;
 
@@ -19,7 +25,7 @@ var
   parameters: integer;
   newstate: boolean;
 begin
-  OutputDebugString('debug_setLastBranchRecording');
+   OutputDebugString('debug_setLastBranchRecording');
   result:=0;
 
   parameters:=lua_gettop(L);

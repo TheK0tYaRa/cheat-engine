@@ -8,6 +8,9 @@ uses
   {$ifdef darwin}
   macport,
   {$endif}
+  {$ifdef linux}
+  NewKernelHandler, mmap, uconst, unixmemory,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}

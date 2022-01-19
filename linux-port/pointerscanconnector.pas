@@ -8,10 +8,17 @@ unit PointerscanConnector;
 interface
 
 uses
-  Classes, SysUtils, sockets, resolve, syncobjs, math, {$ifdef windows}winsock2,{$endif}
-  CELazySocket,  PointerscanNetworkCommands, NewKernelHandler
-  {$ifdef darwin},macport{$endif}{$ifdef linux},unixsocket,unixporthelper{$endif};
-
+  {$ifdef windows}
+  winsock2,
+  {$endif}
+  {$ifdef linux}
+  unixsocket, unixporthelper, unixdebug,
+  {$endif}
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  Classes, SysUtils, sockets, resolve, syncobjs, math,
+  CELazySocket,  PointerscanNetworkCommands, NewKernelHandler;
 
 type
   TConnectEntry=record

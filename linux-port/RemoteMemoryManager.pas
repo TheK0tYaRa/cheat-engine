@@ -16,6 +16,9 @@ uses
   {$ifdef darwin}
   macport,
   {$endif}
+  {$ifdef linux}
+  uconst, mmap,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}

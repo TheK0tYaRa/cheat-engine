@@ -9,7 +9,7 @@ uses
   macport, math,
   {$endif}
   {$ifdef linux}
-  math,unixporthelper,
+  math, unixporthelper, unixmemory,
   {$endif}
   {$ifdef windows}
   windows,

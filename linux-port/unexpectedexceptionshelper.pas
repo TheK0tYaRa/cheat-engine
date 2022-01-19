@@ -9,7 +9,7 @@ uses
   macport,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixdebug, unixerrors,
   {$endif}
   {$ifdef windows}
   jwawindows, windows,

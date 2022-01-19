@@ -7,30 +7,29 @@ unit hexviewunit;
 interface
 
 uses
-{$IFNDEF STANDALONEHV}
+  {$IFNDEF STANDALONEHV}
   {$ifdef darwin}
   macport, macportdefines,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixmemory, uconst,
   {$endif}
   {$ifdef windows}
   windows, commctrl,
   {$endif}
-{$ENDIF}
+  {$ENDIF}
   Classes,  sysUtils, forms, controls, StdCtrls, ExtCtrls, comctrls, graphics,
-  lmessages, menus,  math,
-  Clipbrd,dialogs, changelist, maps, contnrs,
-  strutils, lazutf8, lazutf16, lcltype, LCLIntf
-{$ifdef USELAZFREETYPE}
-  ,cefreetype,FPCanvas, EasyLazFreeType, LazFreeTypeFontCollection, LazFreeTypeIntfDrawer,
-  LazFreeTypeFPImageDrawer, IntfGraphics, fpimage, graphtype
-{$endif}
-
+  lmessages, menus, math, Clipbrd,dialogs, changelist, maps, contnrs, strutils,
+  lazutf8, lazutf16, lcltype, LCLIntf,
+  {$ifdef USELAZFREETYPE}
+  cefreetype,FPCanvas, EasyLazFreeType, LazFreeTypeFontCollection, LazFreeTypeIntfDrawer,
+  LazFreeTypeFPImageDrawer, IntfGraphics, fpimage, graphtype,
+  {$endif}
   {$IFNDEF STANDALONEHV}
-  , byteinterpreter, debuggertypedefinitions, DebugHelper ,commonTypeDefs,symbolhandler,
-  symbolhandlerstructs, cefuncproc, NewKernelHandler, CustomTypeHandler
-  {$ENDIF}, bettercontrols;
+  byteinterpreter, debuggertypedefinitions, DebugHelper ,commonTypeDefs,symbolhandler,
+  symbolhandlerstructs, cefuncproc, NewKernelHandler, CustomTypeHandler,
+  {$ENDIF}
+  bettercontrols;
 
 type
   TDisplayType = (dtByte, dtByteDec, dtWord, dtWordDec, dtDword, dtDwordDec, dtQword, dtQwordDec, dtSingle, dtDouble, dtCustom);

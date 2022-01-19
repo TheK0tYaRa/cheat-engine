@@ -8,9 +8,15 @@ unit binutils;
 interface
 
 uses
-  {$ifdef darwin}macport,{$endif}
-  {$ifdef linux}unixporthelper,{$endif}
-  {$ifdef windows}windows, {$endif}
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper, mmap, uconst,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
   newkernelhandler, forms, Classes, SysUtils, process, LastDisassembleData, strutils, maps;
 
 type

@@ -14,7 +14,7 @@ uses
   windows,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, uconst,
   {$endif}
   {$ifdef darwin}
   macport,

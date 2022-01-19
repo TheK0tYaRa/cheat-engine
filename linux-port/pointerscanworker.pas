@@ -11,7 +11,7 @@ uses
   macport, macportdefines, SyncObjs2, math;
   {$endif}
   {$ifdef linux}
-  SyncObjs2,math,unixporthelper,
+  SyncObjs2, math, unixporthelper, unixdebug, unixmemory,
   {$endif}
   {$ifdef windows}
   windows,

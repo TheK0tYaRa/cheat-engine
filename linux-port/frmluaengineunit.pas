@@ -9,7 +9,7 @@ uses
   macport, LCLIntf, LCLProc, Unix, registry, xmlreg,
   {$endif}
   {$ifdef linux}
-  unixporthelper,xorg,
+  unixporthelper, xorg, unixdebug,
   {$endif}
   {$ifdef windows}
   windows,

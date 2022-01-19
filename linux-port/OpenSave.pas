@@ -11,11 +11,14 @@ uses
      {$ifdef darwin}
      macport,
      {$endif}
+     {$ifdef linux}
+     unixmemory,
+     {$endif}
      {$ifdef windows}
-     windows,
+     windows, shellapi,
      {$endif}
      forms, LCLIntf,registry, SysUtils,AdvancedOptionsUnit,CommentsUnit,
-     CEFuncProc,classes,{formmemorymodifier,formMemoryTrainerUnit,}{$ifdef windows}shellapi,{$endif}
+     CEFuncProc,classes,{formmemorymodifier,formMemoryTrainerUnit,}
      {MemoryTrainerDesignUnit,}StdCtrls,{ExtraTrainerComponents,}Graphics,Controls,
      tableconverter, ExtCtrls,Dialogs,NewKernelHandler, hotkeyhandler, structuresfrm,
      StructuresFrm2, comctrls,dom, xmlread,xmlwrite, FileUtil, ceguicomponents,

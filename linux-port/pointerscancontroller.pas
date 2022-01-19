@@ -5,8 +5,16 @@ unit PointerscanController;
 interface
 
 uses
-  {$ifdef darwin}macport,{$endif}{$ifdef windows}windows,WinSock2,{$endif}
-  {$ifdef linux}unixporthelper,{$endif}LCLIntf, LCLType, Classes, SysUtils,
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper, unixdebug, unixmemory, uconst,
+  {$endif}
+  {$ifdef windows}
+  windows, WinSock2,
+  {$endif}
+  LCLIntf, LCLType, Classes, SysUtils,
   StdCtrls, ComCtrls, Sockets, syncobjs, resolve, math, pointervaluelist,
   PointerscanWorker, PointerscanStructures,  pointeraddresslist,
   PointerscanresultReader, cefuncproc, NewKernelHandler, zstream,

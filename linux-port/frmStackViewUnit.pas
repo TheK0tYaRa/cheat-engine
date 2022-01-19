@@ -8,10 +8,13 @@ uses
   {$ifdef darwin}
   macport,
   {$endif}
+  {$ifdef linux}
+  unixmem,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}
-  cefuncproc, newkernelhandler, Classes, SysUtils, FileUtil, LResources,
+  cefuncproc, NewKernelHandler, Classes, SysUtils, FileUtil, LResources,
   Forms, Controls, Graphics, Dialogs, StdCtrls, Menus, stacktrace2, Clipbrd, ComCtrls,
   strutils, frmSelectionlistunit, maps, betterControls;
 
@@ -84,6 +87,14 @@ resourcestring
     +' dissect window you wish to add this region to';
   rsSVThisStackViewWindowHasAllocatedStackSnapshotsEtc = 'This stackview window has allocated stack snapshots in the target process. Do you wish to free them?';
 
+{$ifdef linux}
+const
+  MEM_COMMIT  = $1000;
+  MEM_RESERVE = $2000;
+  MEM_RELEASE = $8000;
+
+  PAGE_READWRITE = $04;
+{$endif}
 
 implementation
 

@@ -4,25 +4,20 @@ unit MemoryQuery;
 
 interface
 
-{$ifdef jni}
 uses
-  Classes, SysUtils, unixporthelper, NewKernelHandler;
-{$endif}
-
-{$ifdef windows}
-uses
-  Classes, SysUtils, windows, CEFuncProc, NewKernelHandler;
-{$endif}
-
-{$ifdef linux}
-uses
-  Classes, SysUtils, CEFuncProc, NewKernelHandler,unixporthelper;
-{$endif}
-
-{$ifdef darwin}
-uses
-  Classes, SysUtils, macport, CEFuncProc, NewKernelHandler;
-{$endif}
+  {$ifdef jni}
+  unixporthelper,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper, unixmemory, uconst,
+  {$endif}
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  Classes, SysUtils, CEFuncProc, NewKernelHandler;
 
 function FindFreeBlockForRegion(base: ptrUint; size: dword): pointer;
 function isAddress(address: ptrUint):boolean;

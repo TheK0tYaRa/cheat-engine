@@ -12,6 +12,9 @@ uses
   {$ifdef darwin}
   macport, math,
   {$endif}
+  {$ifdef linux}
+  math,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}

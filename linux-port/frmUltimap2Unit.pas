@@ -11,7 +11,7 @@ uses
   macport, mactypes,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixdebug, unixmemory, uconst,
   {$endif}
   {$ifdef windows}
   win32proc,  windows,

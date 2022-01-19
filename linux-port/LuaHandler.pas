@@ -16,7 +16,11 @@ interface
 
 uses
   {$ifdef darwin}
-  mactypes, macport, LCLIntf, LCLType, macCreateRemoteThread, dynlibs,
+  mactypes, macport, LCLIntf, LCLType, macCreateRemoteThread, dynlibs, macportdefines,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper, unixdebug, unixthreads, unixhandles, unixkeys, mmap, unixmemory,
+  unixshell, uconst, temporaryunit, xorg,
   {$endif}
   {$ifdef windows}
   jwawindows, windows, ShellApi,
@@ -27,11 +31,7 @@ uses
   genericHotkey, luafile, xmplayer_server, ExtraTrainerComponents, customtimer,
   menus, XMLRead, XMLWrite, DOM, Clipbrd, typinfo, PEInfoFunctions,
   LCLProc, strutils, registry, md5, commonTypeDefs, LResources, Translations,
-  variants, LazUTF8, zstream, MemoryQuery, LCLVersion
-  {$ifdef darwin}
-  ,macportdefines
-  {$endif}, betterControls;
-
+  variants, LazUTF8, zstream, MemoryQuery, LCLVersion, betterControls;
 
 const MAXTABLERECURSIONLOOKUP=2;
 
@@ -119,14 +119,15 @@ uses autoassembler, MainUnit, MainUnit2, LuaClass, frmluaengineunit, plugin, plu
   LuaPipeServer, LuaTreeview, LuaTreeNodes, LuaTreeNode, LuaCalendar, LuaSymbolListHandler,
   LuaCommonDialog, LuaFindDialog, LuaSettings, LuaPageControl, LuaStructureFrm,
   LuaInternet, SymbolListHandler, ProcessHandlerUnit, processlist,
-  DebuggerInterface, WindowsDebugger, VEHDebugger, KernelDebuggerInterface,
+  DebuggerInterface, {$ifdef windows}WindowsDebugger, winsapi, windows7taskbar, {$endif}
+  VEHDebugger, KernelDebuggerInterface,
   DebuggerInterfaceAPIWrapper, Globals, math, speedhack2, CETranslator, binutils,
-  xinput, winsapi, frmExeTrainerGeneratorUnit, CustomBase85, FileUtil, networkConfig,
+  xinput, frmExeTrainerGeneratorUnit, CustomBase85, FileUtil, networkConfig,
   LuaCustomType, Filehandler, LuaSQL, frmSelectionlistunit, cpuidUnit, LuaRemoteThread,
   LuaManualModuleLoader, pointervaluelist, frmEditHistoryUnit, LuaCheckListBox,
   LuaDiagram, frmUltimap2Unit, frmcodefilterunit, BreakpointTypeDef, LuaSyntax,
   LazLogger, LuaSynedit, LuaRIPRelativeScanner, LuaCustomImageList ,ColorBox,
-  rttihelper, LuaDotNetPipe, LuaRemoteExecutor, windows7taskbar, debugeventhandler,
+  rttihelper, LuaDotNetPipe, LuaRemoteExecutor, debugeventhandler,
   tcclib, dotnethost, CSharpCompiler, LuaCECustomButton, feces;
 
   {$warn 5044 off}
@@ -4023,6 +4024,7 @@ var
   filename: string;
   skipsymbolwait: boolean;
 begin
+  {$ifdef linux}{$else}
   result:=0;
   parameters:=lua_gettop(L);
   if parameters>=1 then
@@ -4057,6 +4059,7 @@ begin
     result:=1;
     lua_pushboolean(L, true);
   end;
+  {$endif}
 end;
 
 
@@ -11038,7 +11041,7 @@ var
   stringallocs: array of pointer;
   sai: integer;
   x: ptruint;
-  y,wr: dword;
+  y,wr: ^dword;
 
   stubaddress, resultaddress: ptruint;
   //allocs: TCEAllocArray;
@@ -11429,7 +11432,7 @@ begin
         {$ifdef windows}
         wr:=WaitForSingleObject(thread, timeout);
         {$endif}
-        if wr=WAIT_OBJECT_0 then
+        if wr=PLongWord(WAIT_OBJECT_0) then
         begin
           if ReadProcessMemory(processhandle, pointer(resultaddress), @r, sizeof(r), x) then
           begin
@@ -11444,7 +11447,7 @@ begin
           end;
         end
         else
-        if wr=WAIT_TIMEOUT then
+        if wr=PLongWord(WAIT_TIMEOUT) then
         begin
           dontfree:=true;
           lua_pushnil(L);
@@ -11526,7 +11529,7 @@ var
   thread: thandle;
 
   r: ptruint;
-  x: dword;
+  x: ^dword;
   y: ptruint;
 
   wr: DWORD;
@@ -15268,8 +15271,9 @@ begin
     initializeLuaMemoryview;
     initializeLuaTableFile;
 
+    {$ifdef linux}{$else}
     InitializeLuaXMPlayer;
-
+    {$endif}
 
     Lua_register(L, 'writeRegionToFile', writeRegionToFile);
     Lua_register(L, 'readRegionFromFile', readRegionFromFile);
@@ -15812,11 +15816,11 @@ begin
 
 
 {$ifdef cpu64}
-      s.add('package.cpath = package.cpath .. [[;'+getcedir+'clibs64'+pathdelim+'?'+{$ifdef windows}'.dll'{$endif}{$ifdef darwin}'.dylib'{$endif}+']]');
-      s.add('package.cpath = package.cpath .. [[;.'+pathdelim+'clibs64'+pathdelim+'?'+{$ifdef windows}'.dll'{$endif}{$ifdef darwin}'.dylib'{$endif}+']]');
+      s.add('package.cpath = package.cpath .. [[;'+getcedir+'clibs64'+pathdelim+'?'+libext+']]');
+      s.add('package.cpath = package.cpath .. [[;.'+pathdelim+'clibs64'+pathdelim+'?'+libext+']]');
 {$else}
-      s.add('package.cpath = package.cpath .. [[;'+getcedir+'clibs32'+pathdelim+'?'+{$ifdef windows}'.dll'{$endif}{$ifdef darwin}'.dylib'{$endif}+']]');
-      s.add('package.cpath = package.cpath .. [[;.'+pathdelim+'clibs32'+pathdelim+'?'+{$ifdef windows}'.dll'{$endif}{$ifdef darwin}'.dylib'{$endif}+']]');
+      s.add('package.cpath = package.cpath .. [[;'+getcedir+'clibs32'+pathdelim+'?'+libext+']]');
+      s.add('package.cpath = package.cpath .. [[;.'+pathdelim+'clibs32'+pathdelim+'?'libext+']]');
 {$endif}
       s.add('stringlist_getCount=strings_getCount');
       s.add('stringlist_getString=strings_getString');

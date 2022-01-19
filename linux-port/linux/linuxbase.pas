@@ -1,4 +1,5 @@
-unit linuxbase; //jwawinbase alternative for linux, name pending
+unit
+linuxbase; //jwawinbase alternative for linux, name pending
 
 {$mode delphi}
 
@@ -40,28 +41,28 @@ type
 
 function CreateFile(lpFileName: LPCSTR; dwDesiredAccess, dwShareMode: DWORD;
   lpSecurityAttributes: LPSECURITY_ATTRIBUTES; dwCreationDisposition, dwFlagsAndAttributes: DWORD;
-  hTemplateFile: HANDLE): HANDLE;
-function GetFileSizeEx(hFile: HANDLE; var lpFileSize: LARGE_INTEGER): BOOL;
+  hTemplateFile: THandle): THandle;
+function GetFileSizeEx(hFile: THandle; var lpFileSize: LARGE_INTEGER): BOOL;
 
 implementation
 
 function CreateFileA(lpFileName: LPCSTR; dwDesiredAccess, dwShareMode: DWORD;
   lpSecurityAttributes: LPSECURITY_ATTRIBUTES; dwCreationDisposition, dwFlagsAndAttributes: DWORD;
-  hTemplateFile: HANDLE): HANDLE;
+  hTemplateFile: THandle): THandle;
 begin                         //char
   { TODO -cCreateFileA : https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea }
 end;
 
 function CreateFileW(lpFileName: LPCWSTR;dwDesiredAccess, dwShareMode: DWORD;
   lpSecurityAttributes: LPSECURITY_ATTRIBUTES; dwCreationDisposition, dwFlagsAndAttributes: DWORD;
-  hTemplateFile: HANDLE): HANDLE;
+  hTemplateFile: THandle): THandle;
 begin                         //wchar_t
   { TODO -cCreateFileW : https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew }
 end;
 
 function CreateFile(lpFileName: LPCSTR; dwDesiredAccess, dwShareMode: DWORD;
   lpSecurityAttributes: LPSECURITY_ATTRIBUTES; dwCreationDisposition, dwFlagsAndAttributes: DWORD;
-  hTemplateFile: HANDLE): HANDLE;
+  hTemplateFile: THandle): THandle;
 begin
   (*
   GetProcedureAddress(_CreateFile, kernel32, 'CreateFile' + AWSuffix);
@@ -79,7 +80,7 @@ begin
   end;
 end;
 
-function GetFileSizeEx(hFile: HANDLE; var lpFileSize: LARGE_INTEGER): BOOL;
+function GetFileSizeEx(hFile: THandle; var lpFileSize: LARGE_INTEGER): BOOL;
 begin
   { TODO -cGetFileSizeEx : https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfilesizeex }
 end;

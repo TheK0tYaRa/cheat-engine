@@ -9,7 +9,7 @@ uses lclproc,
      macport, dynlibs,
      {$endif}
      {$ifdef linux}
-     unixporthelper,
+     unixporthelper, unixdebug,
      {$endif}
      {$ifdef windows}
      windows,
@@ -766,14 +766,13 @@ end;
 
 //plugin type 2:
 //where: when a debug event happens
-{ TODO -cPDebugEvent : Can't find PDebugEvent in the files, commenting it out for now.
-https://github.com/cheat-engine/cheat-engine/issues/1959 } (*type TPluginFunction2=function(debugevent: PDebugEvent):integer; stdcall; //return 0 if you want to let ce handle it as well, 1 if you don't want to let ce handle it as well  (in case of not handling, do ContinueDebugEvent yourself)
+type TPluginFunction2=function(debugevent: PDebugEvent):integer; stdcall; //return 0 if you want to let ce handle it as well, 1 if you don't want to let ce handle it as well  (in case of not handling, do ContinueDebugEvent yourself)
 type TPluginfunctionType2=class
   public
     pluginid: integer;
     functionid: integer;
     callback: TPluginFunction2;
-end;  *)
+end;
 
 //plugin type 3:
 //where: a new process created according to the processwatcher
@@ -865,7 +864,7 @@ type TPlugin = record
   nextid: integer;
   RegisteredFunctions0: array of TPluginfunctionType0;
   RegisteredFunctions1: array of TPluginfunctionType1;
-  { TODO : line 769 }//RegisteredFunctions2: array of TPluginfunctionType2;
+  RegisteredFunctions2: array of TPluginfunctionType2;
   RegisteredFunctions3: array of TPluginfunctionType3;
   RegisteredFunctions4: array of TPluginfunctionType4;
   RegisteredFunctions5: array of TPluginfunctionType5;
@@ -893,8 +892,7 @@ type TPluginHandler=class
     procedure handleAutoAssemblerPlugin(line: ppchar; phase: integer; id: integer);
     procedure handledisassemblerContextPopup(address: ptruint);
     procedure handledisassemblerplugins(address: ptruint; addressStringPointer: pointer; bytestringpointer: pointer; opcodestringpointer: pointer; specialstringpointer: pointer; textcolor: PColor);
-    { TODO -cPDebugEvent : Can't find PDebugEvent in the files, commenting it out for now.
-https://github.com/cheat-engine/cheat-engine/issues/1959 }//function handledebuggerplugins(devent:PDebugEvent):integer;
+    function handledebuggerplugins(devent:PDebugEvent):integer;
     function handlenewprocessplugins(processid: dword; peprocess:ptruint; created: boolean):boolean;
     function handlechangedpointers(section: integer):boolean;
     function registerfunction(pluginid,functiontype:integer; init: pointer):integer;
@@ -918,9 +916,12 @@ var pluginhandler: TPluginhandler;
 
 implementation
 
-uses MainUnit,memorybrowserformunit,formsettingsunit, pluginexports, SynHighlighterAA,
-     {$ifdef windows}DBK32functions,{$endif} luahandler, processhandlerunit
-     {$ifdef windows}, BetterDLLSearchPath{$endif}, dotnethost, PEInfoFunctions, luaclass;
+uses
+  {$ifdef windows}
+  DBK32functions, BetterDLLSearchPath,
+  {$endif}
+  MainUnit,memorybrowserformunit,formsettingsunit, pluginexports, SynHighlighterAA,
+  luahandler, processhandlerunit, dotnethost, PEInfoFunctions, luaclass;
 
 resourcestring
   rsErrorEnabling = 'Error enabling %s';
@@ -1970,7 +1971,8 @@ begin
   exportedfunctions.disassembleEx:=@ce_disassemble;
   exportedfunctions.loadModule:=@ce_loadModule;
 
-  exportedfunctions.aa_AddExtraCommand:=@aa_AddExtraCommand;
+  { #todo -cHKEY :  }
+  //exportedfunctions.aa_AddExtraCommand:=@aa_AddExtraCommand;
   exportedfunctions.aa_RemoveExtraCommand:=@aa_RemoveExtraCommand;
 
   //version 4 init

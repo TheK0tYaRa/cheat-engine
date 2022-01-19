@@ -12,7 +12,7 @@ uses
   windows,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixmemory,
   {$endif}
   {$ifdef darwin}
   macport,

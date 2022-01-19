@@ -4,10 +4,9 @@
 unit Assemblerunit;
 
 //todo: case
-
+        { no case
+            only if tree }
 {$MODE Delphi}
-
-
 
 interface
 
@@ -15,7 +14,13 @@ interface
 uses  sysutils, ProcessHandlerUnit;
 {$else}
 uses
-  dialogs,LCLIntf,sysutils{$ifdef windows},imagehlp{$endif}, ProcessHandlerUnit,vextypedef;
+  {$ifdef windows}
+  imagehlp,
+  {$endif}
+  {$ifdef linux}
+  unixmemory,
+  {$endif}
+  dialogs, LCLIntf, sysutils, ProcessHandlerUnit, vextypedef;
 {$endif}
 
 const opcodecount=1915;  //I wish there was a easier way than to handcount
@@ -2769,7 +2774,8 @@ implementation
 {$ifdef jni}
 uses symbolhandler, assemblerArm, Parsers, NewKernelHandler;
 {$else}
-uses {$ifdef darwin}
+uses
+  {$ifdef darwin}
   macport,
   {$endif}
   {$ifdef windows}

@@ -15,7 +15,8 @@ uses
   mactypes, LCLType,macport,
   {$endif}
   {$ifdef linux}
-  unixporthelper,LCLType,
+  LCLType, unixporthelper, uconst, unixmemory, unixhandles, unixthreads, mmap,
+  unixdebug,
   {$endif}
   {$ifdef windows}
   jwawindows, windows,
@@ -88,7 +89,7 @@ procedure GetWindowList(ProcessListBox: TListBox; showInvisible: boolean=true); 
 procedure GetModuleList(ModuleList: TStrings; withSystemModules: boolean);
 procedure cleanModuleList(ModuleList: TStrings);
 
-function AvailMem:SIZE_T;
+function AvailMem:QWord;
 function isreadable(address:ptrUint):boolean;
 
 
@@ -137,7 +138,9 @@ function GetSystemType: Integer;
 
 procedure ToggleOtherWindows;
 
+{$ifdef linux}{$else}
 Procedure InjectDll(dllname: string; functiontocall: string='');
+{$endif}
 Function GetRelativeFilePath(filename: string):string;
 
 function GetCPUCount: integer;
@@ -333,9 +336,9 @@ type
                 case longint of
                    0 : ( dwOemId : DWORD;
   		       dwPageSize : DWORD;
-            	       lpMinimumApplicationAddress : LPVOID;
-            	       lpMaximumApplicationAddress : LPVOID;
-            	       dwActiveProcessorMask : DWORD_PTR;
+            	       lpMinimumApplicationAddress : Pointer;
+            	       lpMaximumApplicationAddress : Pointer;
+            	       dwActiveProcessorMask : ^DWORD;
             	       dwNumberOfProcessors : DWORD;
                          dwProcessorType : DWORD;
                          dwAllocationGranularity : DWORD;
@@ -684,7 +687,7 @@ end;
 function getathreadid(processid:dword):dword;
 var i: integer;
     ths: thandle;
-    tE: threadentry32;
+    tE: ^threadentry32;
 begin
   {$ifdef windows}
   if frmProcessWatcher<>nil then
@@ -750,7 +753,7 @@ procedure ForceLoadModule(dllname: string; functiontocall: string=''; callreason
 var
   s: string;
   functionloc: ptruint;
-  tid: dword;
+  tid: ^dword;
   e: boolean;
 begin
   try
@@ -2299,7 +2302,7 @@ end;
 
 procedure GetModuleList(ModuleList: TStrings; withSystemModules: boolean);
 var ths: thandle;
-    me32: MODULEENTRY32;
+    me32: ^MODULEENTRY32;
     x: pchar;
     moduledata: tmoduledata;
     i: integer;
@@ -2365,7 +2368,7 @@ end;
 procedure GetThreadList(threadlist: TStrings);
 var
   ths: THandle;
-  te32: THREADENTRY32;
+  te32: ^THREADENTRY32;
 begin
   threadlist.clear;
   ths:=CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD,processid);
@@ -3470,7 +3473,7 @@ end;
 
 function getProcessPathFromProcessID(pid: dword): string;
 var ths: thandle;
-    me32:MODULEENTRY32;
+    me32: ^MODULEENTRY32;
 begin
   outputdebugstring('getProcessPathFromProcessID('+inttostr(pid)+')');
   result:='';
@@ -3494,7 +3497,7 @@ end;
 
 function getProcessnameFromProcessID(pid: dword): string;
 var ths: thandle;
-    me32:MODULEENTRY32;
+    me32: ^MODULEENTRY32;
 begin
   result:='???';
   me32.dwSize:=sizeof(MODULEENTRY32);

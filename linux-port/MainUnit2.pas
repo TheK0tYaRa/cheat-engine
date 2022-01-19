@@ -11,7 +11,7 @@ uses
      macport, macexceptiondebuggerinterface,
      {$endif}
      {$ifdef linux}
-     unixporthelper,
+     unixdebug, unixporthelper, unixmemory,
      {$endif}
      {$ifdef windows}
      windows,

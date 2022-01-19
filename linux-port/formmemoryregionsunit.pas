@@ -9,7 +9,7 @@ uses
   macport,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixmemory, uconst,
   {$endif}
   {$ifdef windows}
   windows,
@@ -58,7 +58,7 @@ type
 var
   FormMemoryRegions: TFormMemoryRegions;
 
-type TGetMappedFileName=function (hProcess: HANDLE; lpv: LPVOID; lpFilename: LPTSTR; nSize: DWORD): DWORD; stdcall;
+type TGetMappedFileName=function (hProcess: THandle; lpv: LPVOID; lpFilename: LPTSTR; nSize: DWORD): DWORD; stdcall;
 var GetMappedFileName: TGetMappedFileName;
 
 

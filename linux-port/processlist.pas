@@ -5,11 +5,18 @@ unit ProcessList;
 interface
 
 uses
-  {$ifdef windows}jwawindows, windows, {$endif}
-  {$ifdef linux}unixporthelper,{$endif}
-  {$ifdef darwin}macport,{$endif}
-  cefuncproc, LazUTF8, Classes, SysUtils{$ifndef JNI}, StdCtrls{$endif},
-  ProcessHandlerUnit {$ifdef JNI},unixporthelper{$endif},newkernelhandler;
+  {$ifdef windows}
+  jwawindows, windows,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper, unixhandles, unixthreads, uconst,
+  {$endif}
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  cefuncproc, LazUTF8, Classes, SysUtils,
+  {$ifndef JNI}StdCtrls, {$else}unixporthelper,{$endif}
+  ProcessHandlerUnit, newkernelhandler;
 
 {$ifndef jni}
 procedure GetProcessList(ProcessList: TListBox; NoPID: boolean=false); overload;
@@ -43,7 +50,7 @@ function GetFirstModuleName(processid: dword): string;
 var
   SNAPHandle: THandle;
   check: boolean;
-  ModuleEntry: MODULEENTRY32;
+  ModuleEntry: TMODULEENTRY32;
 begin
   result:='';
   SNAPHandle:=CreateToolhelp32Snapshot(TH32CS_SNAPMODULE{$ifdef darwin}or TH32CS_SNAPMODULEFIRSTONLY{$endif},processid);

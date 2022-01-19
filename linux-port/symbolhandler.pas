@@ -14,7 +14,7 @@ uses
   macport, coresymbolication,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixmemory, unixdebug, mmap, uconst, unixthreads, unixhandles,
   {$endif}
   {$ifdef windows}
   jwawindows, windows,
@@ -430,8 +430,8 @@ type TSTACKFRAME_EX = record
 {$endif}
 
 type
-  TSymFromName=function(hProcess: HANDLE; Name: LPSTR; Symbol: PSYMBOL_INFO): BOOL; stdcall;
-  TSymFromAddr=function(hProcess:THANDLE; Address:dword64; Displacement:PDWORD64; Symbol:PSYMBOL_INFO):BOOL;stdcall;
+  TSymFromName=function(hProcess: THandle; Name: LPSTR; Symbol: PSYMBOL_INFO): BOOL; stdcall;
+  TSymFromAddr=function(hProcess: THandle; Address:dword64; Displacement:PDWORD64; Symbol:PSYMBOL_INFO):BOOL;stdcall;
 
   TSymEnumeratesymbolsCallback=function(pSymInfo: PSYMBOL_INFO; SymbolSize: ULONG; UserContext: Pointer): BOOL; stdcall;
 
@@ -490,9 +490,9 @@ const
 
 
 {$IFNDEF JNI}
-type TEnumProcessModulesEx=function(hProcess: HANDLE; lphModule: PHMODULE; cb: DWORD; var lpcbNeeded: DWORD; dwFilterFlag: DWORD): BOOL; stdcall;
-type TEnumProcessModules=function(hProcess: HANDLE; lphModule: PHMODULE; cb: DWORD; var lpcbNeeded: DWORD): BOOL; stdcall;
-type TGetModuleFileNameEx=function(hProcess: HANDLE; hModule: HMODULE; lpFilename: pchar; nSize: DWORD): DWORD; stdcall;
+type TEnumProcessModulesEx=function(hProcess: THandle; lphModule: PHMODULE; cb: DWORD; var lpcbNeeded: DWORD; dwFilterFlag: DWORD): BOOL; stdcall;
+type TEnumProcessModules=function(hProcess: THandle; lphModule: PHMODULE; cb: DWORD; var lpcbNeeded: DWORD): BOOL; stdcall;
+type TGetModuleFileNameEx=function(hProcess: THandle; hModule: HMODULE; lpFilename: pchar; nSize: DWORD): DWORD; stdcall;
 {$ENDIF}
 
 
@@ -720,7 +720,7 @@ begin
   inherited destroy;
 end;
 
-function EnumProcessModulesExNotImplemented(hProcess: HANDLE; lphModule: PHMODULE; cb: DWORD; var lpcbNeeded: DWORD; dwFilterFlag: DWORD): BOOL; stdcall;
+function EnumProcessModulesExNotImplemented(hProcess: THandle; lphModule: PHMODULE; cb: DWORD; var lpcbNeeded: DWORD; dwFilterFlag: DWORD): BOOL; stdcall;
 begin
 {$ifndef jni}
   result:=EnumProcessModules(hProcess,lphModule,cb,lpcbNeeded);
@@ -966,7 +966,7 @@ begin
   {$ENDIF}
 end;
 
-function GetTypeName(h: HANDLE; modbase: UINT64; index: integer; infinitycheck: integer=50): string;
+function GetTypeName(h: THandle; modbase: UINT64; index: integer; infinitycheck: integer=50): string;
 var x: dword;
     type_symtag: TSymTagEnum;
     name: PWCHAR;
@@ -5396,7 +5396,7 @@ end;
 function TSymhandler.loadmodulelist: boolean;  //todo: change to a quicker lookup kind of storage (tree)
 var
   ths: thandle;
-  me32:MODULEENTRY32;
+  me32:^MODULEENTRY32;
   s: string;
   x: string;
 

@@ -19,6 +19,9 @@ uses
   {$else}
   formdesignerunit,
   {$endif}
+  {$ifdef windows}
+  windows7taskbar,
+  {$endif}
   betterControls, controls, sysutils, Forms, LazUTF8, dialogs, SynCompletion,
   MainUnit, NewKernelHandler, CEFuncProc, ProcessHandlerUnit, symbolhandler,
   Assemblerunit, hypermode, byteinterpreter, addressparser, autoassembler,
@@ -49,16 +52,16 @@ uses
   ManualModuleLoader, SynHighlighterAA, APIhooktemplatesettingsfrm,
   frmAAEditPrefsUnit, disassembler, hexviewunit, guisafecriticalsection,
   debugeventhandler, formFoundcodeListExtraUnit, addresslist, MemoryRecordUnit,
-  ThreadlistExFRM, windows7taskbar, tablist, frmStructuresConfigUnit,
+  ThreadlistExFRM, tablist, frmStructuresConfigUnit,
   VEHDebugSharedMem, frmDebugEventsUnit, changelist, tableconverter,
   DBK32functions, debug, multicpuexecution, vmxfunctions, frmPagingUnit,
   bigmemallochandler, CustomTypeHandler, LuaHandler, frmLuaEngineUnit,
   frmMemviewPreferencesUnit, frmBreakpointConditionUnit, frmTracerConfigUnit,
-  frmStackViewUnit, luaJit, ScrollBoxEx, fileaccess, ceguicomponents,
-  LuaCaller, LuaSyntax, cesupport, trainergenerator,
-  genericHotkey, frmExeTrainerGeneratorUnit, luafile, xmplayer_server,
-  xmplayer_defines, ExtraTrainerComponents, frmAdConfigUnit, IconStuff,
-  cetranslator, frmStringMapUnit, MemFuncs, frmStringPointerScanUnit,
+  frmStackViewUnit, luaJit, ScrollBoxEx, fileaccess, ceguicomponents, LuaCaller,
+  LuaSyntax, cesupport, trainergenerator, genericHotkey,
+  frmExeTrainerGeneratorUnit, luafile, xmplayer_server, xmplayer_defines,
+  ExtraTrainerComponents, frmAdConfigUnit, IconStuff, cetranslator,
+  frmStringMapUnit, MemFuncs, frmStringPointerScanUnit,
   frmStructPointerRescanUnit, sharedMemory, disassemblerComments,
   frmFilePatcherUnit, LuaCanvas, LuaPen, LuaFont, LuaBrush, LuaPicture, LuaMenu,
   LuaDebug, frmUltimapUnit, DBK64SecondaryLoader, frmHotkeyExUnit,
@@ -89,8 +92,8 @@ uses
   CEListviewItemEditor, LuaTreeview, LuaTreeNodes, LuaTreeNode, LuaCalendar,
   LuaSymbolListHandler, LuaFindDialog, LuaCommonDialog, LuaSettings,
   frmReferencedFunctionsUnit, LuaPageControl, DebugHelper,
-  frmNetworkDataCompressionUnit, lazcontrols, anchordockpkg, LuaApplication,
-  ProcessList, pointeraddresslist, frmResumePointerscanUnit,
+  frmNetworkDataCompressionUnit, lazcontrols, { #todo -cnot-found :  } {anchordockpkg,}
+  LuaApplication, ProcessList, pointeraddresslist, frmResumePointerscanUnit,
   frmSetupPSNNodeUnit, PointerscanWorker, PointerscanStructures,
   PointerscanController, zstreamext, PointerscanConnector,
   PointerscanNetworkStructures, AsyncTimer, PointerscanSettingsIPConnectionList,
@@ -116,7 +119,8 @@ uses
   frmSyntaxHighlighterEditor, LuaCustomImageList, dotnethost, rttihelper,
   cefreetype, LuaDotNetPipe, LuaRemoteExecutor, autoassemblercode,
   CSharpCompiler, newhintwindow, memrecDataStructures, LuaCECustomButton,
-  frmCR3SwitcherUnit, tcclib, sourcecodehandler, frmSourceDisplayUnit, unit1;
+  frmCR3SwitcherUnit, tcclib, sourcecodehandler, frmSourceDisplayUnit,
+  unixmemory, unixdebug, unixhandles, temporaryunit;
 
 {$R cheatengine.res}
 {$IFDEF windows}

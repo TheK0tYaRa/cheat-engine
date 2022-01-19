@@ -9,6 +9,9 @@ uses
   {$ifdef darwin}
   macport,
   {$endif}
+  {$ifdef linux}
+  uconst, mmap, unixdebug,
+  {$endif}
   {$ifdef windows}
   windows, win32proc,
   {$endif}

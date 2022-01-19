@@ -29,7 +29,9 @@ uses
   {$ifdef darwin}
   macport, LCLIntf, LMEssages, messages,
   {$endif}
-
+  {$ifdef linux}
+  temporaryunit, uconst, unixkeys,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}

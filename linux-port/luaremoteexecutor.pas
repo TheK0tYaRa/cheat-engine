@@ -13,14 +13,15 @@ A process can have more than one executor thread at the same time
 interface
 
 uses
-  {$ifdef windows}
-  windows,
-  {$endif}
-
   {$ifdef darwin}
   macport,
   {$endif}
-
+  {$ifdef linux}
+  unixthreads,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
   Classes, SysUtils, math;    //todo: port to mac
 
 type

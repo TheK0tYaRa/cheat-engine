@@ -98,11 +98,10 @@ end;
 
 procedure TfrmBusy.Timer1Timer(Sender: TObject);
 var
-  {$ifdef windows}
-  r:dword;
-  {$endif}
   {$ifdef darwin}
   r: TWaitResult;
+  {$else}
+  r:dword;
   {$endif}
 begin
   {$IFDEF windows} if (WaitForHandle<>0) then  {$ENDIF}

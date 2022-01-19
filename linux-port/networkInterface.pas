@@ -15,7 +15,7 @@ uses
   lcltype, MacTypes,macport,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixthreads, unixmemory, uconst,
   {$endif}
   {$ifdef windows}
   jwawindows, windows,
@@ -88,17 +88,17 @@ type
   public
     function isNetworkHandle(handle: THandle): boolean;
 
-    function Module32Next(hSnapshot: HANDLE; var lpme: MODULEENTRY32; isfirst: boolean=false): BOOL;
-    function Module32First(hSnapshot: HANDLE; var lpme: MODULEENTRY32): BOOL;
+    function Module32Next(hSnapshot: THandle; var lpme: MODULEENTRY32; isfirst: boolean=false): BOOL;
+    function Module32First(hSnapshot: THandle; var lpme: MODULEENTRY32): BOOL;
 
-    function Process32Next(hSnapshot: HANDLE; var lppe: PROCESSENTRY32; isfirst: boolean=false): BOOL;
-    function Process32First(hSnapshot: HANDLE; var lppe: PROCESSENTRY32): BOOL;
-    function CreateToolhelp32Snapshot(dwFlags, th32ProcessID: DWORD): HANDLE;
+    function Process32Next(hSnapshot: THandle; var lppe: PROCESSENTRY32; isfirst: boolean=false): BOOL;
+    function Process32First(hSnapshot: THandle; var lppe: PROCESSENTRY32): BOOL;
+    function CreateToolhelp32Snapshot(dwFlags, th32ProcessID: DWORD): THandle;
     function CloseHandle(handle: THandle):WINBOOL;
-    function OpenProcess(dwDesiredAccess:DWORD; bInheritHandle:WINBOOL; dwProcessId:DWORD):HANDLE;
+    function OpenProcess(dwDesiredAccess:DWORD; bInheritHandle:WINBOOL; dwProcessId:DWORD): THandle;
     function CreateRemoteThread(hProcess: THandle; lpThreadAttributes: Pointer; dwStackSize: DWORD; lpStartAddress: TFNThreadStartRoutine; lpParameter: Pointer;  dwCreationFlags: DWORD; var lpThreadId: DWORD): THandle;
     function VirtualAllocEx(hProcess: THandle; lpAddress: Pointer; dwSize, flAllocationType: DWORD; flProtect: DWORD): Pointer;
-    function VirtualFreeEx(hProcess: HANDLE; lpAddress: LPVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL;
+    function VirtualFreeEx(hProcess: THandle; lpAddress: LPVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL;
     function VirtualQueryEx(hProcess: THandle; lpAddress: Pointer; var lpBuffer: TMemoryBasicInformation; dwLength: DWORD): DWORD;
     function VirtualQueryEx_StartCache(hProcess: THandle; flags: DWORD): boolean;
     procedure VirtualQueryEx_EndCache(hProcess: THandle);
@@ -213,15 +213,15 @@ begin
     result:=true;
   end
   {$ifdef windows}
-  else //not a network handle
+  else //not a network THandle
     result:=windows.CloseHandle(handle)
   {$endif};
 end;
 
-function TCEConnection.Module32Next(hSnapshot: HANDLE; var lpme: MODULEENTRY32; isfirst: boolean=false): BOOL;
+function TCEConnection.Module32Next(hSnapshot: THandle; var lpme: MODULEENTRY32; isfirst: boolean=false): BOOL;
 var ModulelistCommand: packed record
     command: byte;
-    handle: dword;
+    Handle: dword;
   end;
 
   r: packed record
@@ -276,15 +276,15 @@ begin
 
 end;
 
-function TCEConnection.Module32First(hSnapshot: HANDLE; var lpme: MODULEENTRY32): BOOL;
+function TCEConnection.Module32First(hSnapshot: THandle; var lpme: MODULEENTRY32): BOOL;
 begin
   result:=module32next(hSnapshot, lpme, true);
 end;
 
-function TCEConnection.Process32Next(hSnapshot: HANDLE; var lppe: PROCESSENTRY32; isfirst: boolean=false): BOOL;
+function TCEConnection.Process32Next(hSnapshot: THandle; var lppe: PROCESSENTRY32; isfirst: boolean=false): BOOL;
 var ProcesslistCommand: packed record
     command: byte;
-    handle: dword;
+    Handle: dword;
   end;
 
   r: packed record
@@ -301,7 +301,7 @@ begin
   //OutputDebugString('TCEConnection.Process32Next');
   if ((hSnapshot shr 24) and $ff)= $ce then
   begin
-    //OutputDebugString('Valid network handle');
+    //OutputDebugString('Valid network THandle');
 
     if isfirst then
       ProcesslistCommand.command:=CMD_PROCESS32FIRST
@@ -336,13 +336,13 @@ begin
   end;
 end;
 
-function TCEConnection.Process32First(hSnapshot: HANDLE; var lppe: PROCESSENTRY32): BOOL;
+function TCEConnection.Process32First(hSnapshot: THandle; var lppe: PROCESSENTRY32): BOOL;
 begin
   {$ifdef windows}OutputDebugString('TCEConnection.Process32First');{$endif}
   result:=process32next(hSnapshot, lppe, true);
 end;
 
-function TCEConnection.CreateToolhelp32Snapshot(dwFlags, th32ProcessID: DWORD): HANDLE;
+function TCEConnection.CreateToolhelp32Snapshot(dwFlags, th32ProcessID: DWORD): THandle;
 var CTSCommand: packed record
     command: byte;
     dwFlags: dword;
@@ -497,7 +497,7 @@ function TCEConnection.NReadProcessMemory(hProcess: THandle; lpBaseAddress: Poin
 var
   input: packed record
     command: byte;
-    handle: UINT32;
+    Handle: UINT32;
     baseaddress: UINT64;
     size: UINT32;
     compressed: UINT8;
@@ -616,7 +616,7 @@ end;
 function TCEConnection.WriteProcessMemory(hProcess: THandle; const lpBaseAddress: Pointer; lpBuffer: Pointer; nSize: DWORD; var lpNumberOfBytesWritten: PTRUINT): BOOL;
 type TWPMrecord=packed record
       command: byte;
-      handle: integer;
+      Handle: integer;
       baseaddress: qword;
       size: integer;
       //buffer
@@ -813,7 +813,7 @@ begin
       receive(@output, sizeof(output));
       result:=output;
 
-      if (result>0) then //mark it as a network handle
+      if (result>0) then //mark it as a network THandle
         result:=result or $ce000000;
 
       lpThreadId:=result; //for now
@@ -860,7 +860,7 @@ begin
   {$endif}
 end;
 
-function TCEConnection.VirtualFreeEx(hProcess: HANDLE; lpAddress: LPVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL;
+function TCEConnection.VirtualFreeEx(hProcess: THandle; lpAddress: LPVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL;
 var
   input: packed record
     command: byte;
@@ -900,7 +900,7 @@ var
   vqec: TVirtualQueryExCache;
   input: packed record
     command: byte;
-    handle: integer;
+    Handle: integer;
     flags: byte;
   end;
 
@@ -1016,7 +1016,7 @@ function TCEConnection.VirtualQueryEx(hProcess: THandle; lpAddress: Pointer; var
 var
   input: packed record
     command: byte;
-    handle: integer;
+    Handle: integer;
     baseaddress: qword;
   end;
 
@@ -1033,7 +1033,7 @@ var
 begin
   result:=0;
 
-  if VirtualQueryExCacheMap.TryGetValue(hProcess, vqecache) then  //check if there is a cache going on for this handle
+  if VirtualQueryExCacheMap.TryGetValue(hProcess, vqecache) then  //check if there is a cache going on for this THandle
   begin
     //yes, get it from the cache
     if vqecache.getRegion(ptruint(lpAddress), lpBuffer) then
@@ -1096,7 +1096,7 @@ function TCEConnection.GetRegionInfo(hProcess: THandle; lpAddress: Pointer; var 
 var
   input: packed record
     command: byte;
-    handle: integer;
+    Handle: integer;
     baseaddress: qword;
   end;
 
@@ -1118,7 +1118,7 @@ begin
 
   if isNetworkHandle(hProcess) then
   begin
-    log('valid handle');
+    log('valid THandle');
     result:=0;
     input.command:=CMD_GETREGIONINFO;
     input.handle:=hProcess and $ffffff;
@@ -1179,7 +1179,7 @@ begin
   end;
 end;
 
-function TCEConnection.OpenProcess(dwDesiredAccess:DWORD; bInheritHandle:WINBOOL; dwProcessId:DWORD):HANDLE;
+function TCEConnection.OpenProcess(dwDesiredAccess:DWORD; bInheritHandle:WINBOOL; dwProcessId:DWORD): THandle;
 var OpenProcessCommand: packed record
     command: byte;
     pid: integer;
@@ -1203,7 +1203,7 @@ end;
 function TCEConnection.StartDebug(hProcess: THandle): BOOL;
 var Input: packed record
     command: byte;
-    handle: integer;
+    Handle: integer;
   end;
 
 var Output: packed record
@@ -1230,7 +1230,7 @@ function TCEConnection.ContinueDebugEvent(hProcess: THandle; threadid: dword; co
 var
   input: packed record
     command: byte;
-    handle: integer;
+    Handle: integer;
     threadid: dword;
     continuemethod: integer;
   end;
@@ -1261,7 +1261,7 @@ function TCEConnection.WaitForDebugEvent(hProcess: THandle; timeout: integer; va
 var
   Input: packed record
     command: byte;
-    handle: integer;
+    Handle: integer;
     timeout: integer;
   end;
 
@@ -1300,7 +1300,7 @@ function TCEConnection.SetBreakpoint(hProcess: THandle; threadid: integer; debug
 var
   input: packed record
     command: byte;
-    handle: integer;
+    Handle: integer;
     tid: integer;
     debugregister: integer;
     address: qword;
@@ -1336,7 +1336,7 @@ function TCEConnection.RemoveBreakpoint(hProcess: THandle; threadid: integer; de
 var
   input: packed record
     command: byte;
-    handle: integer;
+    Handle: integer;
     tid: integer;
     debugregister: integer;
     wasWatchpoint: integer;
@@ -1649,7 +1649,7 @@ function TCEConnection.loadModule(hProcess: THandle; modulepath: string): boolea
 type
   TInput=packed record
     command: uint8;
-    handle: uint32;
+    Handle: uint32;
     modulepathlength: uint32;
     modulename: packed record end;
   end;
@@ -1684,7 +1684,7 @@ function TCEConnection.loadExtension(hProcess: THandle): boolean;
 var
   loadExtensionCommand: packed record
     command: byte;
-    handle: uint32;
+    Handle: uint32;
   end;
 
   r:uint32;
@@ -1709,7 +1709,7 @@ function TCEConnection.speedhack_setSpeed(hProcess: THandle; speed: single): boo
 var
   speedhackSetSpeedCommand: packed record
     command: byte;
-    handle: uint32;
+    Handle: uint32;
     speed: single;
   end;
 

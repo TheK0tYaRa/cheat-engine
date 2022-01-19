@@ -8,6 +8,9 @@ uses
   {$ifdef darwin}
   macport,
   {$endif}
+  {$ifdef linux}
+  unixthreads, uconst, unixhandles,
+  {$endif}
   {$ifdef windows}
   jwawindows, windows,
   {$endif}
@@ -38,7 +41,7 @@ uses dbk32functions, ProcessHandlerUnit;
 
 procedure TfrmThreadListEx.updatelist;
 var ths: thandle;
-    te32: THREADENTRY32;
+    te32: ^THREADENTRY32;
     th: thandle;
     cont: _context;
 

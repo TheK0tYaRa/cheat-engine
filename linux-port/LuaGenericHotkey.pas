@@ -10,6 +10,9 @@ uses
   {$ifdef darwin}
   macport,
   {$endif}
+  {$ifdef linux}
+  unixporthelper, unixmemory,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}

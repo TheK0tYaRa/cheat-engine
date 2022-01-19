@@ -14,14 +14,15 @@ uses
   macport,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixdebug, unixmemory,
   {$endif}
   {$ifdef windows}
   windows,
   {$endif}
-  Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs, StdCtrls, ExtCtrls, ComCtrls,
-  CEFuncProc, NewKernelHandler, frmStringMapUnit, MemFuncs, AvgLvlTree, Menus,
-  bigmemallochandler, math, maps, oldRegExpr, symbolhandler, commonTypeDefs, lmessages, LCLIntf, betterControls;
+  Classes, SysUtils, FileUtil, LResources, Forms, Controls, Graphics, Dialogs,
+  StdCtrls, ExtCtrls, ComCtrls, CEFuncProc, NewKernelHandler, frmStringMapUnit,
+  MemFuncs, AvgLvlTree, Menus, bigmemallochandler, math, maps, oldRegExpr,
+  symbolhandler, commonTypeDefs, lmessages, LCLIntf, betterControls;
 
 const
   wm_sps_done=wm_user+1;

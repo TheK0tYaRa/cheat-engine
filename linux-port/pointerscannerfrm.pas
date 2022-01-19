@@ -11,7 +11,7 @@ uses
   macport, macportdefines, lmessages,baseunix,
   {$endif}
   {$ifdef linux}
-  wm_boilerplate,unixporthelper,
+  wm_boilerplate, unixporthelper, unixdebug, unixmemory,
   {$endif}
   {$ifdef windows}
   windows, WinSock2,

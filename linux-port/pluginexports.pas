@@ -4,12 +4,18 @@ unit pluginexports;
 
 interface
 
-uses {$ifdef darwin}macport,macportdefines,{$endif}
-     {$ifdef windows}jwawindows, windows,{$endif}
-     {$ifdef linux}unixporthelper,unixerrors,{$endif}
-     ExtCtrls , comctrls, Graphics, forms, StdCtrls,sysutils,Controls,
-     SyncObjs,dialogs,LCLIntf,classes,autoassembler,
-     CEFuncProc,NewKernelHandler,CEDebugger,KernelDebugger, plugin, math,
+uses {$ifdef darwin}
+     macport,macportdefines,
+     {$endif}
+     {$ifdef windows}
+     jwawindows, windows,
+     {$endif}
+     {$ifdef linux}
+     unixporthelper, unixerrors, unixdebug, unixmemory,
+     {$endif}
+     ExtCtrls , comctrls, Graphics, forms, StdCtrls, sysutils, Controls,
+     SyncObjs, dialogs, LCLIntf, classes, autoassembler,
+     CEFuncProc, NewKernelHandler, CEDebugger, KernelDebugger, plugin, math,
      debugHelper, debuggertypedefinitions, typinfo, ceguicomponents, strutils,
      commonTypeDefs, luahandler, lua, betterControls;
 
@@ -624,6 +630,9 @@ end;
 function ce_InjectDLL(dllname: pchar; functiontocall: pchar):BOOL; stdcall;
 var dllname_s,functiontocall_s: string;
 begin
+  {$ifdef linux}
+  result:=false;
+  {$else}
   try
     dllname_s:=dllname;
     functiontocall_s:=functiontocall;
@@ -639,6 +648,7 @@ begin
     end;
 
   end;
+  {$endif}
 end;
 
 function ce_ChangeRegistersAtAddress(address:ptrUint; changereg: pregistermodificationBP):BOOL; stdcall;

@@ -9,7 +9,7 @@ uses
   macport, LCLType, LCLIntf,
   {$endif}
   {$ifdef linux}
-  unixporthelper,LCLType,keys,UnixUI,
+  unixporthelper, LCLType, keys, UnixUI, unixmemory, uconst,
   {$endif}
   {$ifdef windows}
   windows,

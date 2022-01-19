@@ -14,7 +14,7 @@ uses
   macport, math,
   {$endif}
   {$ifdef linux}
-  unixporthelper,math,
+  unixporthelper, math, uconst,
   {$endif}
   {$ifdef windows}
   windows,

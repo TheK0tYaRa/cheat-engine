@@ -12,6 +12,9 @@ uses
   {$ifdef darwin}
   macport,
   {$endif}
+  {$ifdef linux}
+  unixporthelper, unixdebug,
+  {$endif}
   {$ifdef windows}
   windows, comobj,
   {$endif}

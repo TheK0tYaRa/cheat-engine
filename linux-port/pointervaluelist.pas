@@ -17,15 +17,15 @@ uses
   macport, macportdefines,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixdebug, unixporthelper, unixmemory, uconst,
   {$endif}
   {$ifdef windows}
   windows,
   {$endif}
   LCLIntf, dialogs, SysUtils, classes, ComCtrls, CEFuncProc,
-     NewKernelHandler, symbolhandler, symbolhandlerstructs, math,
-     bigmemallochandler, maps, luahandler, lua, lauxlib, lualib, luaclass,
-     LuaObject, zstream, commonTypeDefs;
+  NewKernelHandler, symbolhandler, symbolhandlerstructs, math,
+  bigmemallochandler, maps, luahandler, lua, lauxlib, lualib, luaclass,
+  LuaObject, zstream, commonTypeDefs;
 
 const scandataversion=1;
 

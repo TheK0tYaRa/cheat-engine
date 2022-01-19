@@ -242,16 +242,16 @@ type
 const
   LastAutoAssemblerVersion = dvAutoAssembler2005;
 
-{$ifdef windows}
 type
   TSynCustomHighlighterHelper=class helper for TSynCustomHighlighter
 
   public
-    function loadFromRegistryDefault(RootKey: HKEY; Key: string): boolean;
+    { #todo -cHKEY : make it .config }  (*
+    function loadFromRegistryDefault(      // path
+      RootKey: {$ifdef windows}HKEY{$else}AnsiString{$endif}; Key: string): boolean;
     function loadFromRegistryDefault: boolean;
+    *)
   end;
-{$endif}
-
 
 type
   TSynAASyn = class(TSynCustomHighlighter)
@@ -349,13 +349,15 @@ type
     procedure InitIdent;
     function getfirsttoken(s: string): string;
     function IdentKind(MayBe: PChar): TtkTokenKind;
-    procedure MakeMethodTables;
+    { #todo -cHKEY : make it .config }
+    {procedure MakeMethodTables;      }
     procedure AddressOpProc;
     procedure AsciiCharProc;
     procedure AnsiProc;
     procedure BorProc;
     procedure LuaProc;
-    procedure BraceOpenProc;
+    { #todo -cHKEY : make it .config }
+    { procedure BraceOpenProc; }
     procedure ColonOrGreaterProc;
     procedure CRProc;
     procedure IdentProc;
@@ -433,7 +435,8 @@ type
     property PackageSource: Boolean read fPackageSource write SetPackageSource default True;
   end;
 
-procedure aa_AddExtraCommand(command:pchar);
+{ #todo -cHKEY : make it .config }
+{procedure aa_AddExtraCommand(command:pchar);}
 procedure aa_RemoveExtraCommand(command:pchar);
 function isExtraCommand(token:string): boolean;
 
@@ -441,11 +444,11 @@ function isExtraCommand(token:string): boolean;
 implementation
 
 uses
-{$IFDEF SYN_CLX}
+  {$IFDEF SYN_CLX}
   QSynEditStrConst;
-{$ELSE}
-  SynEditStrConst, registry, betterControls;
-{$ENDIF}
+  {$ELSE}
+  SynEditStrConst, {$ifdef linux}regconfig{$else}registry{$endif}, betterControls;
+  {$ENDIF}
 
 
 
@@ -454,8 +457,11 @@ var
   mHashTable: array[#0..#255] of Integer;
 
   extraCommands: Tstringlist;
-{$ifdef windows}
-function TSynCustomHighlighterHelper.loadFromRegistryDefault(RootKey: HKEY; Key: string): boolean;
+
+{ #todo -cHKEY : make it .config }
+(*
+function TSynCustomHighlighterHelper.loadFromRegistryDefault(
+  RootKey: {$ifdef windows}HKEY{$else}AnsiString{$endif}; Key: string): boolean;
 //for highlighters that do not implement loadFromRegistry , like the cpp highlighter
 var
   reg: TRegistry;
@@ -528,7 +534,6 @@ function TSynCustomHighlighterHelper.loadFromRegistryDefault: boolean;
 begin
   result:=loadFromRegistryDefault(HKEY_CURRENT_USER, '\Software\Cheat Engine\CPP Highlighter'+darkmodestring);
 end;
-{$endif}
 
 procedure aa_AddExtraCommand(command:pchar);
 begin
@@ -541,6 +546,7 @@ begin
 
   extraCommands.Add(command);
 end;
+*)
 
 procedure aa_RemoveExtraCommand(command:pchar);
 begin
@@ -1164,6 +1170,8 @@ begin
 
 end;
 
+{ #todo -cHKEY : make it .config }
+(*
 procedure TSynAASyn.MakeMethodTables;
 var
   I: Char;
@@ -1199,6 +1207,7 @@ begin
       fProcTable[I] := {$IFDEF FPC}@{$ENDIF}UnknownProc;
     end;
 end;
+*)
 
 constructor TSynAASyn.Create(AOwner: TComponent);
 begin
@@ -1274,7 +1283,8 @@ begin
   SetAttributesOnChange({$IFDEF FPC}@{$ENDIF}DefHighlightChange);
 
   InitIdent;
-  MakeMethodTables;
+  { #todo -cHKEY : make it .config }
+  {MakeMethodTables; }
   fRange := rsUnknown;
   fAsmStart := False;
   fDefaultFilter := SYNS_FilterPascal;
@@ -1370,6 +1380,8 @@ begin
   end;
 end;
 
+{ #todo -cHKEY : make it .config }
+(*
 procedure TSynAASyn.BraceOpenProc;
 var i,l: integer;
   changeHighlighter: (chlNo, chlLua, chlPascal, chlCPP);
@@ -1560,7 +1572,8 @@ begin
 
   end;
   BorProc;
- end;
+end;
+*)
 
 procedure TSynAASyn.ColonOrGreaterProc;
 begin

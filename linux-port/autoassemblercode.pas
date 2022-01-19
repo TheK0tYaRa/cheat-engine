@@ -67,7 +67,17 @@ procedure AutoAssemblerCodePass2(var dataForPass2: TAutoAssemblerCodePass2Data; 
 
 implementation
 
-uses {$ifdef windows}windows,{$endif}{$ifdef darwin}macport,macportdefines,math,{$endif}ProcessHandlerUnit, symbolhandler, luahandler, lua, lauxlib, lualib, StrUtils,
+uses
+  {$ifdef windows}
+  windows,
+  {$endif}
+  {$ifdef linux}
+  uconst, mmap, unixthreads, math,
+  {$endif}
+  {$ifdef darwin}
+  macport,macportdefines,math,
+  {$endif}
+  ProcessHandlerUnit, symbolhandler, luahandler, lua, lauxlib, lualib, StrUtils,
   Clipbrd, dialogs, lua_server, Assemblerunit, NewKernelHandler, DBK32functions;
 
 
@@ -371,7 +381,7 @@ var
 
   a, newAddress: ptruint;
   syminfo, nextsyminfo: PCESymbolInfo;
-  bw: size_t;
+  bw: QWord;
   psize: integer;
 
   phandle: THandle;

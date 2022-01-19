@@ -12,10 +12,10 @@ uses
   windows, winsock,
   {$endif}
   {$ifdef linux}
-  unixporthelper,baseunix,
+  unixdebug, baseunix, unixporthelper, unixmemory,
   {$endif}
   {$ifdef darwin}
-  ctypes, baseunix, macport
+  ctypes, baseunix, macport,
   {$endif}
   Classes, SysUtils, Sockets, ssockets, NewKernelHandler;
 

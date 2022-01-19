@@ -1029,7 +1029,8 @@ begin
   if chighlighter=nil then
   begin
     chighlighter:=TSynCppSyn.Create(nil);
-    chighlighter.loadFromRegistryDefault;
+    { #todo -cHKEY : make it .config }
+    {chighlighter.loadFromRegistryDefault;  }
   end;
 
   oldstyle:=fcanvas.font.style;

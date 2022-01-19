@@ -11,15 +11,16 @@ uses
   {$ifdef darwin}
   macport, LCLType, math,
   {$endif}
-  {$ifdef windows}
-  jwawindows, windows,
+  {$ifdef linux}
+  uconst, math, mmap, unixthreads,
   {$endif}
-
-  symbolhandler,symbolhandlerstructs,LCLIntf, Messages, SysUtils, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons,CEDebugger, Menus,CEFuncProc, ExtCtrls,disassembler,
-  SyncObjs,registry, ComCtrls, LResources,NewKernelHandler{$ifdef windows},win32proc{$endif},
-  DPIHelper,
-  betterControls;
+  {$ifdef windows}
+  jwawindows, windows, win32proc,
+  {$endif}
+  symbolhandler,symbolhandlerstructs,LCLIntf, Messages, SysUtils, Classes, Graphics,
+  Controls, Forms, Dialogs, StdCtrls, Buttons,CEDebugger, Menus,CEFuncProc,
+  ExtCtrls, disassembler, SyncObjs,registry, ComCtrls, LResources, NewKernelHandler,
+  DPIHelper, betterControls;
 
 
 

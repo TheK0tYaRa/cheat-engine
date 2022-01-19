@@ -11,8 +11,17 @@ of individual memory allocs, so no data loss for allocating small chunks of memo
 
 interface
 
-uses {$ifdef darwin}macport,mactypes,math,{$endif}{$ifdef windows}windows,{$endif}
-  {$ifdef linux}unixporthelper,proctools,math,{$endif}classes,sysutils, newkernelhandler, LCLIntf;
+uses
+  {$ifdef darwin}
+  macport, mactypes, math,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper, proctools, math, unixmemory, uconst,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$endif}
+  classes,sysutils, newkernelhandler, LCLIntf;
 
 type TBigMemoryAllocHandler=class
 private

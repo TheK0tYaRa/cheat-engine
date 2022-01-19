@@ -9,7 +9,7 @@ uses {$ifdef darwin}
      macport, macportdefines,
      {$endif}
      {$ifdef linux}
-     unixporthelper,
+     unixporthelper, unixthreads,
      {$endif}
      {$ifdef windows}
      windows,

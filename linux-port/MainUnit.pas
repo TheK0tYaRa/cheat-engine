@@ -6,59 +6,37 @@ interface
 
 uses
   {$ifdef darwin}
-  LResources, LCLIntf, LCLProc, MacOSAll,MacOSXPosix, LMessages, Classes, Forms, Controls, Messages,
-  ComCtrls, stdctrls,sysutils, graphics,menus, dialogs, extctrls, math, buttons,
+  MacOSAll,MacOSXPosix, LMessages,
+  lcltype,
+  macport, UTF8Process, macportdefines, //last one
+  {$endif}
+  {$ifdef linux}
+  LMessages, lcltype, unixporthelper, unixControls, unixdebug, unixthreads,
+  unixmemory,
+  {$endif}
+  {$ifdef windows}
+  jwaWindows, Windows, shellapi, imagehlp, kerneldebugger, commctrl, hypermode,
+  AccessCheck, peinfounit, PEInfoFunctions, pointervaluelist, ManualModuleLoader,
+  frmRegistersunit, ctypes, addresslisthandlerunit, windows7taskbar, DebuggerInterface,
+  vehdebugger, tableconverter, htmlhelp, win32int, {defaulttranslator,} fileaccess,
+  cesupport, trainergenerator, xmplayer_server, sharedMemory, win32proc,
+  vmxfunctions, FileUtil, networkInterfaceApi, networkconfig, d3dhookUnit, PNGcomn,
+  FPimage, GraphType, IntfGraphics, RemoteMemoryManager,
+  DBK64SecondaryLoader, debuggertypedefinitions, networkInterface,
+  zstream, zstreamext, VirtualQueryExCache, LazUTF8,
+  {$endif}
+  LResources, LCLIntf, LCLProc, MenuItemExtra, Classes, Forms, Controls, Messages,
+  ComCtrls, stdctrls, sysutils, graphics, menus, dialogs, extctrls, math, buttons,
   ImgList, ActnList, registry, Clipbrd, NewKernelHandler, Assemblerunit,
   symbolhandler,autoassembler, addresslist, CustomTypeHandler, MemoryRecordUnit,memscan,
   SaveFirstScan, foundlisthelper, disassembler, tablist, simpleaobscanner,frmSelectionlistunit,
   lua, LuaHandler, lauxlib, lualib,CEDebugger,debughelper ,speedhack2, groupscancommandparser,
   frmautoinjectunit, commonTypeDefs, unrandomizer,savedscanhandler,luafile,hotkeyhandler,
-  genericHotkey,LazLogger,lcltype,FrmMemoryRecordDropdownSettingsUnit,
+  genericHotkey,LazLogger,FrmMemoryRecordDropdownSettingsUnit,
   ceguicomponents,formdesignerunit,xmlutils,vartypestrings,plugin,byteinterpreter,
-  MenuItemExtra,frmgroupscanalgoritmgeneratorunit
+  frmgroupscanalgoritmgeneratorunit, LCLVersion, fgl, betterControls;
 
-  , macport,LCLVersion, UTF8Process, macportdefines, fgl, betterControls;     //last one
-  {$endif}
-
-  {$ifdef linux}
-  LResources, LCLIntf, LCLProc, Classes, Forms, Controls, LMessages, Messages, lcltype,
-  ComCtrls, stdctrls,sysutils, graphics,menus, dialogs, extctrls, math, buttons,
-  ImgList, ActnList, registry, Clipbrd, NewKernelHandler, Assemblerunit,LinuxEx,
-  symbolhandler,autoassembler, addresslist, CustomTypeHandler, MemoryRecordUnit,memscan,
-  SaveFirstScan, foundlisthelper, disassembler, tablist, simpleaobscanner,frmSelectionlistunit,
-  lua, LuaHandler, lauxlib, lualib,CEDebugger,debughelper ,speedhack2, groupscancommandparser,
-  frmautoinjectunit, commonTypeDefs, unrandomizer,savedscanhandler,luafile,hotkeyhandler,
-  genericHotkey,LazLogger,FrmMemoryRecordDropdownSettingsUnit,unixporthelper,unixControls,
-  ceguicomponents,formdesignerunit,xmlutils,vartypestrings,plugin,byteinterpreter,
-  MenuItemExtra,frmgroupscanalgoritmgeneratorunit, LCLVersion, fgl, betterControls;
-  {$endif}
-
-  {$ifdef windows}
-  jwaWindows, Windows, LCLIntf, LCLProc, Messages, SysUtils, Classes, Graphics,
-  Controls, Forms, ComCtrls, StdCtrls, Menus, Buttons, shellapi,
-  imagehlp, ExtCtrls, Dialogs, Clipbrd, CEDebugger, kerneldebugger, assemblerunit,
-  hotkeyhandler, registry, Math, ImgList, commctrl, NewKernelHandler,
-  unrandomizer, symbolhandler, ActnList, LResources, hypermode, memscan,
-  autoassembler, plugin, savefirstscan, menuitemExtra, speedhack2, AccessCheck,
-  foundlisthelper, disassembler, peinfounit, PEInfoFunctions,
-  simpleaobscanner, pointervaluelist, ManualModuleLoader, debughelper,
-  frmRegistersunit, ctypes, addresslist, addresslisthandlerunit, memoryrecordunit,
-  windows7taskbar, tablist, DebuggerInterface, vehdebugger, tableconverter,
-  customtypehandler, lua, luahandler, lauxlib, lualib, frmSelectionlistunit,
-  htmlhelp, win32int, {defaulttranslator,} fileaccess, formdesignerunit,
-  ceguicomponents, frmautoinjectunit, cesupport, trainergenerator, genericHotkey,
-  luafile, xmplayer_server, sharedMemory{$ifdef windows}, win32proc{$endif},
-  vmxfunctions, FileUtil, networkInterfaceApi, networkconfig, d3dhookUnit, PNGcomn,
-  FPimage, byteinterpreter, frmgroupscanalgoritmgeneratorunit, vartypestrings,
-  groupscancommandparser, GraphType, IntfGraphics, RemoteMemoryManager,
-  DBK64SecondaryLoader, savedscanhandler, debuggertypedefinitions, networkInterface,
-  FrmMemoryRecordDropdownSettingsUnit, xmlutils, zstream, zstreamext, commonTypeDefs,
-  VirtualQueryExCache, LazLogger, LazUTF8, LCLVersion, fgl, betterControls;
-  {$endif}
 //the following are just for compatibility
-
-
-
 const
   copypasteversion = 4;
 
@@ -637,10 +615,10 @@ type
     procedure MenuItem9Click(Sender: TObject);
     procedure miPresetWritableClick(Sender: TObject);
     procedure miResyncFormsWithLuaClick(Sender: TObject);
-    procedure miCreateLuaFormClick(Sender: TObject);
+    {$ifdef linux}{$else}procedure miCreateLuaFormClick(Sender: TObject);{$endif}
     procedure MenuItem7Click(Sender: TObject);
     procedure miSetCrosshairClick(Sender: TObject);
-    procedure miTableClick(Sender: TObject);
+    {$ifdef linux}{$else}procedure miTableClick(Sender: TObject);{$endif}
     procedure miResetRangeClick(Sender: TObject);
     procedure miChangeColorClick(Sender: TObject);
     procedure miDefineNewCustomTypeLuaClick(Sender: TObject);
@@ -937,6 +915,7 @@ type
       washexadecimal, ishexadecimal: boolean): string;
 
     //designer functions
+    {$ifdef linux}{$else}
     procedure RenameFileClick(Sender: TObject);
     procedure SaveFileClick(Sender: TObject);
     procedure DeleteFileClick(Sender: TObject);
@@ -945,6 +924,7 @@ type
     procedure RestoreAndShowFormClick(Sender: TObject);
     procedure DeleteFormClick(Sender: TObject);
     procedure FormDesignerClose(Sender: TObject; var CloseAction: TCloseAction);
+    {$endif}
 
     procedure setIsProtected(p: boolean);
 
@@ -1053,8 +1033,10 @@ type
     procedure DestroyCancelButton;
 
     function AddressListAutoAssemblerEdit(Sender: TObject; memrec: TMemoryRecord): boolean;
+    {$ifdef linux}{$else}
     procedure createFormdesigner;
     procedure UpdateMenu;
+    {$endif}
 
     procedure DoGroupconfigButtonClick(sender: tobject);
 
@@ -4102,7 +4084,7 @@ begin
 
   f.Show;
 end;
-{$endif}
+
 procedure TMainForm.RestoreAndShowFormClick(Sender: TObject);
 var
   f: tceform;
@@ -4114,7 +4096,7 @@ begin
   f.RestoreToDesignState;
   f.Show;
 end;
-{$ifdef linux}{$else}
+
 procedure TMainForm.FormDesignerClose(Sender: TObject; var CloseAction: TCloseAction);
 var
   i: integer;
@@ -4131,7 +4113,6 @@ begin
   closeAction := caFree;
   FormDesigner := nil;
 end;
-{$endif}
 
 procedure TMainForm.RenameFileClick(Sender: TObject);
 var
@@ -4296,7 +4277,7 @@ begin
   end;
 
 end;
-{$ifdef linux}{$else}
+
 procedure TMainForm.createFormdesigner;
 begin
   if FormDesigner = nil then
@@ -4380,10 +4361,12 @@ begin
   {$endif}
 end;
 
+{$ifdef linux}{$else}
 procedure TMainForm.miTableClick(Sender: TObject);
 begin
   UpdateMenu;
 end;
+{$endif}
 
 procedure TMainForm.miResetRangeClick(Sender: TObject);
 begin
@@ -7499,8 +7482,10 @@ begin
   {$endif}
 
   //cleanup the user forms
+  {$ifdef linux}{$else}
   if formdesigner <> nil then
     formdesigner.Close;
+  {$endif}
 
   //undo unrandomize
   if unrandomize <> nil then

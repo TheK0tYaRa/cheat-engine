@@ -439,7 +439,7 @@ begin
   lua_register(LuaVM, 'getInternet', getInternet);
 end;
 
-{$ifndef windows}
+{$if not defined(windows) and not defined(linux)}
 procedure loadCookiesFromRegistry;
 var
   r: TRegistry;
@@ -504,14 +504,14 @@ end;
 {$endif}
 
 initialization
-  {$ifndef windows}
+  {$if not defined(windows) and not defined(linux)}
   cookies:=TStringHashList.Create(false);
   loadCookiesFromRegistry;
   {$endif}
 
   luaclass_register(TWinInternet, wininternet_addMetaData);
 
-  {$ifndef windows}
+  {$if not defined(windows) and not defined(linux)}
 finalization
 
   saveCookiesToRegistry;

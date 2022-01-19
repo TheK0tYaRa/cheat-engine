@@ -11,13 +11,14 @@ uses
   macport,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixdebug, unixthreads, unixerrors, unixhandles, unixmemory,
+  mmap, uconst,
   {$endif}
   {$ifdef windows}
-  jwawindows, Windows, win32proc,
+  jwawindows, Windows, win32proc,WindowsDebugger,
   {$endif}
   Classes, SysUtils, syncobjs, GuiSafeCriticalSection,
-  disassembler, CEFuncProc, newkernelhandler,debuggertypedefinitions, frmTracerUnit,
+  disassembler, CEFuncProc, NewKernelHandler,debuggertypedefinitions, frmTracerUnit,
   DebuggerInterfaceAPIWrapper, lua, lauxlib, lualib,
   tracerIgnore, BreakpointTypeDef, LCLProc;
 
@@ -171,7 +172,7 @@ type
 implementation
 
 uses foundcodeunit, DebugHelper, MemoryBrowserFormUnit, frmThreadlistunit,
-     WindowsDebugger, VEHDebugger, KernelDebuggerInterface, NetworkDebuggerInterface,
+     VEHDebugger, KernelDebuggerInterface, NetworkDebuggerInterface,
      frmDebugEventsUnit, formdebugstringsunit, symbolhandler,
      networkInterface, networkInterfaceApi, ProcessHandlerUnit, globals,
      UnexpectedExceptionsHelper, frmcodefilterunit, frmBranchMapperUnit, LuaHandler,

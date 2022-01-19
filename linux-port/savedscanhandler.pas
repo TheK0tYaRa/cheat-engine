@@ -66,25 +66,22 @@ end;   }
 
 interface
 
-{$ifdef darwin}
-uses macport, LCLIntf,classes,sysutils,syncobjs, CEFuncProc, CustomTypeHandler, commonTypeDefs;
-{$endif}
-
-{$ifdef linux}
-uses LCLIntf,classes,sysutils,syncobjs, CEFuncProc, CustomTypeHandler, commonTypeDefs;
-{$endif}
-
-{$ifdef windows}
-uses windows, LCLIntf,classes,sysutils,syncobjs, CEFuncProc, CustomTypeHandler, commonTypeDefs;
-
-{$define customtypeimplemented}
-
-{$endif}
-
-{$ifdef jni}
-uses Classes,sysutils,syncobjs,unixporthelper, CustomTypeHandler, commonTypeDefs;
-
-{$endif}
+uses
+  {$ifdef jni}
+  Classes,sysutils,syncobjs,unixporthelper, CustomTypeHandler, commonTypeDefs;
+  {$else}
+  {$ifdef darwin}
+  macport,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper,
+  {$endif}
+  {$ifdef windows}
+  windows,
+  {$define customtypeimplemented}
+  {$endif}
+  LCLIntf,classes,sysutils,syncobjs, CEFuncProc, CustomTypeHandler, commonTypeDefs;
+  {$endif}
 
 type TSavedScantype= (fs_advanced,fs_addresslist);
 //type TValueType= (vt_byte,vt_word, vt_dword, vt_single, vt_double, vt_int64, vt_all);     //todo: Make compatible with the rest of ce's vartype

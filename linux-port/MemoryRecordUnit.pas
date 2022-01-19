@@ -4,36 +4,26 @@ unit MemoryRecordUnit;
 
 interface
 
-{$ifdef windows}
 uses
-  Windows, forms, graphics, Classes, SysUtils, controls, stdctrls, comctrls,
-  symbolhandler, SymbolListHandler, cefuncproc,newkernelhandler, hotkeyhandler,
-  dom, XMLRead,XMLWrite, customtypehandler, fileutil, LCLProc, commonTypeDefs,
-  pointerparser, LazUTF8, LuaClass, math, betterControls, memrecDataStructures;
-{$endif}
-
-{$ifdef linux}
-uses
+  {$ifdef jni}
+  //only used as a class to store entries and freeze/setvalue. It won't have a link with the addresslist and does not decide it's position
+  unixporthelper, Classes, sysutils, symbolhandler, NewKernelHandler, DOM,
+  XMLRead, XMLWrite, CustomTypeHandler, FileUtil, commonTypeDefs, math, pointerparser;
+  {$else}
+  {$ifdef windows}
+  Windows, betterControls,
+  {$endif}
+  {$ifdef linux}
+  unixmemory, unixdebug, mmap, uconst,
+  {$endif}
+  {$ifdef darwin}
+  macport,
+  {$endif}
   forms, graphics, Classes, SysUtils, controls, stdctrls, comctrls,
   symbolhandler, SymbolListHandler, cefuncproc,newkernelhandler, hotkeyhandler,
   dom, XMLRead,XMLWrite, customtypehandler, fileutil, LCLProc, commonTypeDefs,
   pointerparser, LazUTF8, LuaClass, math, memrecDataStructures;
-{$endif}
-
-{$ifdef darwin}
-uses
-  macport, forms, graphics, Classes, SysUtils, controls, stdctrls, comctrls,
-  symbolhandler, SymbolListHandler, cefuncproc,newkernelhandler, hotkeyhandler,
-  dom, XMLRead,XMLWrite, CustomTypeHandler, fileutil, LCLProc, commonTypeDefs,
-  pointerparser, LazUTF8, LuaClass, math,memrecDataStructures;
-{$endif}
-
-{$ifdef jni}
-//only used as a class to store entries and freeze/setvalue. It won't have a link with the addresslist and does not decide it's position
-uses
-  unixporthelper, Classes, sysutils, symbolhandler, NewKernelHandler, DOM,
-  XMLRead, XMLWrite, CustomTypeHandler, FileUtil, commonTypeDefs, math, pointerparser;
-{$endif}
+  {$endif}
 
 resourcestring
   rsMRNibbleSupportIsOnlyForHexadecimalDisplay = 'Nibble support is only for hexadecimal display';

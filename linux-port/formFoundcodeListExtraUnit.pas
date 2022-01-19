@@ -7,7 +7,8 @@ interface
 uses
   {$ifdef darwin}
   macport,
-  {$else}
+  {$endif}
+  {$ifdef windows}
   windows,
   {$endif}
   LResources, LCLIntf, Messages, SysUtils, Variants, Classes, Graphics,

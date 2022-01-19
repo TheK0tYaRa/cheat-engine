@@ -8,6 +8,9 @@ uses
   {$ifdef darwin}
   macport, LCLIntf, math,
   {$endif}
+  {$ifdef linux}
+  math, unixporthelper,
+  {$endif}
   {$ifdef windows}
   windows, CommCtrl,
   {$endif}
@@ -124,7 +127,7 @@ begin
 end;
 
 
-function enumfunc(hModule:HANDLE; lpszType:pchar; lpszName:pchar; lParam: PtrInt):WINBOOL;stdcall;
+function enumfunc(hModule:THandle; lpszType:pchar; lpszName:pchar; lParam: PtrInt):WINBOOL;stdcall;
 var
   allicons: tmemorystream;
   icon: TIcon;

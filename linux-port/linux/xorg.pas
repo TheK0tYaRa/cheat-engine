@@ -5,18 +5,27 @@ unit xorg;
 interface
 
 uses
-  unixporthelper;
+  unixporthelper, dialogs, unixhandles;
 
-function GetForegroundWindow():Handle;
+const
+  MB_OK = $0000;
+
+function GetForegroundWindow(): THandle;
+function MessageBox(hWnd: HWND; lpText, lpCaption: PChar; uType: Cardinal = MB_OK): integer;
 
 implementation
 
-function GetForegroundWindow():Handle;
+function GetForegroundWindow(): THandle;
 var
   w:HWND;
 begin
   { TODO -cGetForegroundWindow : https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getforegroundwindow }
   // xdotool getwindowfocus
+end;
+
+function MessageBox(hWnd: HWND; lpText, lpCaption: PChar; uType: Cardinal = MB_OK): integer;
+begin
+  DefaultMessageBox(lpText, lpCaption, uType);
 end;
 
 end.

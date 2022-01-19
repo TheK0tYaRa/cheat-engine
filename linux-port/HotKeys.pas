@@ -9,7 +9,7 @@ uses
   macport, LCLType, math, machotkeys,
   {$endif}
   {$ifdef linux}
-  unixporthelper,LCLType,math,
+  unixporthelper,LCLType,math, unixmemory,
   {$endif}
   {$ifdef windows}
   windows,

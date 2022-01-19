@@ -1,7 +1,5 @@
 unit unixporthelper;
 
-//
-
 {$mode delphi}
 
 interface
@@ -51,11 +49,11 @@ type
   PWCHAR=^WCHAR;
   UCHAR=Byte;
   USHORT=Word;
-  HANDLE=integer;
-  HDC=HANDLE;
-  HWND=HANDLE;
-  HICON=HANDLE;
-  HMODULE=HANDLE;
+  //HANDLE=integer;
+  //HDC=HANDLE;
+  //HWND=HANDLE;
+  HICON=THANDLE;
+  HMODULE=THANDLE;
   PHMODULE=^HMODULE;
 
   UINT=UInt32;
@@ -144,107 +142,21 @@ type
   //end;
 
 // Thread walking        //yoinked from jwatlhelp32
-  PTHREADENTRY32 = ^THREADENTRY32;
-  tagTHREADENTRY32 = record
-    dwSize: DWORD;
-    cntUsage: DWORD;
-    th32ThreadID: DWORD;       // this thread
-    th32OwnerProcessID: DWORD; // Process this thread is associated with
-    tpBasePri: LONG;
-    tpDeltaPri: LONG;
-    dwFlags: DWORD;
-  end;
-  THREADENTRY32 = tagTHREADENTRY32;
-  LPTHREADENTRY32 = ^THREADENTRY32;        // LPTHREADENTRY32 = ^THREADENTRY32 = ^tagTHREADENTRY32
-  TThreadEntry32 = THREADENTRY32;
+  //PTHREADENTRY32 = ^THREADENTRY32;
+  //tagTHREADENTRY32 = record
+  //  dwSize: DWORD;
+  //  cntUsage: DWORD;
+  //  th32ThreadID: DWORD;       // this thread
+  //  th32OwnerProcessID: DWORD; // Process this thread is associated with
+  //  tpBasePri: LONG;
+  //  tpDeltaPri: LONG;
+  //  dwFlags: DWORD;
+  //end;
+  //THREADENTRY32 = tagTHREADENTRY32;
+  //LPTHREADENTRY32 = ^THREADENTRY32;        // LPTHREADENTRY32 = ^THREADENTRY32 = ^tagTHREADENTRY32
+  //TThreadEntry32 = THREADENTRY32;
 
   //LPMODULEENTRY32 = ^tagMODULEENTRY32;
-
-const
- MAX_PATH=256;
- MAX_MODULE_NAME32=256;
- CONTEXT_i386=$10000;
- PAGE_READONLY = 2;
- PAGE_READWRITE = 4;
- PAGE_WRITECOPY = 8;
- PAGE_EXECUTE = 16;
- PAGE_EXECUTE_READ = 32;
- PAGE_EXECUTE_READWRITE = 64;
- PAGE_EXECUTE_WRITECOPY = 128;
- PAGE_GUARD = 256;
- PAGE_NOACCESS = 1;
- PAGE_NOCACHE = 512;
- MEM_COMMIT = 4096;
- MEM_FREE = 65536;
- MEM_RESERVE = 8192;
- MEM_IMAGE = 16777216;
- MEM_MAPPED = 262144;
- MEM_PRIVATE = 131072;
- MEM_DECOMMIT = 16384;
- MEM_RELEASE = 32768;
- MEM_TOP_DOWN = 1048576;
- MEM_RESET        = $80000;
- MEM_WRITE_WATCH  = $200000;
- MEM_PHYSICAL     = $400000;
- MEM_LARGE_PAGES  = $20000000;
- MEM_4MB_PAGES    = dword($80000000);
-
- {$ifdef cpux86_64}
- CONTEXT_AMD64=$100000;
-
- CONTEXT_CONTROL         = (CONTEXT_AMD64 or $00000001);
- CONTEXT_INTEGER         = (CONTEXT_AMD64 or $00000002);
- CONTEXT_SEGMENTS        = (CONTEXT_AMD64 or $00000004);
- CONTEXT_FLOATING_POINT  = (CONTEXT_AMD64 or $00000008);
- CONTEXT_DEBUG_REGISTERS = (CONTEXT_AMD64 or $00000010);
-
- CONTEXT_FULL            = (CONTEXT_CONTROL or CONTEXT_INTEGER or CONTEXT_FLOATING_POINT);
- CONTEXT_ALL             = (CONTEXT_CONTROL or CONTEXT_INTEGER or CONTEXT_SEGMENTS or CONTEXT_FLOATING_POINT or CONTEXT_DEBUG_REGISTERS);
- {$endif}
-
-{
- INITIAL_MXCSR = $1f80;            // initial MXCSR value
- INITIAL_FPCSR = $027f;            // initial FPCSR value
-
- CONTEXT_EXCEPTION_ACTIVE    = $08000000;
- CONTEXT_SERVICE_ACTIVE      = $10000000;
- CONTEXT_EXCEPTION_REQUEST   = $40000000;
- CONTEXT_EXCEPTION_REPORTING = $80000000;
-}
-
- THREAD_GET_CONTEXT = 8;
- THREAD_SUSPEND_RESUME = 2;
- THREAD_SET_CONTEXT = 16;
- THREAD_QUERY_INFORMATION = 64;
-
- INVALID_SOCKET = THandle(not(0));
- INADDR_BROADCAST=CARDINAL($FFFFFFFF);
-
- TH32CS_SNAPHEAPLIST = $00000001;
- TH32CS_SNAPPROCESS  = $00000002;
- TH32CS_SNAPTHREAD   = $00000004;
- TH32CS_SNAPMODULE   = $00000008;
- TH32CS_SNAPMODULE32 = 0;
- TH32CS_SNAPALL      = TH32CS_SNAPHEAPLIST or TH32CS_SNAPPROCESS or
-                       TH32CS_SNAPTHREAD or TH32CS_SNAPMODULE;
- TH32CS_GETALLMODS   = $80000000;
-
- PROCESS_ALL_ACCESS = $1f0fff; //not really used
-
- clWindowText=0;
-
- {exceptions shamelessly borrowed from win/wininc/defines.inc}
- EXCEPTION_ACCESS_VIOLATION    = $c0000005;
- EXCEPTION_SINGLE_STEP         = $80000004;
- EXCEPTION_BREAKPOINT          = $80000003;
- EXCEPTION_ILLEGAL_INSTRUCTION = $c000001d;
- EXCEPTION_PRIV_INSTRUCTION    = $c0000096;
-
-const                        //yes, ntstatus aka LONG, { TODO -cNtStatus : fix that before it gets to debugging }
-  STATUS_WX86_SINGLE_STEP = LONG($4000001E);
-  {$EXTERNALSYM STATUS_WX86_SINGLE_STEP}
-  STATUS_WX86_BREAKPOINT =  LONG($4000001F);
-  {$EXTERNALSYM STATUS_WX86_BREAKPOINT}
 
 {$ifdef ANDROID}
 function GetTempDir: string;
@@ -259,7 +171,7 @@ function VirtualFree(lpAddress:LPVOID; dwSize:PTRUINT; dwFreeType:DWORD):WINBOOL
 
 //function OpenThread(dwDesiredAccess:DWORD; bInheritHandle:BOOL; dwThreadId:DWORD):HANDLE;
 
-//procedure CloseHandle(hObject:HANDLE);
+//procedure CloseHandle(hObject:THANDLE);
 
 //function CreateToolhelp32Snapshot(dwFlags,th32ProcessID:DWORD):HANDLE;
 //function Thread32First(hSnapshot:HANDLE; lpte:tagTHREADENTRY32):BOOL;
@@ -272,15 +184,9 @@ function CopyFile(source: string; destination: string; failifdestinationExists: 
 Function DirectoryExistsUTF8 (Const Directory : RawByteString) : Boolean;
 Function CreateDirUTF8(Const NewDir : UnicodeString) : Boolean;
 
-function GetCurrentProcessID: SizeUInt;
-procedure ZeroMemory(destination: pointer; size: integer);
-procedure CopyMemory(destination: pointer; Origin: pointer; size: integer);
-procedure MoveMemory(destination: pointer; Origin: pointer; size: integer);
-procedure FillMemory(destination: pointer; Length: integer; Filler: BYTE);
 function QueryPerformanceFrequency(var tps: TLargeInteger): boolean;
 function QueryPerformanceCounter(var currenttick: TLargeInteger): boolean;
 
-{$ifdef linux}procedure OutputDebugString(l:string);{$endif}
 procedure log(l: string);
 
 function WinCPToUTF8(s: string): string;
@@ -429,42 +335,23 @@ begin
 
 end;
 
-function VirtualAllocEx(hProcess:HANDLE; lpAddress:LPVOID; dwSize:SIZE_T; flAllocationType,flProtect:DWORD):LPVOID;
-begin
-  { TODO -cVirtualAllocEx : https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex }
-end;
 
-function VirtualFreeEx(hProcess:HANDLE; lpAddress:LPVOID; dwSize:SIZE_T; dwFreeType:DWORD):BOOL;
-begin
-  { TODO -cVirtualFreeEx : https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualfreeex }
-end;
-
-function OpenThread(dwDesiredAccess:DWORD; bInheritHandle:BOOL; dwThreadId:DWORD):HANDLE;
-begin
-  { TODO -cOpenThread : https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openthread }
-end;
-
-procedure CloseHandle(hObject:HANDLE);
-begin
-  { TODO -cCloseHandle : https://docs.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle }
-end;
-
-function CreateToolhelp32Snapshot(dwFlags,th32ProcessID:DWORD):HANDLE;
+function CreateToolhelp32Snapshot(dwFlags,th32ProcessID:DWORD):THandle;
 begin
   { TODO -cCreateToolhelp32Snapshot : https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-createtoolhelp32snapshot }
 end;
 
-function Thread32First(hSnapshot:HANDLE; lpte:tagTHREADENTRY32):BOOL;
-begin
-  { TODO -cThread32First : https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-thread32first }
-end;
+//function Thread32First(hSnapshot:THandle; lpte:tagTHREADENTRY32):BOOL;
+//begin
+//  { TODO -cThread32First : https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-thread32first }
+//end;
 
-function Thread32Next(hSnapshot:HANDLE; lpte:tagTHREADENTRY32):BOOL;
-begin
-  { TODO -cThread32Next : https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-thread32next }
-end;
+//function Thread32Next(hSnapshot:THandle; lpte:tagTHREADENTRY32):BOOL;
+//begin
+//  { TODO -cThread32Next : https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-thread32next }
+//end;
 
-//function Module32First(hSnapshot:HANDLE; lpme:tagMODULEENTRY32):BOOL;
+//function Module32First(hSnapshot:THandle; lpme:tagMODULEENTRY32):BOOL;
 //begin
 //  { TODO -cModule32First : https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-module32first }
 //end;
@@ -495,42 +382,6 @@ begin
   currenttick:=GetTickCount64;
   result:=true;
 end;
-
-procedure ZeroMemory(destination: pointer; size: integer);
-begin
-  //log('ZeroMemory');
-  FillByte(destination^, size, 0); //perhaps filldword might be faster, but for now keep it compatible
-  //log('ZeroMemory returned');
-end;
-
-procedure MoveMemory(destination: pointer; Origin: pointer; size: integer);
-begin
-  Move(Origin^, Destination^, size);
-end;
-
-procedure CopyMemory(destination: pointer; Origin: pointer; size: integer);
-begin
-  MoveMemory(destination, origin, size);
-end;
-
-procedure FillMemory(destination: pointer; Length: integer; Filler: BYTE);
-begin
-  { TODO -cFollMemory : https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa366561(v=vs.85) }
-  FillByte(destination^, Length, Filler); //not tested whatsoever
-end;
-
-function GetCurrentProcessID: SizeUInt;
-begin
-  result:=GetProcessID;
-end;
-
-{$ifdef linux}
-procedure OutputDebugString(l:string);
-begin
-  writeln(l);
-end;
-
-{$endif}
 
 procedure log(l: string);
 begin

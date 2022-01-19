@@ -8,6 +8,9 @@ uses
   {$ifdef darwin}
   macport, math, LCLIntf,
   {$endif}
+  {$ifdef linux}
+  math, unixporthelper, unixmemory,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}

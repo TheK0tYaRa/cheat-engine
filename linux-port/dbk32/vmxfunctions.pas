@@ -9,7 +9,7 @@ uses
   macport,
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, unixmemory, unixdebug, unixthreads,
   {$endif}
   {$ifdef windows}
   jwawindows, windows,
@@ -127,8 +127,8 @@ const
 
 type
   _CLIENT_ID = record
-    UniqueProcess: HANDLE;
-    UniqueThread: HANDLE;
+    UniqueProcess: THandle;
+    UniqueThread: THandle;
   end;
   CLIENT_ID = _CLIENT_ID;
   PCLIENT_ID = ^CLIENT_ID;

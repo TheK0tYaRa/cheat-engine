@@ -9,14 +9,14 @@ uses
   macport,
   {$endif}
   {$ifdef linux}
-  linuxthreads,
+  unixthreads, unixhandles,
   {$endif}
   {$ifdef windows}
-  jwawindows, windows,
+  jwawindows, windows, vmxfunctions,
   {$endif}
   LCLIntf, Messages, SysUtils, Classes, Graphics, Controls,
   Forms, Dialogs, StdCtrls, ExtCtrls, CEFuncProc,CEDebugger, ComCtrls, ImgList,
-  Filehandler, Menus, LResources,{tlhelp32,}{$ifdef windows}vmxfunctions,{$endif} NewKernelHandler,
+  Filehandler, Menus, LResources,{tlhelp32,} NewKernelHandler,
   debugHelper{, KIcon}, commonTypeDefs, math, syncobjs, Contnrs, betterControls;
 
 type

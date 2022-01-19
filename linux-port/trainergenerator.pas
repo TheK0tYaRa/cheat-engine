@@ -8,6 +8,9 @@ uses
   {$ifdef darwin}
   macport,
   {$endif}
+  {$ifdef linux}
+  unixmemory,
+  {$endif}
   {$ifdef windows}
   windows,
   {$endif}
@@ -663,13 +666,15 @@ procedure TfrmTrainerGenerator.sbPlayStopXMClick(Sender: TObject);
 begin
   if sbPlayStopXM.tag=0 then //not yet playing
   begin
-    xmplayer.playXM(fnXM.FileName);
+    { #note -cxmplayer : not yet }
+    //xmplayer.playXM(fnXM.FileName);
     sbPlayStopXM.glyph:=stopbitmap;
     sbPlayStopXM.tag:=1;
   end
   else
   begin
-    xmplayer.stop;
+    { #note -cxmplayer : not yet }
+    //xmplayer.stop;
     sbPlayStopXM.glyph:=playbitmap;
     sbPlayStopXM.tag:=0;
   end;
@@ -741,7 +746,8 @@ procedure TfrmTrainerGenerator.FormClose(Sender: TObject;
   var CloseAction: TCloseAction);
 begin
   try
-    xmplayer.stop; //can raise an not initialized exception
+    { #note -cxmplayer : not yet }
+    //xmplayer.stop; //can raise an not initialized exception
   except
     //deal with it by ignoring it
   end;
@@ -756,8 +762,9 @@ begin
 
   if trainerform<>nil then
   begin
-    if (btnDesignForm.Tag=1) and (formdesigner<>nil) then
-      formdesigner.Close;
+    { #note -cformdesigner : not yet }
+    //if (btnDesignForm.Tag=1) and (formdesigner<>nil) then
+    //  formdesigner.Close;
 
     trainerform.hide;
   end;
@@ -966,7 +973,8 @@ var generated: tstringlist;
   cheatpanel: TCEPanel;
 begin
 
-  trainerform.active:=false;
+  { #note -cactive : not yet }
+  //trainerform.active:=false;
   trainerform.SaveCurrentStateasDesign;
 
 
@@ -1661,7 +1669,8 @@ var i: integer;
     currentcheat: TCheat;
 begin
 
-
+  { #note -cformdesigner : not yet }
+  (*
   if btnDesignForm.tag=0 then
   begin
     mainform.createFormdesigner;
@@ -1687,9 +1696,7 @@ begin
     btnDesignForm.caption:=rsDesignUserinterfaceManually;
   end;
 
-
-
-
+  *)
 end;
 
 procedure TfrmTrainerGenerator.editHotkey(m: Tmemoryrecord; hotkey: TMemoryrecordhotkey);

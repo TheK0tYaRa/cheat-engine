@@ -9,7 +9,7 @@ uses
   macport, LCLType, macportdefines,
   {$endif}
   {$ifdef linux}
-  unixporthelper,LCLType,linuxthreads,ELFInfo,
+  unixporthelper, LCLType, unixthreads, ELFInfo, unixdebug, unixmemory, mmap, uconst,
   {$endif}
   {$ifdef windows}
   jwawindows, windows,imagehlp,
@@ -4024,7 +4024,7 @@ var dll: string;
     functionname: string;
     dllList: tstringlist;
 begin
-
+  {$ifdef linux}{$else}
   functionname:='';
   dll:='';
 
@@ -4070,7 +4070,7 @@ begin
     symhandler.reinitialize(true);
     showmessage(rsDLLInjected);
   end;
-
+  {$endif}
 end;
 
 procedure TMemoryBrowser.AutoInject1Click(Sender: TObject);

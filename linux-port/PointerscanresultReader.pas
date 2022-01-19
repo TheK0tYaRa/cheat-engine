@@ -9,10 +9,10 @@ interface
 
 uses
   {$ifdef darwin}
-  macport, MacTypes,,macportdefines
+  macport, MacTypes,macportdefines
   {$endif}
   {$ifdef linux}
-  unixporthelper,mmap,linuxbase,linuxthreads,
+  unixporthelper, mmap, linuxbase, unixthreads, unixdebug, unixhandles, unixmemory, uconst,
   {$endif}
   {$ifdef windows}
   windows,

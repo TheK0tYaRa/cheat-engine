@@ -6,28 +6,25 @@ unit disassembler;
 
 interface
 
-{$ifdef jni}
-uses unixporthelper, sysutils, byteinterpreter, symbolhandler, NewKernelHandler,
- ProcessHandlerUnit, LastDisassembleData, DisassemblerArm, commonTypeDefs;
-{$endif}
-
-{$ifdef windows}
-uses windows, classes, imagehlp,sysutils,LCLIntf,byteinterpreter, symbolhandler, symbolhandlerstructs,
+uses
+  {$ifdef jni}
+  unixporthelper, sysutils, byteinterpreter, symbolhandler, NewKernelHandler,
+  ProcessHandlerUnit, LastDisassembleData, DisassemblerArm, commonTypeDefs;
+  {$else}
+  {$ifdef windows}
+  windows, betterControls,
+  {$endif}
+  {$ifdef linux}
+  uconst, unixmemory, xorg, unixdebug,
+  {$endif}
+  {$ifdef darwin}
+  LCLType, macport, macportdefines,
+  {$endif}
+  classes, sysutils, LCLIntf, byteinterpreter, symbolhandler, symbolhandlerstructs,
   CEFuncProc, NewKernelHandler, ProcessHandlerUnit, LastDisassembleData, disassemblerarm,
-  commonTypeDefs, maps, math,vextypedef, betterControls, syncobjs;
-{$endif}
-
-{$ifdef linux}
-uses classes, sysutils,LCLIntf,byteinterpreter, symbolhandler, symbolhandlerstructs,
-  CEFuncProc, NewKernelHandler, ProcessHandlerUnit, LastDisassembleData, disassemblerarm,
-  commonTypeDefs, maps, math,vextypedef, syncobjs;
-{$endif}
-
-{$ifdef darwin}
-uses LCLIntf, LCLType, macport, macportdefines, classes,sysutils,byteinterpreter, symbolhandler, symbolhandlerstructs,
-  CEFuncProc, NewKernelHandler, ProcessHandlerUnit, LastDisassembleData, disassemblerarm,
-  commonTypeDefs, maps, math,vextypedef, syncobjs;
-{$endif}
+  commonTypeDefs, maps, math,vextypedef, syncobjs
+  ;
+  {$endif}
 
 //translation: There is no fucking way I change the descriptions to resource strings
 //if you're bored, go do this
@@ -45,7 +42,7 @@ const BIT_REX_R=4;
 const BIT_REX_X=2;
 const BIT_REX_B=1;
 
-  {$ifdef UNIX}
+{$ifdef UNIX}
 const
   EFLAGS_CF=(1 shl 0);
   EFLAGS_PF=(1 shl 2);
@@ -61,7 +58,10 @@ const
   EFLAGS_VM=(1 shl 17);
   EFLAGS_AC=(1 shl 18);
   EFLAGS_ID=(1 shl 21);
-  {$endif}
+
+type
+  pint = ^integer;
+{$endif}
 
 type
 

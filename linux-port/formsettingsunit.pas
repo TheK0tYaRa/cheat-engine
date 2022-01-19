@@ -8,9 +8,13 @@ uses
   {$ifdef darwin}
   macport, macexceptiondebuggerinterface,
   {$endif}
+  {$ifdef linux}
+  unixporthelper, unixkeys, unixmemory,
+  {$endif}
   {$ifdef windows}
   windows, win32proc,
-  {$endif}LCLProc, LCLIntf, LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
+  {$endif}
+  LCLProc, LCLIntf, LCLType, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   StdCtrls,registry, Menus,ComCtrls,CEFuncProc,ExtCtrls,{tlhelp32,}CheckLst,
   Buttons, LResources, frameHotkeyConfigUnit, math,
 

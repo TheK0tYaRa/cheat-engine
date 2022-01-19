@@ -12,7 +12,7 @@ uses
   mactypes, macport,
   {$endif}
   {$ifdef linux}
-  linuxthreads,unixporthelper,
+  unixthreads,unixporthelper,
   {$endif}
   {$ifdef windows}
   {jwawindows,} windows,
@@ -31,13 +31,13 @@ function NetworkReadProcessMemory(hProcess: THandle; lpBaseAddress, lpBuffer: Po
 function NetworkWriteProcessMemory(hProcess: THandle; const lpBaseAddress: Pointer; lpBuffer: Pointer; nSize: size_t; var lpNumberOfBytesWritten: ptruint): BOOL; stdcall;
 
 function NetworkVirtualQueryEx(hProcess: THandle; lpAddress: Pointer; var lpBuffer: TMemoryBasicInformation; dwLength: DWORD): DWORD; stdcall;
-function NetworkOpenProcess(dwDesiredAccess:DWORD; bInheritHandle:WINBOOL; dwProcessId:DWORD):HANDLE; stdcall;
-function NetworkCreateToolhelp32Snapshot(dwFlags, th32ProcessID: DWORD): HANDLE; stdcall;
-function NetworkProcess32First(hSnapshot: HANDLE; var lppe: PROCESSENTRY32): BOOL; stdcall;
-function NetworkProcess32Next(hSnapshot: HANDLE; var lppe: PROCESSENTRY32): BOOL; stdcall;
+function NetworkOpenProcess(dwDesiredAccess:DWORD; bInheritHandle:WINBOOL; dwProcessId:DWORD):THandle; stdcall;
+function NetworkCreateToolhelp32Snapshot(dwFlags, th32ProcessID: DWORD): THandle; stdcall;
+function NetworkProcess32First(hSnapshot: THandle; var lppe: PROCESSENTRY32): BOOL; stdcall;
+function NetworkProcess32Next(hSnapshot: THandle; var lppe: PROCESSENTRY32): BOOL; stdcall;
 
-function NetworkModule32First(hSnapshot: HANDLE; var lpme: MODULEENTRY32): BOOL; stdcall;
-function NetworkModule32Next(hSnapshot: HANDLE; var lpme: MODULEENTRY32): BOOL; stdcall;
+function NetworkModule32First(hSnapshot: THandle; var lpme: MODULEENTRY32): BOOL; stdcall;
+function NetworkModule32Next(hSnapshot: THandle; var lpme: MODULEENTRY32): BOOL; stdcall;
 
 function NetworkCloseHandle(handle: THandle):WINBOOL; stdcall;
 function NetworkSetBreakpoint(handle: THandle; threadid: integer; debugregister: integer; address: PtrUInt; bptype: integer; bpsize: integer): boolean;
@@ -117,7 +117,7 @@ begin
     connection.VirtualQueryEx_EndCache(hProcess);
 end;
 
-function NetworkProcess32Next(hSnapshot: HANDLE; var lppe: PROCESSENTRY32): BOOL; stdcall;
+function NetworkProcess32Next(hSnapshot: THandle; var lppe: PROCESSENTRY32): BOOL; stdcall;
 begin
   if getConnection<>nil then
     result:=connection.Process32Next(hSnapshot, lppe)
@@ -125,7 +125,7 @@ begin
     result:=FALSE;
 end;
 
-function NetworkProcess32First(hSnapshot: HANDLE; var lppe: PROCESSENTRY32): BOOL; stdcall;
+function NetworkProcess32First(hSnapshot: THandle; var lppe: PROCESSENTRY32): BOOL; stdcall;
 begin
   {$ifdef windows}OutputDebugString('NetworkProcess32First');{$endif}
   if getConnection<>nil then
@@ -134,7 +134,7 @@ begin
     result:=FALSE;
 end;
 
-function NetworkModule32Next(hSnapshot: HANDLE; var lpme: MODULEENTRY32): BOOL; stdcall;
+function NetworkModule32Next(hSnapshot: THandle; var lpme: MODULEENTRY32): BOOL; stdcall;
 begin
   if getConnection<>nil then
     result:=connection.Module32Next(hSnapshot, lpme)
@@ -142,7 +142,7 @@ begin
     result:=FALSE;
 end;
 
-function NetworkModule32First(hSnapshot: HANDLE; var lpme: MODULEENTRY32): BOOL; stdcall;
+function NetworkModule32First(hSnapshot: THandle; var lpme: MODULEENTRY32): BOOL; stdcall;
 begin
   if getConnection<>nil then
     result:=connection.Module32First(hSnapshot, lpme)
@@ -150,7 +150,7 @@ begin
     result:=FALSE;
 end;
 
-function NetworkCreateToolhelp32Snapshot(dwFlags, th32ProcessID: DWORD): HANDLE; stdcall;
+function NetworkCreateToolhelp32Snapshot(dwFlags, th32ProcessID: DWORD): THandle; stdcall;
 begin
   if getConnection<>nil then
     result:=connection.CreateToolhelp32Snapshot(dwflags, th32ProcessId)
@@ -254,7 +254,7 @@ begin
     result:=nil;
 end;
 
-function NetworkVirtualFreeEx(hProcess: HANDLE; lpAddress: LPVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL; stdcall;
+function NetworkVirtualFreeEx(hProcess: THandle; lpAddress: LPVOID; dwSize: SIZE_T; dwFreeType: DWORD): BOOL; stdcall;
 begin
   if getconnection<>nil then
     result:=connection.VirtualFreeEx(hProcess, lpAddress, dwSize, dwFreeType)
@@ -270,7 +270,7 @@ begin
     result:=0;
 end;
 
-function NetworkOpenProcess(dwDesiredAccess:DWORD; bInheritHandle:WINBOOL; dwProcessId:DWORD):HANDLE; stdcall;
+function NetworkOpenProcess(dwDesiredAccess:DWORD; bInheritHandle:WINBOOL; dwProcessId:DWORD):THandle; stdcall;
 begin
   if getConnection<>nil then
     result:=connection.OpenProcess(dwDesiredAccess, bInheritHandle, dwProcessId)

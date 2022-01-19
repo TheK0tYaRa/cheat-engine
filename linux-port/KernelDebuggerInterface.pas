@@ -4,9 +4,14 @@ unit KernelDebuggerInterface;
 
 interface
 
-{$ifdef windows}
 uses
-  jwawindows, windows, Classes, SysUtils,cefuncproc, newkernelhandler,DebuggerInterface,contnrs;
+  {$ifdef windows}
+  jwawindows, windows,
+  {$endif}
+  {$ifdef linux}
+  unixporthelper,unixdebug,
+  {$endif}
+  Classes, SysUtils,cefuncproc, newkernelhandler,DebuggerInterface,contnrs;
 
 type
   TEventType=(etCreateProcess, etCreateThread, etDestroyThread);
@@ -17,7 +22,7 @@ type
   end;
   PInjectedEvent=^TInjectedEvent;
 
-
+{$ifndef linux}
 type
   TKernelDebugInterface=class;
   TThreadPoller=class(tthread)
@@ -45,7 +50,7 @@ type
     NeedsToContinue: boolean;
     globalDebug: boolean;
   public
-    function WaitForDebugEvent(var lpDebugEvent: TDebugEvent; dwMilliseconds: DWORD): BOOL; override;
+    function WaitForDebugEvent(var lpDebugEvent: TDebugEvent; dwMilliseconds: DWORD): BOOL; {$ifndef linux}override;{$endif}
     function ContinueDebugEvent(dwProcessId: DWORD; dwThreadId: DWORD; dwContinueStatus: DWORD): BOOL; override;
     function SetThreadContext(hThread: THandle; const lpContext: TContext; isFrozenThread: Boolean=false): BOOL; override;
     function GetThreadContext(hThread: THandle; var lpContext: TContext; isFrozenThread: Boolean=false):  BOOL; override;
@@ -60,13 +65,11 @@ type
     destructor destroy; override;
     constructor create(globalDebug, canStepKernelcode: boolean);
   end;
-
-{$endif}
+  {$endif}
 
 implementation
 
 {$ifdef windows}
-
 uses symbolhandler, ProcessHandlerUnit, dialogs;
 
 resourcestring

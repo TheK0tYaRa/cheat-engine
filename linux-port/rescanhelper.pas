@@ -9,7 +9,7 @@ uses
   macport, (*CELazySocket, PointerscanNetworkCommands, *),
   {$endif}
   {$ifdef linux}
-  unixporthelper,
+  unixporthelper, uconst,
   {$endif}
   {$ifdef windows}
   windows, CELazySocket, PointerscanNetworkCommands,
