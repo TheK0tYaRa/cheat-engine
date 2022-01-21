@@ -3,14 +3,13 @@
   <ProjectSession>
     <Version Value="12"/>
     <BuildModes Active="Release linux x64_86"/>
-    <Units Count="144">
+    <Units Count="147">
       <Unit0>
         <Filename Value="cheatengineLinux.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="262"/>
-        <CursorPos X="55" Y="279"/>
-        <UsageCount Value="187"/>
+        <CursorPos X="78" Y="14"/>
+        <UsageCount Value="191"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
@@ -46,7 +45,7 @@
         <UnitName Value="RegConfig"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="26" Y="11"/>
-        <UsageCount Value="163"/>
+        <UsageCount Value="167"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit4>
       <Unit5>
@@ -55,7 +54,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="6"/>
         <CursorPos X="49" Y="19"/>
-        <UsageCount Value="162"/>
+        <UsageCount Value="166"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
       <Unit6>
@@ -64,7 +63,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="76"/>
         <CursorPos X="59" Y="86"/>
-        <UsageCount Value="162"/>
+        <UsageCount Value="166"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit6>
       <Unit7>
@@ -73,7 +72,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="21"/>
         <CursorPos X="9" Y="47"/>
-        <UsageCount Value="126"/>
+        <UsageCount Value="130"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit7>
       <Unit8>
@@ -82,7 +81,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="4"/>
         <CursorPos X="23" Y="28"/>
-        <UsageCount Value="127"/>
+        <UsageCount Value="131"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit8>
       <Unit9>
@@ -90,7 +89,7 @@
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="16"/>
-        <UsageCount Value="41"/>
+        <UsageCount Value="45"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit9>
       <Unit10>
@@ -250,8 +249,8 @@
       <Unit29>
         <Filename Value="LuaHandler.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="4037"/>
-        <CursorPos X="10" Y="4062"/>
+        <TopLine Value="13142"/>
+        <CursorPos X="69" Y="13163"/>
         <UsageCount Value="34"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit29>
@@ -493,8 +492,8 @@
       <Unit61>
         <Filename Value="frmUltimap2Unit.pas"/>
         <EditorIndex Value="-1"/>
-        <CursorPos X="49" Y="14"/>
-        <UsageCount Value="9"/>
+        <CursorPos X="35" Y="23"/>
+        <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit61>
       <Unit62>
@@ -654,7 +653,7 @@
         <Filename Value="lua/lua.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="231"/>
-        <CursorPos X="87" Y="253"/>
+        <CursorPos X="28" Y="257"/>
         <UsageCount Value="12"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit82>
@@ -1113,8 +1112,31 @@
         <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit143>
+      <Unit144>
+        <Filename Value="lua/lualib.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="36"/>
+        <CursorPos X="76" Y="55"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit144>
+      <Unit145>
+        <Filename Value="lua/lauxlib.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="212"/>
+        <CursorPos X="31" Y="237"/>
+        <UsageCount Value="10"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit145>
+      <Unit146>
+        <Filename Value="/usr/lib/fpc/src/rtl/unix/cthreads.pp"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="7"/>
+        <CursorPos X="50" Y="27"/>
+        <UsageCount Value="10"/>
+      </Unit146>
     </Units>
-    <JumpHistory Count="7" HistoryIndex="6">
+    <JumpHistory Count="9" HistoryIndex="8">
       <Position1>
         <Filename Value="cheatengineLinux.lpr"/>
         <Caret Line="95" Column="87" TopLine="79"/>
@@ -1143,6 +1165,14 @@
         <Filename Value="cheatengineLinux.lpr"/>
         <Caret Line="137" Column="34" TopLine="113"/>
       </Position7>
+      <Position8>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="278" Column="61" TopLine="262"/>
+      </Position8>
+      <Position9>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="19" Column="8"/>
+      </Position9>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>

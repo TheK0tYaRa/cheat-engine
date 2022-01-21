@@ -79,7 +79,7 @@ type
 
 const
   LUA_VERSION = 'Lua 5.3';
-  LUA_RELEASE = 'Lua 5.3.1';
+  LUA_RELEASE = 'Lua 5.3.6';
   LUA_VERSION_NUM = 503;
   LUA_COPYRIGHT = 'Copyright (C) 1994-2015 Lua.org, PUC-Rio';
   LUA_AUTHORS = 'R. Ierusalimschy, L. H. de Figueiredo, W. Celes';
@@ -243,7 +243,7 @@ procedure lua_createtable(L: Plua_State; narr, nrec: Integer); cdecl;
 function lua_newuserdata(L: Plua_State; sz: size_t): Pointer; cdecl; overload;
 procedure lua_newuserdata(L: Plua_State; p: pointer); cdecl; overload;
 function lua_getmetatable(L: Plua_State; objindex: Integer): Integer; cdecl;
-procedure lua_getfenv(L: Plua_State; idx: Integer); cdecl;
+{ #todo : not in lua < 5.1 }//procedure lua_getfenv(L: Plua_State; idx: Integer); cdecl;
 
 (*
 ** set functions (stack -> Lua)
@@ -253,7 +253,7 @@ procedure lua_setfield(L: Plua_State; idx: Integer; k: PChar); cdecl;
 procedure lua_rawset(L: Plua_State; idx: Integer); cdecl;
 procedure lua_rawseti(L: Plua_State; idx: integer; n: lua_Integer); cdecl;
 function lua_setmetatable(L: Plua_State; objindex: Integer): Integer; cdecl;
-function lua_setfenv(L: Plua_State; idx: Integer): Integer; cdecl;
+{ #todo : not in lua < 5.1 }//function lua_setfenv(L: Plua_State; idx: Integer): Integer; cdecl;
 
 (*
 ** `load' and `call' functions (load and run Lua code)
@@ -522,14 +522,14 @@ function lua_rawgeti(L: Plua_State; idx: integer; n: lua_Integer):integer; cdecl
 procedure lua_createtable(L: Plua_State; narr, nrec: Integer); cdecl; external LUA_NAME;
 function lua_newuserdata(L: Plua_State; sz: size_t): Pointer; cdecl; external LUA_NAME;
 function lua_getmetatable(L: Plua_State; objindex: Integer): Integer; cdecl; external LUA_NAME;
-procedure lua_getfenv(L: Plua_State; idx: Integer); cdecl; external LUA_NAME;
+{ #todo : not in lua < 5.1 }//procedure lua_getfenv(L: Plua_State; idx: Integer); cdecl; external LUA_NAME;
 
 procedure lua_settable(L: Plua_State; idx: Integer); cdecl; external LUA_NAME;
 procedure lua_setfield(L: Plua_State; idx: Integer; k: PChar); cdecl; external LUA_NAME;
 procedure lua_rawset(L: Plua_State; idx: Integer); cdecl; external LUA_NAME;
 procedure lua_rawseti(L: Plua_State; idx: integer; n: lua_Integer); cdecl; external LUA_NAME;
 function lua_setmetatable(L: Plua_State; objindex: Integer): Integer; cdecl; external LUA_NAME;
-function lua_setfenv(L: Plua_State; idx: Integer): Integer; cdecl; external LUA_NAME;
+{ #todo : not in lua < 5.1 }//function lua_setfenv(L: Plua_State; idx: Integer): Integer; cdecl; external LUA_NAME;
 
 
 

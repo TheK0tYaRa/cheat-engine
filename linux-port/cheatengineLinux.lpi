@@ -30,7 +30,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="7"/>
       <MinorVersionNr Value="2"/>
-      <BuildNr Value="7077"/>
+      <BuildNr Value="7081"/>
       <StringTable CompanyName="Cheat Engine" FileDescription="Cheat Engine" ProductVersion="7.2"/>
     </VersionInfo>
     <BuildModes Count="1">

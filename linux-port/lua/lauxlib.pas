@@ -45,7 +45,7 @@ type
   end;
   PluaL_reg = ^luaL_reg;
 
-procedure luaL_openlib(L: Plua_State; const libname: PChar; const lr: PluaL_reg; nup: Integer); cdecl;
+  { #todo : not in lua < 5.1 }//procedure luaL_openlib(L: Plua_State; const libname: PChar; const lr: PluaL_reg; nup: Integer); cdecl;
 procedure luaL_register(L: Plua_State; const libname: PChar; const lr: PluaL_reg); cdecl;
 function luaL_getmetafield(L: Plua_State; obj: Integer; const e: PChar): Integer; cdecl;
 function luaL_callmeta(L: Plua_State; obj: Integer; const e: PChar): Integer; cdecl;
@@ -73,14 +73,14 @@ function luaL_ref(L: Plua_State; t: Integer): Integer; cdecl;
 procedure luaL_unref(L: Plua_State; t, ref: Integer); cdecl;
 
 function luaL_loadfile(L: Plua_State; const filename: PChar): Integer; cdecl;
-function luaL_loadbuffer(L: Plua_State; const buff: PChar; size: size_t; const name: PChar): Integer; cdecl;
+{ #todo : not in lua < 5.1 }//function luaL_loadbuffer(L: Plua_State; const buff: PChar; size: size_t; const name: PChar): Integer; cdecl;
 function luaL_loadstring(L: Plua_State; const s: PChar): Integer; cdecl;
 
 function luaL_newstate: Plua_State; cdecl;
 function lua_open: Plua_State; // compatibility; moved from unit lua to lauxlib because it needs luaL_newstate
 
 function luaL_gsub(L: Plua_State; const s, p, r: PChar): PChar; cdecl;
-function luaL_findtable(L: Plua_State; idx: Integer; const fname: PChar; szhint: Integer): PChar; cdecl;
+{ #todo : not in lua < 5.1 }//function luaL_findtable(L: Plua_State; idx: Integer; const fname: PChar; szhint: Integer): PChar; cdecl;
 
 (*
 ** ===============================================================
@@ -135,7 +135,7 @@ procedure luaL_putchar(B: PluaL_Buffer; c: Char); // warning: see note above abo
 procedure luaL_addsize(B: PluaL_Buffer; n: Integer);
 
 procedure luaL_buffinit(L: Plua_State; B: PluaL_Buffer); cdecl;
-function luaL_prepbuffer(B: PluaL_Buffer): PChar; cdecl;
+{ #todo : not in lua < 5.1 }//function luaL_prepbuffer(B: PluaL_Buffer): PChar; cdecl;
 procedure luaL_addlstring(B: PluaL_Buffer; const s: PChar; l: size_t); cdecl;
 procedure luaL_addstring(B: PluaL_Buffer; const s: PChar); cdecl;
 procedure luaL_addvalue(B: PluaL_Buffer); cdecl;
@@ -185,10 +185,10 @@ begin
   // does nothing as this operation is deprecated
 end;
 
-procedure luaL_openlib(L: Plua_State; const libname: PChar; const lr: PluaL_reg; nup: Integer); cdecl; external LUA_LIB_NAME;
+{ #todo : not in lua < 5.1 }//procedure luaL_openlib(L: Plua_State; const libname: PChar; const lr: PluaL_reg; nup: Integer); cdecl; external LUA_LIB_NAME;
 procedure luaL_register(L: Plua_State; const libname: PChar; const lr: PluaL_reg); cdecl;
 begin
-  luaL_openlib(L, libname, lr,0);
+  { #todo : not in lua < 5.1 }//luaL_openlib(L, libname, lr,0);
 end;
 
 function luaL_getmetafield(L: Plua_State; obj: Integer; const e: PChar): Integer; cdecl; external LUA_LIB_NAME;
@@ -223,7 +223,7 @@ begin
   result:=luaL_loadfilex(L,filename,nil);
 end;
 
-function luaL_loadbuffer(L: Plua_State; const buff: PChar; size: size_t; const name: PChar): Integer; cdecl; external LUA_LIB_NAME;
+{ #todo : not in lua < 5.1 }//function luaL_loadbuffer(L: Plua_State; const buff: PChar; size: size_t; const name: PChar): Integer; cdecl; external LUA_LIB_NAME;
 function luaL_loadstring(L: Plua_State; const s: PChar): Integer; cdecl; external LUA_LIB_NAME;
 
 function luaL_newstate: Plua_State; cdecl; external LUA_LIB_NAME;
@@ -234,7 +234,7 @@ begin
 end;
 
 function luaL_gsub(L: Plua_State; const s, p, r: PChar): PChar; cdecl; external LUA_LIB_NAME;
-function luaL_findtable(L: Plua_State; idx: Integer; const fname: PChar; szhint: Integer): PChar; cdecl; external LUA_LIB_NAME;
+{ #todo : not in lua < 5.1 }//function luaL_findtable(L: Plua_State; idx: Integer; const fname: PChar; szhint: Integer): PChar; cdecl; external LUA_LIB_NAME;
 
 function luaL_typename(L: Plua_State; i: Integer): PChar;
 begin
@@ -299,7 +299,7 @@ end;
 procedure luaL_addchar(B: PluaL_Buffer; c: Char);
 begin
   if ptruint(@(B^.b)) < (ptruint(@(B^.buffer[0])) + LUAL_BUFFERSIZE) then
-    luaL_prepbuffer(B);
+    { #todo : not in lua < 5.1 }//luaL_prepbuffer(B);
   B^.b[1] := c;
   B^.b := B^.b + 1;
 end;
@@ -315,7 +315,7 @@ begin
 end;
 
 procedure luaL_buffinit(L: Plua_State ; B: PluaL_Buffer); cdecl; external LUA_LIB_NAME;
-function luaL_prepbuffer(B: PluaL_Buffer): PChar; cdecl; external LUA_LIB_NAME;
+{ #todo : not in lua < 5.1 }//function luaL_prepbuffer(B: PluaL_Buffer): PChar; cdecl; external LUA_LIB_NAME;
 procedure luaL_addlstring(B: PluaL_Buffer; const s: PChar; l: size_t); cdecl; external LUA_LIB_NAME;
 procedure luaL_addstring(B: PluaL_Buffer; const s: PChar); cdecl; external LUA_LIB_NAME;
 procedure luaL_addvalue(B: PluaL_Buffer); cdecl; external LUA_LIB_NAME;

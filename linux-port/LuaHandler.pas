@@ -15068,7 +15068,7 @@ begin
   L:=LUAVM;
   if L<>nil then
   begin
-    luaL_openlibs(L);
+    { #todo : not in lua < 5.1 }//    luaL_openlibs(L);
 
     lua_atpanic(L, LuaPanic);
     InitLimitedLuastate(L);
