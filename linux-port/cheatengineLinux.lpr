@@ -278,7 +278,8 @@ var
   path: string;
   noautorun: boolean;
 
-{$R *.res}
+  { #note : It be broke }
+//{$R *.res}
 
 begin
   Application.Title:='Cheat Engine 7.3';
