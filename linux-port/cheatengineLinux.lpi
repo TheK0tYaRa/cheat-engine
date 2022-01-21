@@ -63,51 +63,36 @@
         <PackageName Value="LCL"/>
       </Item6>
     </RequiredPackages>
-    <Units Count="10">
+    <Units Count="7">
       <Unit0>
         <Filename Value="cheatengineLinux.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="fuckitcopypastedcode/anchoreditor.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="AnchorEditor"/>
-      </Unit1>
-      <Unit2>
-        <Filename Value="fuckitcopypastedcode/environmentopts.pp"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="EnvironmentOpts"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="fuckitcopypastedcode/idetranslations.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="IDETranslations"/>
-      </Unit3>
-      <Unit4>
         <Filename Value="linux/regconfig.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="RegConfig"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="linux/unixkeys.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="linux/unixdebug.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="linux/unixmemory.pas"/>
+        <IsPartOfProject Value="True"/>
       </Unit4>
       <Unit5>
-        <Filename Value="linux/unixkeys.pas"/>
+        <Filename Value="linux/unixhandles.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit5>
       <Unit6>
-        <Filename Value="linux/unixdebug.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit6>
-      <Unit7>
-        <Filename Value="linux/unixmemory.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit7>
-      <Unit8>
-        <Filename Value="linux/unixhandles.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit8>
-      <Unit9>
         <Filename Value="linux/temporaryunit.pas"/>
         <IsPartOfProject Value="True"/>
-      </Unit9>
+      </Unit6>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

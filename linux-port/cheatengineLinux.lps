@@ -9,14 +9,12 @@
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
         <TopLine Value="262"/>
-        <CursorPos X="43" Y="280"/>
+        <CursorPos X="55" Y="279"/>
         <UsageCount Value="187"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
         <Filename Value="fuckitcopypastedcode/anchoreditor.pas"/>
-        <IsPartOfProject Value="True"/>
         <UnitName Value="AnchorEditor"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1122"/>
@@ -26,7 +24,6 @@
       </Unit1>
       <Unit2>
         <Filename Value="fuckitcopypastedcode/environmentopts.pp"/>
-        <IsPartOfProject Value="True"/>
         <UnitName Value="EnvironmentOpts"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="26"/>
@@ -36,7 +33,6 @@
       </Unit2>
       <Unit3>
         <Filename Value="fuckitcopypastedcode/idetranslations.pas"/>
-        <IsPartOfProject Value="True"/>
         <UnitName Value="IDETranslations"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="213"/>
@@ -90,33 +86,33 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit8>
       <Unit9>
-        <Filename Value="linux/unixmem.pas"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos Y="11"/>
-        <UsageCount Value="120"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit9>
-      <Unit10>
-        <Filename Value="linux/const.pp"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="25" Y="5"/>
-        <UsageCount Value="39"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit10>
-      <Unit11>
-        <Filename Value="linux/const.pas"/>
-        <UnitName Value="uconst"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="38" Y="12"/>
-        <UsageCount Value="39"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
-      </Unit11>
-      <Unit12>
         <Filename Value="linux/temporaryunit.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos Y="16"/>
         <UsageCount Value="41"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="linux/unixmem.pas"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos Y="11"/>
+        <UsageCount Value="120"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="linux/const.pp"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="25" Y="5"/>
+        <UsageCount Value="39"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="linux/const.pas"/>
+        <UnitName Value="uconst"/>
+        <EditorIndex Value="-1"/>
+        <CursorPos X="38" Y="12"/>
+        <UsageCount Value="39"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit12>
       <Unit13>
