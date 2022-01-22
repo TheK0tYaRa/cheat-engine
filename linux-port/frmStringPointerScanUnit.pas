@@ -1081,7 +1081,7 @@ begin
   outputfile:=TFileStream.create(Outputfilename+'.temp', fmOpenWrite or fmShareDenyNone);
 
 
-  lastwrite:=GetTickCount;
+  lastwrite:=GetTickCount64;
 
   lw:=pointerfilereader.levelWidth;
   outputfile.WriteBuffer(lw, sizeof(lw));

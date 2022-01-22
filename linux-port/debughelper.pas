@@ -502,7 +502,7 @@ begin
             begin
               if idle then
               begin
-                if (not timeoutonly) or (gettickcount>(bp^.deletetickcount+3000)) then
+                if (not timeoutonly) or (gettickcount64>(bp^.deletetickcount+3000)) then
                   dec(bp^.deletecountdown);
               end;
             end;

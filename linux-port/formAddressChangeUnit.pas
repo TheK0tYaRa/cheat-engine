@@ -303,7 +303,7 @@ begin
   else
     IncreaseClick(nil);
 
-  repeattimer.Interval:=max(10,500-((GetTickCount-repeatstart) div 10));
+  repeattimer.Interval:=max(10,500-((GetTickCount64-repeatstart) div 10));
 end;
 
 procedure TOffsetInfo.DecreaseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);

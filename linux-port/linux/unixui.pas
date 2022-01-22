@@ -5,7 +5,7 @@ unit UnixUI;
 interface
 
 uses
-  unixporthelper, unixhandles;
+  unixporthelper, unixhandles, unixdebug, Forms, Dialogs;
 
 type
   LPCSTR = {$IFDEF USE_DELPHI_TYPES} Windows.LPCSTR {$ELSE} PAnsiChar {$ENDIF};
@@ -21,13 +21,18 @@ type
 
   {$ENDIF UNICODE}
 
-procedure MessageBox(hWnd: HWND; lpText: LPCTSTR; lpCaption: LPCTSTR; uType: UINT);
+function MessageBox(hWnd: THandle = 0; lpText: LPCTSTR = 'Text'; lpCaption: LPCTSTR = 'Caption';
+  uType: UINT = $0):Integer;
 
 implementation
 
-procedure MessageBox(hWnd: HWND; lpText: LPCTSTR; lpCaption: LPCTSTR; uType: UINT);
+function MessageBox(hWnd: THandle = 0; lpText: LPCTSTR = 'Text'; lpCaption: LPCTSTR = 'Caption';
+  uType: UINT = $0):Integer;
 begin
-
+  OutputDebugString('Untested linux MessageBox');
+  if hWnd <> 0 then
+    OutputDebugString('HWND is not implemented in MessageBox on linux yet');
+  result:=Application.MessageBox(lpText,lpCaption,uType);
 end;
 
 end.

@@ -3,6 +3,9 @@ program cheatengineLinux;
 {$mode objfpc}{$H+}
 
 uses
+  {$ifdef linux}
+  cthreads, //for some reason required
+  {$endif}
   {$ifdef darwin}
   cthreads,
   {$endif}
@@ -14,10 +17,7 @@ uses
   macport, macportdefines,coresymbolication, macexceptiondebuggerinterface,
   macCreateRemoteThread, macumm, machotkeys, macPipe,
   {$endif}
-  {$ifdef linux}
-  cthreads, { removes threading error
-               but adds abstract method error }
-  {$else}
+  {$ifndef linux}
   formdesignerunit,
   {$endif}
   {$ifdef windows}

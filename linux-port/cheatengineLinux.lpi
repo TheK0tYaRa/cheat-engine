@@ -30,7 +30,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="7"/>
       <MinorVersionNr Value="2"/>
-      <BuildNr Value="7100"/>
+      <BuildNr Value="7108"/>
       <StringTable CompanyName="Cheat Engine" FileDescription="Cheat Engine" ProductVersion="7.2"/>
     </VersionInfo>
     <BuildModes Count="1">
@@ -132,6 +132,9 @@
         <ShowHints Value="False"/>
       </Verbosity>
       <WriteFPCLogo Value="False"/>
+      <CompilerMessages>
+        <IgnoredMessages idx7119="True" idx5093="True" idx5066="True" idx5061="True" idx5059="True" idx5044="True" idx5043="True" idx5036="True" idx4110="True" idx4105="True" idx4104="True" idx4056="True" idx4046="True" idx4045="True"/>
+      </CompilerMessages>
       <CustomOptions Value="-dbenchmarkps
 -dcemain
 -dNDEBUG
