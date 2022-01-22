@@ -7,7 +7,9 @@
       <Unit0>
         <Filename Value="cheatengineLinux.lpr"/>
         <IsPartOfProject Value="True"/>
-        <CursorPos X="45" Y="12"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="111"/>
+        <CursorPos X="21" Y="126"/>
         <UsageCount Value="213"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -17,7 +19,7 @@
         <UnitName Value="RegConfig"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="26" Y="11"/>
-        <UsageCount Value="194"/>
+        <UsageCount Value="197"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
       <Unit2>
@@ -26,44 +28,38 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="6"/>
         <CursorPos X="49" Y="19"/>
-        <UsageCount Value="193"/>
+        <UsageCount Value="196"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
       <Unit3>
         <Filename Value="linux/unixdebug.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="4"/>
-        <TopLine Value="185"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="184"/>
         <CursorPos X="65" Y="204"/>
-        <UsageCount Value="193"/>
-        <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
+        <UsageCount Value="196"/>
       </Unit3>
       <Unit4>
         <Filename Value="linux/unixmemory.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="2"/>
+        <EditorIndex Value="-1"/>
         <CursorPos X="9" Y="47"/>
-        <UsageCount Value="157"/>
-        <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
+        <UsageCount Value="160"/>
       </Unit4>
       <Unit5>
         <Filename Value="linux/unixhandles.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="3"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="3"/>
         <CursorPos X="5" Y="9"/>
-        <UsageCount Value="158"/>
-        <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
+        <UsageCount Value="161"/>
       </Unit5>
       <Unit6>
         <Filename Value="linux/temporaryunit.pas"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="4" Y="12"/>
-        <UsageCount Value="72"/>
+        <UsageCount Value="75"/>
       </Unit6>
       <Unit7>
         <Filename Value="fuckitcopypastedcode/anchoreditor.pas"/>
@@ -249,13 +245,11 @@
       </Unit28>
       <Unit29>
         <Filename Value="LuaHandler.pas"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="1356"/>
-        <CursorPos X="34" Y="1374"/>
-        <UsageCount Value="34"/>
+        <CursorPos X="16"/>
+        <FoldState Value=" T6pmX04g"/>
+        <UsageCount Value="35"/>
         <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit29>
       <Unit30>
         <Filename Value="debugeventhandler.pas"/>
@@ -1004,8 +998,9 @@
       <Unit127>
         <Filename Value="disassembler.pas"/>
         <EditorIndex Value="-1"/>
-        <CursorPos X="39" Y="18"/>
-        <UsageCount Value="6"/>
+        <TopLine Value="2942"/>
+        <CursorPos Y="2957"/>
+        <UsageCount Value="11"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit127>
       <Unit128>
@@ -1057,9 +1052,9 @@
       <Unit134>
         <Filename Value="Assemblerunit.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="2769"/>
-        <CursorPos X="45" Y="2784"/>
-        <UsageCount Value="9"/>
+        <TopLine Value="871"/>
+        <CursorPos X="14" Y="887"/>
+        <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit134>
       <Unit135>
@@ -1111,9 +1106,9 @@
       <Unit141>
         <Filename Value="lua/lualib.pas"/>
         <EditorIndex Value="-1"/>
-        <TopLine Value="36"/>
-        <CursorPos X="76" Y="55"/>
-        <UsageCount Value="8"/>
+        <TopLine Value="57"/>
+        <CursorPos X="41" Y="72"/>
+        <UsageCount Value="10"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit141>
       <Unit142>
@@ -1338,12 +1333,10 @@
       <Unit169>
         <Filename Value="linux/unixui.pas"/>
         <UnitName Value="UnixUI"/>
-        <EditorIndex Value="5"/>
+        <EditorIndex Value="-1"/>
         <TopLine Value="8"/>
         <CursorPos X="50" Y="32"/>
         <UsageCount Value="12"/>
-        <Loaded Value="True"/>
-        <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit169>
       <Unit170>
         <Filename Value="csharpcompiler.pas"/>
@@ -1362,35 +1355,180 @@
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit171>
     </Units>
-    <JumpHistory Count="6" HistoryIndex="5">
+    <JumpHistory Count="15" HistoryIndex="14">
       <Position1>
-        <Filename Value="cheatengineLinux.lpr"/>
-        <Caret Line="13" Column="18" TopLine="7"/>
+        <Filename Value="LuaHandler.pas"/>
+        <Caret Line="15945" TopLine="15926"/>
       </Position1>
       <Position2>
-        <Filename Value="cheatengineLinux.lpr"/>
-        <Caret Line="18" Column="12" TopLine="7"/>
+        <Filename Value="LuaHandler.pas"/>
+        <Caret Line="15071" Column="52" TopLine="15056"/>
       </Position2>
       <Position3>
-        <Filename Value="cheatengineLinux.lpr"/>
-        <Caret Line="95" Column="86" TopLine="80"/>
+        <Filename Value="LuaHandler.pas"/>
+        <Caret Line="15071" TopLine="15056"/>
       </Position3>
       <Position4>
-        <Filename Value="linux/unixhandles.pas"/>
-        <Caret Line="9" Column="5" TopLine="3"/>
+        <Filename Value="LuaHandler.pas"/>
+        <Caret Line="15072" Column="5" TopLine="15057"/>
       </Position4>
       <Position5>
-        <Filename Value="linux/unixdebug.pas"/>
-        <Caret Line="204" Column="65" TopLine="185"/>
+        <Filename Value="LuaHandler.pas"/>
+        <Caret Line="15071" Column="39" TopLine="15057"/>
       </Position5>
       <Position6>
         <Filename Value="LuaHandler.pas"/>
-        <Caret Line="1614" Column="49" TopLine="1597"/>
+        <Caret Line="15072" TopLine="15057"/>
       </Position6>
+      <Position7>
+        <Filename Value="LuaHandler.pas"/>
+        <Caret Line="15279" TopLine="15264"/>
+      </Position7>
+      <Position8>
+        <Filename Value="LuaHandler.pas"/>
+        <Caret Line="15897" TopLine="15879"/>
+      </Position8>
+      <Position9>
+        <Filename Value="LuaHandler.pas"/>
+        <Caret Line="15946" Column="50" TopLine="15928"/>
+      </Position9>
+      <Position10>
+        <Filename Value="LuaHandler.pas"/>
+        <Caret Line="15948" TopLine="15928"/>
+      </Position10>
+      <Position11>
+        <Filename Value="LuaHandler.pas"/>
+        <Caret Column="16"/>
+      </Position11>
+      <Position12>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="10" Column="42"/>
+      </Position12>
+      <Position13>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="60" Column="87" TopLine="46"/>
+      </Position13>
+      <Position14>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="126" Column="57" TopLine="106"/>
+      </Position14>
+      <Position15>
+        <Filename Value="cheatengineLinux.lpr"/>
+        <Caret Line="269" Column="33" TopLine="250"/>
+      </Position15>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
       <Modes ActiveMode=""/>
     </RunParams>
   </ProjectSession>
+  <Debugging>
+    <BreakPoints>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="LuaHandler.pas"/>
+        <Line Value="187"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="lua/lualib.pas"/>
+        <Line Value="74"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="lua/lualib.pas"/>
+        <Line Value="52"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="disassembler.pas"/>
+        <Line Value="1640"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="Assemblerunit.pas"/>
+        <Line Value="887"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="Assemblerunit.pas"/>
+        <Line Value="888"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="Assemblerunit.pas"/>
+        <Line Value="2065"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="Assemblerunit.pas"/>
+        <Line Value="2066"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="Assemblerunit.pas"/>
+        <Line Value="2067"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="Assemblerunit.pas"/>
+        <Line Value="2068"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="disassembler.pas"/>
+        <Line Value="2957"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="disassembler.pas"/>
+        <Line Value="2959"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="disassembler.pas"/>
+        <Line Value="2984"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="disassembler.pas"/>
+        <Line Value="2986"/>
+      </Item>
+      <Item>
+        <Kind Value="bpkSource"/>
+        <WatchScope Value="wpsLocal"/>
+        <WatchKind Value="wpkWrite"/>
+        <Source Value="cheatengineLinux.lpr"/>
+        <Line Value="270"/>
+      </Item>
+    </BreakPoints>
+  </Debugging>
 </CONFIG>

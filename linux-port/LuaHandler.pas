@@ -15068,7 +15068,8 @@ begin
   L:=LUAVM;
   if L<>nil then
   begin
-    { #todo : not in lua < 5.1 }//    luaL_openlibs(L);
+    { #todo : not in lua < 5.1 }//
+    luaL_openlibs(L);
 
     lua_atpanic(L, LuaPanic);
     InitLimitedLuastate(L);
@@ -15271,9 +15272,7 @@ begin
     initializeLuaMemoryview;
     initializeLuaTableFile;
 
-    {$ifdef linux}{$else}
-    InitializeLuaXMPlayer;
-    {$endif}
+    { #todo : XMPlayer } //InitializeLuaXMPlayer;
 
     Lua_register(L, 'writeRegionToFile', writeRegionToFile);
     Lua_register(L, 'readRegionFromFile', readRegionFromFile);

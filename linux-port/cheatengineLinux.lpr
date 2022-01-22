@@ -123,7 +123,7 @@ uses
   frmCR3SwitcherUnit, tcclib, sourcecodehandler, frmSourceDisplayUnit,
   unixmemory, unixdebug, unixhandles, temporaryunit;
 
-{$R cheatengine.res}
+{$R cheatengineLinux.res}
 {$IFDEF windows}
 //{$R manifest.res}  //lazarus now has this build in (but sucks as it explicitly turns of dpi aware)
 //{$R Sounds.rc}
