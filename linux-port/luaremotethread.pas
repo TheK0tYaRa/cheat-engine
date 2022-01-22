@@ -82,7 +82,7 @@ begin
   if lua_Gettop(L)>=1 then
     timeout:=lua_tointeger(L,1)
   else
-    timeout:=INFINITE;
+    timeout:=0;
 
   rt:=TRemoteThread(luaclass_getClassObject(L));
   r:=rt.waitForThread(timeout);

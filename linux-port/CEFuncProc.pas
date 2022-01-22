@@ -687,7 +687,7 @@ end;
 function getathreadid(processid:dword):dword;
 var i: integer;
     ths: thandle;
-    tE: ^threadentry32;
+    te: ^threadentry32;
 begin
   {$ifdef windows}
   if frmProcessWatcher<>nil then
@@ -1909,7 +1909,7 @@ begin
   else
     result:=x.dwAvailVirtual;
   {$else}
-  result:=-1;
+  result:=0;
   {$ENDIF}
 
 end;

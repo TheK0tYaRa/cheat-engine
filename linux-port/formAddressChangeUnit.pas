@@ -318,7 +318,7 @@ begin
   else
     stepsize:=ifthen(istop, 4, processhandler.pointersize);
 
-  repeatstart:=GetTickCount;
+  repeatstart:=GetTickCount64;
   repeatdirection:=0; //tell the timer to decrease
 
   repeattimer:=TTimer.Create(self.owner.owner);
@@ -340,7 +340,7 @@ begin
   else
     stepsize:=ifthen(istop, 4, processhandler.pointersize);
 
-  repeatstart:=GetTickCount;
+  repeatstart:=GetTickCount64;
   repeatdirection:=1; //tell the timer to increase
   repeattimer:=TTimer.Create(self.owner.owner);
   repeattimer.Interval:=500;

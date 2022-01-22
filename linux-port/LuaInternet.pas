@@ -1,7 +1,7 @@
 unit LuaInternet;
 
 {$mode delphi}
-
+{$WARN 5061 off : Variable "$1" read but nowhere assigned}
 interface
 
 

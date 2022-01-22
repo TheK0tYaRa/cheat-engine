@@ -2101,7 +2101,7 @@ begin
             if messagebox(0,'The pointerscanner seems to take a long time to terminate. Force it?', 'Pointerscan Timeout', MB_YESNO)=IDYES then break;
 
 
-            terminatedTime:=GetTickCount;
+            terminatedTime:=GetTickCount64;
 
           end;
 

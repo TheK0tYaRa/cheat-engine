@@ -67,7 +67,7 @@ var
   currentColorSet: TBetterControlColorSet;
 
   //color overrides
-  clWindowtext: TColor=graphics.clWindowText;
+  clWindowtext: TColor=DWord(graphics.clWindowText);
   clWindow: TColor=graphics.clWindow;
   clHighlight: TColor=graphics.clHighlight;
   clBtnFace: TColor=graphics.clBtnFace;

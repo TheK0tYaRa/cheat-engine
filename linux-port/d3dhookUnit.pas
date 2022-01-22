@@ -735,7 +735,7 @@ var eventlist: array of THandle;
     cursor: boolean;
     cursorstart: dword;
 begin
-  cursorstart:=gettickcount;
+  cursorstart:=GetTickCount64;
   console.log:=tstringlist.create;
   console.cursorpos:=0;
 
@@ -765,7 +765,7 @@ begin
         lastmessage:=owner.shared.console.lastmessage;
         Synchronize(dokeyboard);
         SetEvent(owner.hashandledkeyboardevent);
-        cursorstart:=GetTickCount;
+        cursorstart:=GetTickCount64;
       end;
 
       WAIT_OBJECT_0+2:

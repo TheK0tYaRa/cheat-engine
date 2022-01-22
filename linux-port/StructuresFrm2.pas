@@ -3508,9 +3508,9 @@ var x: integer;
     s: string;
 
 begin
-  if gettickcount>lastresizecheck+50 then
+  if gettickcount64>lastresizecheck+50 then
   begin
-    lastresizecheck:=GetTickCount;
+    lastresizecheck:=GetTickCount64;
     SetupFirstNodeLength;
     tvStructureView.ReAlign;
 

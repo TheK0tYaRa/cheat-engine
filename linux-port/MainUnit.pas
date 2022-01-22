@@ -5775,7 +5775,7 @@ begin
   {$endif}
 
   Set8087CW($133f);
-  SetSSECSR($1f80);
+  SetMXCSR($1f80);
 
   //FormDropFiles fix for win7, win8 and later (window message filter update)
   {$ifdef windows}
@@ -6041,7 +6041,7 @@ begin
 
   old8087CW := Get8087CW;
   Set8087CW($133f);
-  SetSSECSR($1f80);
+  SetMXCSR($1f80);
 
 
 
@@ -8023,7 +8023,7 @@ begin
 
   onetimeonly := True;
   Set8087CW($133f);
-  SetSSECSR($1f80);
+  SetMXCSR($1f80);
 
   loadt := False;
   editsh2.Text := format('%.1f', [1.0]);

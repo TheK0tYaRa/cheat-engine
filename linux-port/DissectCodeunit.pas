@@ -196,7 +196,7 @@ begin
   btnStart.Caption:=rsStop;
   timer1.Enabled:=true;
 
-  starttime:=gettickcount;
+  starttime:=GetTickCount64;
 
   dissectcode.dowork;
 
@@ -243,7 +243,7 @@ var h,m,s,ms: word;
 
     x: double;
 begin
-  currenttime:=gettickcount;
+  currenttime:=GetTickCount64;
   currenttime:=currenttime-starttime;
   //currenttime holds the number of milliseconds that have passed (usually devidable by 1000 because of the timer)
 

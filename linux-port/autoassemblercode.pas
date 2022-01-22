@@ -1143,7 +1143,7 @@ begin
       end;
 
 
-      {
+      (*
       typedef struct {
         union{
           struct{
@@ -1160,7 +1160,7 @@ begin
           double da[2];
         };
       } xmmreg, *pxmmreg;
-      }
+      *)
 
       //testcompile the full script
       if targetself then

@@ -93,7 +93,7 @@ end;
 
 procedure TAddressListEditor.MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
-//  if gettickcount<starttime+GetDoubleClickTime then
+//  if GetTickCount64<starttime+GetDoubleClickTime then
 //    DblClick
 //  else
     inherited MouseDown(Button, Shift, X, Y);
@@ -230,7 +230,7 @@ begin
 
 
 
-  starttime:=GetTickCount;
+  starttime:=GetTickCount64;
 
   if ((GetKeyState(VK_RETURN) shr 15) and 1)=1 then  //if launched with RETURN then select all
   begin

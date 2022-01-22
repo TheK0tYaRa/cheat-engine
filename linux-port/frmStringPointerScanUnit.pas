@@ -641,7 +641,7 @@ end;
 //--------------TRescan----------------
 procedure TRescan.flushResults;
 begin
-  lastwrite:=GetTickCount;
+  lastwrite:=GetTickCount64;
   outputfile.WriteBuffer(results.Memory^, results.position);
   results.position:=0;
 end;
@@ -651,7 +651,7 @@ begin
   inc(fcount);
   results.WriteBuffer(p^, pointerfilereader.entrysize);
 
-  if ((gettickcount-lastwrite)>5*60*1000) or (results.Position>=(15*1024*1024)) then
+  if ((GetTickCount64-lastwrite)>5*60*1000) or (results.Position>=(15*1024*1024)) then
     flushResults;
 end;
 
@@ -1395,7 +1395,7 @@ end;
 
 procedure TScanner.flushResults;
 begin
-  lastwrite:=GetTickCount;
+  lastwrite:=GetTickCount64;
   resultfile.WriteBuffer(results.Memory^, results.position);
   results.position:=0;
 end;
@@ -1542,7 +1542,7 @@ begin
   results.WriteBuffer(unicode, sizeof(unicode));
   results.WriteBuffer(path[0], sizeof(path[0])*(maxlevel+1));
 
-  if (getTickCount-lastwrite>5*60*1000) or (results.Position>=(15*1024*1024)) then
+  if (GetTickCount64-lastwrite>5*60*1000) or (results.Position>=(15*1024*1024)) then
     flushResults;
 
   inc(count);

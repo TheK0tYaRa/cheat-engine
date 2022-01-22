@@ -672,7 +672,7 @@ begin
   if lua_gettop(L)>0 then
     timeout:=lua_tointeger(L,1)
   else
-    timeout:=INFINITE;
+    timeout:=0;
 
   setlength(buffers,0);
   try
@@ -859,7 +859,7 @@ begin
       if (lua_gettop(L)>=3) and (not lua_isnil(L,3)) then
         timeout:=lua_tointeger(L,3)
       else
-        timeout:=INFINITE;
+        timeout:=0;
 
       if (lua_gettop(L)>=4) and (not lua_isnil(L,4)) then
         waittilldone:=not lua_toboolean(L,4)

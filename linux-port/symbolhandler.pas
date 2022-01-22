@@ -3557,7 +3557,7 @@ begin
         {$ifdef windows}
         base:=FindFreeBlockForRegion(preferedaddress,max(65536,size));
         {$else}
-        base:=0;
+        base:=NIL;
         {$endif}
 
         globalalloc:=virtualallocex(processhandle,base,max(65536,size),MEM_COMMIT or MEM_RESERVE , PAGE_EXECUTE_READWRITE);
@@ -3596,7 +3596,7 @@ begin
         if (globalallocpid<>processid) or (globalalloc=nil) or (globalallocsizeleft<size) then //new alloc
         begin
           globalallocpid:=processid;
-          globalalloc:=virtualallocex(processhandle,{$ifdef windows}FindFreeBlockForRegion(preferedaddress,max(65536,size)){$else}0{$endif},max(65536,size),MEM_COMMIT or MEM_RESERVE , PAGE_EXECUTE_READWRITE);
+          globalalloc:=virtualallocex(processhandle,{$ifdef windows}FindFreeBlockForRegion(preferedaddress,max(65536,size)){$else}NIL{$endif},max(65536,size),MEM_COMMIT or MEM_RESERVE , PAGE_EXECUTE_READWRITE);
           globalallocsizeleft:=max(65536,size);
 
           if globalalloc<>nil then

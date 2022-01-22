@@ -1363,7 +1363,7 @@ begin
         UnsetBreakpoint(bp);
         bp^.deletecountdown:=10; //10*100=1000=1 second
         bp^.markedfordeletion := True; //set this flag so it gets deleted on next no-event
-        bp^.deletetickcount:=GetTickCount;
+        bp^.deletetickcount:=GetTickCount64;
 
         bp^.FoundcodeDialog:=nil;
         bp^.frmTracer:=nil;
@@ -1379,7 +1379,7 @@ begin
 
     breakpoint^.deletecountdown:=10;
     breakpoint^.markedfordeletion := True;
-    breakpoint^.deletetickcount:=GetTickCount;
+    breakpoint^.deletetickcount:=GetTickCount64;
 
 
     state:=false;
@@ -2820,13 +2820,13 @@ begin
 
   if delayAfterDebuggerAttach>0 then
   begin
-    starttime:=gettickcount;
+    starttime:=GetTickCount64;
     seconds:=starttime;
-    while gettickcount<starttime+delayAfterDebuggerAttach do
+    while GetTickCount64<starttime+delayAfterDebuggerAttach do
     begin
       CheckSynchronize(100);
 
-      if gettickcount>seconds+1000 then
+      if GetTickCount64>seconds+1000 then
       begin
         seconds:=seconds+1000;
         beep;

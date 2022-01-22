@@ -710,14 +710,14 @@ begin
           if temphotkey.keycount=maxActiveKeyCount then //it belongs to the max complex hotkey count
           begin
             //OutputDebugString('1');
-            if ((tempHotkey.hotkeylistItem.lastactivate+ifthen(tempHotkey.hotkeylistItem.delaybetweenActivate>0, tempHotkey.hotkeylistItem.delaybetweenActivate, hotkeyIdletime))<GetTickCount) then //check if it can be activated
+            if ((tempHotkey.hotkeylistItem.lastactivate+ifthen(tempHotkey.hotkeylistItem.delaybetweenActivate>0, tempHotkey.hotkeylistItem.delaybetweenActivate, hotkeyIdletime))<GetTickCount64) then //check if it can be activated
             begin
               a:=tempHotkey.hotkeylistItem.windowtonotify;
               b:=tempHotkey.hotkeylistItem.id;
               c:=(tempHotkey.hotkeylistItem.uVirtKey shl 16)+tempHotkey.hotkeylistItem.fuModifiers;
              // OutputDebugString('2');
 
-              tempHotkey.hotkeylistItem.lastactivate:=gettickcount;
+              tempHotkey.hotkeylistItem.lastactivate:=gettickcount64;
               if tempHotkey.hotkeylistItem.handler2 then
               begin
                 //OutputDebugString('3');

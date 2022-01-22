@@ -48,7 +48,7 @@ end;
 procedure TChangeList.SetValue(i: integer; value: string);
 begin
   if (list[i].value<>'') and (list[i].value<>value) then
-    list[i].LastChange:=Gettickcount;
+    list[i].LastChange:=GetTickCount64;
 
   list[i].value:=value;
 end;

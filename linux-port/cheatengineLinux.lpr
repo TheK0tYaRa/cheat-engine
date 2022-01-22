@@ -11,11 +11,12 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, {CEInterfaces,} // this includes the LCL widgetset
   {$ifdef darwin}
-  //
   macport, macportdefines,coresymbolication, macexceptiondebuggerinterface,
   macCreateRemoteThread, macumm, machotkeys, macPipe,
   {$endif}
   {$ifdef linux}
+  cthreads, { removes threading error
+               but adds abstract method error }
   {$else}
   formdesignerunit,
   {$endif}
@@ -92,7 +93,7 @@ uses
   CEListviewItemEditor, LuaTreeview, LuaTreeNodes, LuaTreeNode, LuaCalendar,
   LuaSymbolListHandler, LuaFindDialog, LuaCommonDialog, LuaSettings,
   frmReferencedFunctionsUnit, LuaPageControl, DebugHelper,
-  frmNetworkDataCompressionUnit, lazcontrols, { #todo -cnot-found :  } {anchordockpkg,}
+  frmNetworkDataCompressionUnit, lazcontrols, { #note -cnot-found :  } {anchordockpkg,}
   LuaApplication, ProcessList, pointeraddresslist, frmResumePointerscanUnit,
   frmSetupPSNNodeUnit, PointerscanWorker, PointerscanStructures,
   PointerscanController, zstreamext, PointerscanConnector,

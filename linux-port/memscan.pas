@@ -5652,7 +5652,7 @@ begin
   (*
   {$if defined(cpui386) or defined(cpux86_64)}
   Set8087CW($133f); //disable floating point exceptions in this thread
-  SetSSECSR($1f80);
+  SetMXCSR($1f80);
   {$endif}
   *)
 

@@ -569,7 +569,7 @@ var
   procedure renderChar;
   begin
     //renderable character
-    charlength:=UTF8CharacterLength(pchar(@formattedtext[i]));
+    charlength:=UTF8CodepointSize(pchar(@formattedtext[i]));
     if charlength>1 then
     begin
       setlength(c,charlength);

@@ -5,7 +5,7 @@ unit frmSaveSnapshotsUnit;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
+  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls, LazFileUtils,
   ExtCtrls, math, LuaCanvas, FPImage, FPCanvas, FPImgCanv, FPReadPNG, FPWritePNG, betterControls;
 
 resourcestring
@@ -254,7 +254,7 @@ begin
     //copy all selected snapshots to this folder
 
     ext:=ExtractFileExt(savedialog1.filename);
-    f:=ExtractFileNameWithoutExt(savedialog1.filename);
+    f:=ExtractFileNameOnly(savedialog1.filename);
 
 
 

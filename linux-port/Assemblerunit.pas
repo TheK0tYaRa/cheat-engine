@@ -2781,7 +2781,7 @@ uses
   {$ifdef windows}
   windows,
   {$endif}
-  CEFuncProc, symbolhandler, lua, luahandler, lualib, assemblerArm, Parsers,
+  CEFuncProc, symbolhandler, lua, LuaHandler, lualib, assemblerArm, Parsers,
   NewKernelHandler, LuaCaller, math, cpuidUnit, classes, controls;
 {$endif}
 

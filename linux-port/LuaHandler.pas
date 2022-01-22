@@ -25,7 +25,7 @@ uses
   {$ifdef windows}
   jwawindows, windows, ShellApi,
   {$endif}
-  vmxfunctions, Classes, dialogs, SysUtils, lua, lualib,
+  vmxfunctions, Classes, dialogs, SysUtils, lua, lualib, LazFileUtils,
   lauxlib, syncobjs, CEFuncProc, NewKernelHandler, Graphics,
   controls, LuaCaller, forms, ExtCtrls, StdCtrls, comctrls, ceguicomponents,
   genericHotkey, luafile, xmplayer_server, ExtraTrainerComponents, customtimer,
@@ -12175,8 +12175,8 @@ end;
 function lua_sendMessage(L:PLua_state): integer; cdecl;
 var h: HWND;
     Msg:  UINT;
-    wp: WPARAM;
-    lp: LPARAM;
+    wp: Word;
+    lp: LongInt;
 begin
   result:=0;
   if lua_gettop(L)=4 then
@@ -12194,8 +12194,8 @@ end;
 function lua_sendMessageTimeout(L:PLua_state): integer; cdecl;
 var h: HWND;
     Msg:  UINT;
-    wp: WPARAM;
-    lp: LPARAM;
+    wp: Word;
+    lp: LongInt;
     flags, timeout: uint;
     r: DWORD_PTR;
 begin
@@ -14466,7 +14466,7 @@ function lua_extractfilenamewithoutext(L: Plua_State): integer; cdecl;
 begin
   if lua_gettop(L)>=1 then
   begin
-    lua_pushstring(L, ExtractFileNameWithoutExt(Lua_ToString(L,1)));
+    lua_pushstring(L, ExtractFileNameOnly(Lua_ToString(L,1)));
     exit(1);
   end
   else

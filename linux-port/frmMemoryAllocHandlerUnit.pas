@@ -858,6 +858,8 @@ function TfrmMemoryAllocHandler.WaitForInitializationToFinish: boolean;
 begin
   {$IFDEF windows}
     result:=WaitForSingleObject(CEInitializationFinished,5000)=WAIT_OBJECT_0;
+  {$else}
+    result:=true;
   {$ENDIF}
 end;
 

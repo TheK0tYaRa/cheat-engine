@@ -862,7 +862,7 @@ begin
     if not isupdating then
       disCanvas.Repaint;
 
-    lastupdate:=gettickcount;
+    lastupdate:=GetTickCount64;
 
   end;
 
