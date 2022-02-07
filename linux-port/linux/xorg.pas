@@ -5,7 +5,8 @@ unit xorg;
 interface
 
 uses
-  unixporthelper, dialogs, unixhandles;
+  //unixporthelper,
+  dialogs, unixhandles;
 
 const
   MB_OK = $0000;
@@ -16,8 +17,8 @@ function MessageBox(hWnd: HWND; lpText, lpCaption: PChar; uType: Cardinal = MB_O
 implementation
 
 function GetForegroundWindow(): THandle;
-var
-  w:HWND;
+//var
+  //w:HWND;
 begin
   { TODO -cGetForegroundWindow : https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getforegroundwindow }
   // xdotool getwindowfocus

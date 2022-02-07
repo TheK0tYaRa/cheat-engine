@@ -16,7 +16,7 @@ uses
   {$endif}
   {$ifdef linux}
   LCLType, unixporthelper, uconst, unixmemory, unixhandles, unixthreads, mmap,
-  unixdebug,
+  unixdebug, CEapi,
   {$endif}
   {$ifdef windows}
   jwawindows, windows,
@@ -362,8 +362,8 @@ implementation
 uses disassembler,CEDebugger,debughelper, symbolhandler, symbolhandlerstructs,
      frmProcessWatcherUnit, KernelDebugger, formsettingsunit, MemoryBrowserFormUnit,
      savedscanhandler, networkInterface, networkInterfaceApi, vartypestrings,
-     processlist, Parsers, Globals, xinput, luahandler, LuaClass, LuaObject,
-     UnexpectedExceptionsHelper, LazFileUtils, autoassembler, Clipbrd;
+     processlist, Parsers, Globals, xinput, LuaHandler, LuaClass, LuaObject,
+     UnexpectedExceptionsHelper, LazFileUtils, autoassembler, Clipbrd, process;
 
 
 resourcestring
@@ -1581,7 +1581,7 @@ begin
 
   result:=cOsUnknown;
 
- {$ENDIF}
+  {$ENDIF}
   cachedSystemType:=result;
 end;
 
@@ -3831,11 +3831,17 @@ initialization
     {$ifdef windows}
     OpenProcess:=@windows.OpenProcess;
     {$endif}
+    //{$ifdef linux}
+    //OpenProcess:=@
+    //{$endif}
   end;
 
 
+  {$ifdef linux}
+  ownprocesshandle := CEapi.OpenProcess(GetCurrentProcessId);
+  {$else}
   ownprocesshandle := OpenProcess(ifthen(GetSystemType<=6,$1f0fff, process_all_access), True, GetCurrentProcessId);
-
+  {$endif}
 
 
   getmem(tempdir,256);

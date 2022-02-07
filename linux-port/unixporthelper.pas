@@ -5,7 +5,7 @@ unit unixporthelper;
 interface
 
 uses
-  Classes, SysUtils{$ifdef android},log{$endif},BaseUnix;
+  Classes, SysUtils, {$ifdef android}log,{$else}unixdebug,{$endif} BaseUnix;
 
 //just fill in some basic info. Most of it won't be used for jni. It's mostly for some structures and function declaration/pointers
 type
@@ -336,10 +336,10 @@ begin
 end;
 
 
-function CreateToolhelp32Snapshot(dwFlags,th32ProcessID:DWORD):THandle;
-begin
-  { TODO -cCreateToolhelp32Snapshot : https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-createtoolhelp32snapshot }
-end;
+//function CreateToolhelp32Snapshot(dwFlags,th32ProcessID:DWORD):THandle;
+//begin
+//  { TODO -cCreateToolhelp32Snapshot : https://docs.microsoft.com/en-us/windows/win32/api/tlhelp32/nf-tlhelp32-createtoolhelp32snapshot }
+//end;
 
 //function Thread32First(hSnapshot:THandle; lpte:tagTHREADENTRY32):BOOL;
 //begin
@@ -389,7 +389,7 @@ begin
   __android_log_write(ANDROID_LOG_ERROR, 'CECORE',pchar(l));
 {$endif}
 
-{$ifdef windows}
+{$if defined(windows) or defined(linux)}
   Outputdebugstring(pchar(l));
 {$endif}
 

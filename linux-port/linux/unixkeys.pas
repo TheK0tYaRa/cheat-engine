@@ -7,27 +7,29 @@ interface
 uses
   LCL, LCLType;
 
-type
-  short = SmallInt;
-
 const
   MOD_CONTROL = VK_CONTROL;
   MOD_ALT     = VK_MENU;
   MOD_SHIFT   = VK_SHIFT;
 
-function GetKeyState(nVirtKey: integer): SHORT;
-function GetAsyncKeyState(vKey: integer): SHORT;
+function GetKeyState(nVirtKey: Integer): Smallint;
+function GetAsyncKeyState(vKey: integer): SmallInt;
 
 implementation
 
-function GetKeyState(nVirtKey: integer): SHORT;
+           { ughhh, this is garbage. imma just do this for now
+              Probably gonna borrow it from wine later }
+
+function GetKeyState(nVirtKey: Integer): Smallint;
 begin
-  { TODO -cGetKeyState : https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getkeystate }
+  { #todo -cGetKeyState : https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getkeystate }
+  result := 0;
 end;
 
-function GetAsyncKeyState(vKey: integer): SHORT;
+function GetAsyncKeyState(vKey: integer): SmallInt;
 begin
   { #todo -cGetAsyncKeyState : https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getasynckeystate }
+  result := 0;
 end;
 
 end.

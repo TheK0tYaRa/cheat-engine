@@ -4,8 +4,8 @@ unit unixdebug;
 
 interface
 
-uses
-  unixporthelper;
+//uses
+//  unixporthelper;
 
 const
   EXCEPTION_NONCONTINUABLE     = $1; // Noncontinuable exception
@@ -19,7 +19,7 @@ type
     ExceptionRecord: PEXCEPTION_RECORD;
     ExceptionAddress: Pointer;
     NumberParameters: DWORD;
-    ExceptionInformation: array [0..EXCEPTION_MAXIMUM_PARAMETERS - 1] of ULONG_PTR;
+    ExceptionInformation: array [0..EXCEPTION_MAXIMUM_PARAMETERS - 1] of PtrUInt;
   end;
   EXCEPTION_RECORD = _EXCEPTION_RECORD;
   TExceptionRecord = EXCEPTION_RECORD;
@@ -41,11 +41,11 @@ type
   _EXCEPTION_RECORD64 = record
     ExceptionCode: DWORD;
     ExceptionFlags: DWORD;
-    ExceptionRecord: DWORD64;
-    ExceptionAddress: DWORD64;
+    ExceptionRecord: UInt64;
+    ExceptionAddress: UInt64;
     NumberParameters: DWORD;
     __unusedAlignment: DWORD;
-    ExceptionInformation: array [0..EXCEPTION_MAXIMUM_PARAMETERS - 1] of DWORD64;
+    ExceptionInformation: array [0..EXCEPTION_MAXIMUM_PARAMETERS - 1] of UInt64;
   end;
   EXCEPTION_RECORD64 = _EXCEPTION_RECORD64;
   PEXCEPTION_RECORD64 = ^EXCEPTION_RECORD64;
@@ -62,13 +62,13 @@ type
   PExceptionDebugInfo = LPEXCEPTION_DEBUG_INFO;
 
 type
-  PTHREAD_START_ROUTINE = function(lpThreadParameter: LPVOID): DWORD; stdcall;
+  PTHREAD_START_ROUTINE = function(lpThreadParameter: Pointer): DWORD; stdcall;
   LPTHREAD_START_ROUTINE = PTHREAD_START_ROUTINE;
   TThreadStartRoutine = PTHREAD_START_ROUTINE;
   LPCREATE_THREAD_DEBUG_INFO = ^CREATE_THREAD_DEBUG_INFO;
   _CREATE_THREAD_DEBUG_INFO = record
     hThread: THandle;
-    lpThreadLocalBase: LPVOID;
+    lpThreadLocalBase: Pointer;
     lpStartAddress: LPTHREAD_START_ROUTINE;
   end;
   CREATE_THREAD_DEBUG_INFO = _CREATE_THREAD_DEBUG_INFO;
@@ -81,12 +81,12 @@ type
     hFile: THandle;
     hProcess: THandle;
     hThread: THandle;
-    lpBaseOfImage: LPVOID;
+    lpBaseOfImage: Pointer;
     dwDebugInfoFileOffset: DWORD;
     nDebugInfoSize: DWORD;
-    lpThreadLocalBase: LPVOID;
+    lpThreadLocalBase: Pointer;
     lpStartAddress: LPTHREAD_START_ROUTINE;
-    lpImageName: LPVOID;
+    lpImageName: Pointer;
     fUnicode: Word;
   end;
   CREATE_PROCESS_DEBUG_INFO = _CREATE_PROCESS_DEBUG_INFO;
@@ -115,10 +115,10 @@ type
   LPLOAD_DLL_DEBUG_INFO = ^LOAD_DLL_DEBUG_INFO;
   _LOAD_DLL_DEBUG_INFO = record
     hFile: THandle;
-    lpBaseOfDll: LPVOID;
+    lpBaseOfDll: Pointer;
     dwDebugInfoFileOffset: DWORD;
     nDebugInfoSize: DWORD;
-    lpImageName: LPVOID;
+    lpImageName: Pointer;
     fUnicode: Word;
   end;
   LOAD_DLL_DEBUG_INFO = _LOAD_DLL_DEBUG_INFO;
@@ -128,7 +128,7 @@ type
 type
   LPUNLOAD_DLL_DEBUG_INFO = ^UNLOAD_DLL_DEBUG_INFO;
   _UNLOAD_DLL_DEBUG_INFO = record
-    lpBaseOfDll: LPVOID;
+    lpBaseOfDll: Pointer;
   end;
   UNLOAD_DLL_DEBUG_INFO = _UNLOAD_DLL_DEBUG_INFO;
   TUnloadDllDebugInfo = UNLOAD_DLL_DEBUG_INFO;
@@ -137,7 +137,7 @@ type
 type
   LPOUTPUT_DEBUG_STRING_INFO = ^OUTPUT_DEBUG_STRING_INFO;
   _OUTPUT_DEBUG_STRING_INFO = record
-    lpDebugStringData: LPSTR;
+    lpDebugStringData: PChar;
     fUnicode: Word;
     nDebugStringLength: Word;
   end;
@@ -190,9 +190,9 @@ const
   RIP_EVENT                  = 9;
 
 const    //yes, ntstatus aka LONG, { TODO -cNtStatus : fix that before it gets to debugging }
-  STATUS_WX86_SINGLE_STEP = LONG($4000001E);
+  STATUS_WX86_SINGLE_STEP = Integer($4000001E);
   {$EXTERNALSYM STATUS_WX86_SINGLE_STEP}
-  STATUS_WX86_BREAKPOINT =  LONG($4000001F);
+  STATUS_WX86_BREAKPOINT =  Integer($4000001F);
   {$EXTERNALSYM STATUS_WX86_BREAKPOINT}
 
 function IsDebuggerPresent:boolean;
@@ -203,7 +203,7 @@ implementation
 function IsDebuggerPresent:boolean;
 begin
   { #todo -cIsDebuggerPresent : https://docs.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-isdebuggerpresent }
-  IsDebuggerPresent:=false;
+  //IsDebuggerPresent:=false;
 end;
 
 procedure OutputDebugString(l:string);

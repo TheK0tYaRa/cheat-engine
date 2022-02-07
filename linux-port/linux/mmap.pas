@@ -1,7 +1,7 @@
 unit mmap;
 
 {$mode delphi}
-
+{$WARN 5033 off : Function result does not seem to be set}
 interface
 
 uses
@@ -40,7 +40,6 @@ end;
 function CreateFileMapping(hFile: THandle; lpFileMappingAttributes: LPSECURITY_ATTRIBUTES;
   flProtect, dwMaximumSizeHigh, dwMaximumSizeLow: DWORD; lpName:LPCSTR ): THandle;
 begin
-  { TODO -cCreateFileMappingW : https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-createfilemappingw }
   case AWSuffix of
     'A':(CreateFileMappingA(hFile, lpFileMappingAttributes, flProtect,
       dwMaximumSizeHigh, dwMaximumSizeLow, lpName));

@@ -5,7 +5,7 @@ unit unixthreads;
 interface
 
 uses
-  unixporthelper, uconst;
+  unixporthelper, uconst, baseunix;
 
 const
   INVALID_HANDLE_VALUE = THandle(-1);
@@ -69,7 +69,7 @@ function CreateRemoteThread(hProcess: THandle; lpThreadAttributes: LPSECURITY_AT
   dwStackSize: SIZE_T; lpStartAddress: LPTHREAD_START_ROUTINE; lpParameter: LPVOID;
   dwCreationFlags: DWORD; var lpThreadId: LPDWORD): THandle;
 
-function GetCurrentProcessId: DWORD;
+function GetCurrentProcessId: pid_t;
 function GetCurrentProcess: THandle;
 
 function OpenThread(dwDesiredAccess:DWORD; bInheritHandle:BOOL; dwThreadId:DWORD):THandle;
@@ -95,9 +95,10 @@ begin
   { TODO -cCreateRemoteThread : https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethread }
 end;
 
-function GetCurrentProcessId: DWORD;
+function GetCurrentProcessId: pid_t;
 begin
   { TODO -cGetCurrentProcessId : https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocessid }
+  result := FpGetPID;  // FPC has it not as DWORD and it's universal, so...
 end;
 
 function OpenThread(dwDesiredAccess: DWORD; bInheritHandle: BOOL; dwThreadId: DWORD): THandle;
@@ -111,12 +112,12 @@ begin
 end;
 
 function GetCurrentProcess: THandle;
-var
-  pid: dword;
+//var
+//  pid: dword;
 begin
   { #todo -cGetCurrentProcess : https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getcurrentprocess }
-  pid := GetProcessID;
-  GetCurrentProcess := -1;
+  //pid := GetProcessID;
+  //GetCurrentProcess := -1;
 end;
 
 { TLHelp32 }

@@ -2,6 +2,8 @@ program cheatengineLinux;
 
 {$mode objfpc}{$H+}
 
+{$DEFINE novmx}
+
 uses
   {$ifdef linux}
   cthreads, //for some reason required
@@ -136,9 +138,6 @@ uses
 
 {$R sounds.res}
 {$R Images.res}
-
-
-
 
 procedure HandleParameters;
 {Keep in mind: Responsible for not making the mainform visible}

@@ -30,11 +30,57 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="7"/>
       <MinorVersionNr Value="2"/>
-      <BuildNr Value="7114"/>
+      <BuildNr Value="7143"/>
       <StringTable CompanyName="Cheat Engine" FileDescription="Cheat Engine" ProductVersion="7.2"/>
     </VersionInfo>
-    <BuildModes Count="1">
+    <BuildModes Count="2">
       <Item1 Name="Release linux x64_86" Default="True"/>
+      <Item2 Name="Debug linux x64_86">
+        <CompilerOptions>
+          <Version Value="11"/>
+          <Target>
+            <Filename Value="bin/cheatengine-$(TargetCPU)"/>
+          </Target>
+          <SearchPaths>
+            <IncludeFiles Value="$(ProjOutDir)"/>
+            <OtherUnitFiles Value="VEHDebug;dbk32;lua;jvdesign;betterControls;$(LazarusDir)/ide;linux;linux/CEServer"/>
+            <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+          </SearchPaths>
+          <Parsing>
+            <Style Value="1"/>
+            <SyntaxOptions>
+              <SyntaxMode Value="Delphi"/>
+            </SyntaxOptions>
+          </Parsing>
+          <CodeGeneration>
+            <TargetCPU Value="x86_64"/>
+            <TargetOS Value="linux"/>
+            <Optimizations>
+              <OptimizationLevel Value="0"/>
+            </Optimizations>
+          </CodeGeneration>
+          <Linking>
+            <Debugging>
+              <DebugInfoType Value="dsDwarf2Set"/>
+              <UseExternalDbgSyms Value="True"/>
+            </Debugging>
+          </Linking>
+          <Other>
+            <Verbosity>
+              <ShowNotes Value="False"/>
+              <ShowHints Value="False"/>
+            </Verbosity>
+            <WriteFPCLogo Value="False"/>
+            <CompilerMessages>
+              <IgnoredMessages idx7119="True" idx5093="True" idx5066="True" idx5061="True" idx5059="True" idx5044="True" idx5043="True" idx5036="True" idx4110="True" idx4105="True" idx4104="True" idx4056="True" idx4046="True" idx4045="True"/>
+            </CompilerMessages>
+            <CustomOptions Value="-dbenchmarkps
+-dcemain
+-dNDEBUG
+-dDBVMFORAMDISWORKING"/>
+          </Other>
+        </CompilerOptions>
+      </Item2>
     </BuildModes>
     <PublishOptions>
       <Version Value="2"/>
@@ -63,7 +109,7 @@
         <PackageName Value="LCL"/>
       </Item6>
     </RequiredPackages>
-    <Units Count="7">
+    <Units Count="9">
       <Unit0>
         <Filename Value="cheatengineLinux.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -93,6 +139,15 @@
         <Filename Value="linux/temporaryunit.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="linux/CEServer/ceporthelp.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CEporthelp"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="linux/libc.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -101,8 +156,8 @@
       <Filename Value="bin/cheatengine-$(TargetCPU)"/>
     </Target>
     <SearchPaths>
-      <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="VEHDebug;dbk32;lua;jvdesign;betterControls;$(LazarusDir)/ide;linux"/>
+      <IncludeFiles Value="$(ProjOutDir);/usr/lib/fpc/src/packages/libc/src/"/>
+      <OtherUnitFiles Value="VEHDebug;dbk32;lua;jvdesign;betterControls;$(LazarusDir)/ide;linux;/usr/lib/fpc/src/packages/libc/src/"/>
       <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
@@ -135,7 +190,8 @@
       <CompilerMessages>
         <IgnoredMessages idx7119="True" idx5093="True" idx5066="True" idx5061="True" idx5059="True" idx5044="True" idx5043="True" idx5036="True" idx4110="True" idx4105="True" idx4104="True" idx4056="True" idx4046="True" idx4045="True"/>
       </CompilerMessages>
-      <CustomOptions Value="-dbenchmarkps
+      <CustomOptions Value="-gv
+-dbenchmarkps
 -dcemain
 -dNDEBUG
 -dDBVMFORAMDISWORKING"/>
@@ -145,7 +201,7 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Exceptions Count="3">
+    <Exceptions Count="5">
       <Item1>
         <Name Value="EAbort"/>
       </Item1>
@@ -155,6 +211,12 @@
       <Item3>
         <Name Value="EFOpenError"/>
       </Item3>
+      <Item4>
+        <Name Value="RunError(216)"/>
+      </Item4>
+      <Item5>
+        <Name Value="EAccessViolation"/>
+      </Item5>
     </Exceptions>
   </Debugging>
 </CONFIG>
