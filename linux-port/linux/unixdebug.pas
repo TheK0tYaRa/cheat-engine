@@ -1,7 +1,7 @@
 unit unixdebug;
 
 {$mode Delphi}
-
+{$WARN 5033 off : Function result does not seem to be set}
 interface
 
 //uses

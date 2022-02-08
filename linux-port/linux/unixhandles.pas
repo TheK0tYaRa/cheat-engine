@@ -1,7 +1,7 @@
 unit unixhandles;
 
 {$mode objfpc}{$H+}
-
+{$WARN 5033 off : Function result does not seem to be set}
 interface
 
 type

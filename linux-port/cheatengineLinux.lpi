@@ -30,7 +30,7 @@
       <AutoIncrementBuild Value="True"/>
       <MajorVersionNr Value="7"/>
       <MinorVersionNr Value="2"/>
-      <BuildNr Value="7143"/>
+      <BuildNr Value="7146"/>
       <StringTable CompanyName="Cheat Engine" FileDescription="Cheat Engine" ProductVersion="7.2"/>
     </VersionInfo>
     <BuildModes Count="2">
@@ -109,7 +109,7 @@
         <PackageName Value="LCL"/>
       </Item6>
     </RequiredPackages>
-    <Units Count="9">
+    <Units Count="8">
       <Unit0>
         <Filename Value="cheatengineLinux.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -140,14 +140,9 @@
         <IsPartOfProject Value="True"/>
       </Unit6>
       <Unit7>
-        <Filename Value="linux/CEServer/ceporthelp.pas"/>
+        <Filename Value="linux/ceserver.inc"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="CEporthelp"/>
       </Unit7>
-      <Unit8>
-        <Filename Value="linux/libc.pas"/>
-        <IsPartOfProject Value="True"/>
-      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

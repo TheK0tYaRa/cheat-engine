@@ -7,9 +7,7 @@ interface
 uses
   Classes, SysUtils, TEMPlibc;
 
-{$include}
-
-{context.h}
+{content.h}
 
 (*
  * context.h
@@ -18,60 +16,61 @@ uses
  *      Author: eric
  *)
 
-//{$ifndef} CONTEXT_H_
+//{$ifndef } CONTEXT_H_
 //#define CONTEXT_H_
 
-//{$ifdef } HAS_LINUX_USER_H
+{$ifdef HAS_LINUX_USER_H}
 //#include <linux/user.h>
-//{$else}
+{$else}
 //#include <sys/user.h>
-//{$endif}
+{$endif}
 
 //#include <sys/ptrace.h>
 //#include <linux/socket.h>
 
-//{$ifdef } __aarch64__
+{$ifdef aarch64} { #note : unsure }
 //#include <elf.h>
-//{$endif}
+{$endif}
 
 
 
 //#include <sys/socket.h>
 
-
-{$ifdef CPU32} // __i386__
-  type CONTEXT_REGS = user_regs_struct;
-{$endif}
-
-{$ifdef CPU64} // __x86_64__
-  type CONTEXT_REGS = user_regs_struct;
-{$endif}
-
-
-{$ifdef CPUARM} // __arm__
-  type CONTEXT_REGS = pt_regs;
-{$endif}
-
-{$ifdef CPUAARCH64} // __aarch64__
-  type CONTEXT_REGS = user_pt_regs;
-{$endif}
-
 type
-  PContext = ^CONTEXT;
+  PCONTEXT_REGS = ^CONTEXT_REGS;
+{$ifdef CPUi386}
+  CONTEXT_REGS = user_regs_struct;
+{$endif}
+
+{$ifdef CPUx86_64}
+  CONTEXT_REGS = user_regs_struct;
+{$endif}
+
+
+{$ifdef CPUARM}
+  CONTEXT_REGS = pt_regs;
+{$endif}
+
+
+{$ifdef aarch64}
+  CONTEXT_REGS = user_pt_regs;
+{$endif}
+
+  PCONTEXT = ^CONTEXT;
   CONTEXT = record
     regs: CONTEXT_REGS;
   end;
 
-                                                   {^}
-function getRegisters(tid: integer; registerstore: CONTEXT_REGS): integer;
-function setRegisters(tid: integer; registerstore: CONTEXT_REGS): integer;
-//{$endif} /* CONTEXT_H_ */
+
+function getRegisters(tid: Integer; registerstore: PCONTEXT_REGS): Integer;
+function setRegisters(tid: Integer; registerstore: PCONTEXT_REGS): Integer;
+//{$endif} (* CONTEXT_H_ *)
 
 {}
 
 implementation
 
-{context.c}
+{content.c}
 
 (*
  * context.c
@@ -81,29 +80,29 @@ implementation
  *)
 
 
-//#include "context.h"
+//#include 'context.h'
 
-function getRegisters(tid: integer; registerstore: CONTEXT_REGS): integer;
+function getRegisters(tid: Integer; registerstore: PCONTEXT_REGS): Integer;
 begin
 {$ifndef NT_PRSTATUS}
-  result := safe_ptrace(PTRACE_GETREGS, tid, 0, registerstore);
+  Result := safe_ptrace(PTRACE_GETREGS, tid, 0, registerstore);
 {$else}
   struct iovec iov;
-  iov.iov_base=registerstore;
-  iov.iov_len=sizeof(CONTEXT_REGS);
-  result := safe_ptrace(PTRACE_GETREGSET, tid, (void*)NT_PRSTATUS, &iov);
+  iov.iov_base := registerstore;
+  iov.iov_len := sizeof(CONTEXT_REGS);
+  Result := safe_ptrace(PTRACE_GETREGSET, tid, (void*)NT_PRSTATUS, (* C2PAS: RefOrBit? *)&iov);
 {$endif}
 end;
 
-function setRegisters(tid: integer; registerstore: CONTEXT_REGS): integer;
+function setRegisters(tid: Integer; registerstore: PCONTEXT_REGS): Integer;
 begin
 {$ifndef NT_PRSTATUS}
-  result := safe_ptrace(PTRACE_SETREGS, tid, 0, registerstore);
+  Result := safe_ptrace(PTRACE_SETREGS, tid, 0, registerstore);
 {$else}
   struct iovec iov;
-  iov.iov_base=registerstore;
-  iov.iov_len=sizeof(CONTEXT_REGS);
-  result := safe_ptrace(PTRACE_SETREGSET, tid, (void*)NT_PRSTATUS, &iov);
+  iov.iov_base := registerstore;
+  iov.iov_len := sizeof(CONTEXT_REGS);
+  Result := safe_ptrace(PTRACE_SETREGSET, tid, (void*)NT_PRSTATUS, (* C2PAS: RefOrBit? *)&iov);
 {$endif}
 end;
 

@@ -16,7 +16,7 @@ uses
   {$endif}
   {$ifdef linux}
   LCLType, unixporthelper, uconst, unixmemory, unixhandles, unixthreads, mmap,
-  unixdebug, CEapi,
+  unixdebug, ceserver, //CEapi,
   {$endif}
   {$ifdef windows}
   jwawindows, windows,
@@ -32,14 +32,14 @@ ExtCtrls,
 LastDisassembleData,
 
 {$ifdef netclient}
-netapis,
+  netapis,
 {$else}
-NewKernelHandler,
-{$ifndef standalonetrainer}
-{$ifndef netserver}
-hypermode,
-{$endif}
-{$endif}
+  NewKernelHandler,
+  {$ifndef standalonetrainer}
+    {$ifndef netserver}
+      hypermode,
+    {$endif}
+  {$endif}
 {$endif}
  math,syncobjs, {$ifdef windows}shellapi,{$endif} ProcessHandlerUnit, controls, {$ifdef windows}shlobj, ActiveX,{$endif} strutils,
 commontypedefs, {$ifdef windows}Win32Int,{$endif} maps, lua, lualib, lauxlib{$ifdef darwin},macportdefines{$endif}, betterControls;
@@ -3838,7 +3838,7 @@ initialization
 
 
   {$ifdef linux}
-  ownprocesshandle := CEapi.OpenProcess(GetCurrentProcessId);
+  //ownprocesshandle := CEapi.OpenProcess(GetCurrentProcessId);
   {$else}
   ownprocesshandle := OpenProcess(ifthen(GetSystemType<=6,$1f0fff, process_all_access), True, GetCurrentProcessId);
   {$endif}

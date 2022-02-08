@@ -1,7 +1,7 @@
 unit unixthreads;
 
 {$mode delphi}
-
+{$WARN 5033 off : Function result does not seem to be set}
 interface
 
 uses

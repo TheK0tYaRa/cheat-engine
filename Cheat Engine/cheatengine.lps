@@ -4,7 +4,7 @@
     <PathDelim Value="\"/>
     <Version Value="11"/>
     <BuildModes Active="Release 32-Bit"/>
-    <Units Count="412">
+    <Units Count="413">
       <Unit0>
         <Filename Value="cheatengine.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -2588,19 +2588,25 @@
         <UsageCount Value="20"/>
       </Unit410>
       <Unit411>
-        <Filename Value="..\linux-port\linux\libc\LibC.pp"/>
-        <UnitName Value="libc"/>
-        <IsVisibleTab Value="True"/>
+        <Filename Value="..\linux-port\linux\libc\libc.pp"/>
         <EditorIndex Value="1"/>
         <UsageCount Value="10"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit411>
+      <Unit412>
+        <Filename Value="Z:\mnt\DATA\Documents\applications\win\cheating\cheatengine\cheat-engine\linux-port\linux\porthelph.inc"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
+        <UsageCount Value="10"/>
+        <Loaded Value="True"/>
+        <DefaultSyntaxHighlighter Value="Delphi"/>
+      </Unit412>
     </Units>
     <JumpHistory HistoryIndex="-1"/>
     <RunParams>
       <FormatVersion Value="2"/>
-      <Modes Count="0" ActiveMode=""/>
+      <Modes Count="0" ActiveMode="default"/>
     </RunParams>
   </ProjectSession>
 </CONFIG>
