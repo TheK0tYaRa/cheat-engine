@@ -27,8 +27,9 @@ struct Application::Impl {
     bool Initialize();
     void Shutdown();
     void RenderFrame();
-    void RenderProcessList();
-    void RenderScanner();
+    void RenderMainWindow();
+    void RenderProcessPanel();
+    void RenderScannerPanel();
     void RefreshProcesses();
 };
 
@@ -66,6 +67,12 @@ void Application::Run() {
 }
 
 bool Application::Impl::Initialize() {
+#ifdef SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR
+    SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_PREFER_LIBDECOR, "1");
+#endif
+#ifdef SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR
+    SDL_SetHint(SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR, "1");
+#endif
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
         return false;
     }
@@ -123,25 +130,81 @@ void Application::Impl::RenderFrame() {
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    RenderProcessList();
-    RenderScanner();
+    RenderMainWindow();
 
     ImGui::Render();
-    glViewport(0, 0, static_cast<int>(ImGui::GetIO().DisplaySize.x),
-               static_cast<int>(ImGui::GetIO().DisplaySize.y));
+    ImGuiIO& io = ImGui::GetIO();
+    const ImVec2 display_size = io.DisplaySize;
+    const ImVec2 framebuffer_scale = io.DisplayFramebufferScale;
+    const int fb_width = static_cast<int>(display_size.x * framebuffer_scale.x);
+    const int fb_height = static_cast<int>(display_size.y * framebuffer_scale.y);
+    glViewport(0, 0, fb_width > 0 ? fb_width : 1, fb_height > 0 ? fb_height : 1);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window);
 }
 
-void Application::Impl::RenderProcessList() {
-    ImGui::Begin("Processes");
+void Application::Impl::RenderMainWindow() {
+    ImGuiIO& io = ImGui::GetIO();
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowSize(io.DisplaySize);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+                            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize |
+                            ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_MenuBar;
+    if (ImGui::Begin("Cheat Engine##MainWindow", nullptr, flags)) {
+        if (ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if (ImGui::MenuItem("Refresh Processes")) {
+                    RefreshProcesses();
+                }
+                bool should_quit = false;
+                if (ImGui::MenuItem("Quit")) {
+                    should_quit = true;
+                }
+                ImGui::EndMenu();
+                if (should_quit) {
+                    SDL_Event quit_event{};
+                    quit_event.type = SDL_QUIT;
+                    SDL_PushEvent(&quit_event);
+                }
+            }
+            ImGui::EndMenuBar();
+        }
+
+        const ImVec2 content_size = ImGui::GetContentRegionAvail();
+        const float minimum_width = ImGui::GetFontSize() * 16.0f;
+        const float process_panel_width = content_size.x * 0.35f;
+        const float left_width = process_panel_width > minimum_width ? process_panel_width : minimum_width;
+
+        ImGui::BeginChild("ProcessPanel", ImVec2(left_width, 0.0f), true);
+        RenderProcessPanel();
+        ImGui::EndChild();
+
+        ImGui::SameLine();
+
+        ImGui::BeginChild("ScannerPanel", ImVec2(0.0f, 0.0f), true);
+        RenderScannerPanel();
+        ImGui::EndChild();
+    }
+    ImGui::End();
+    ImGui::PopStyleVar(2);
+}
+
+void Application::Impl::RenderProcessPanel() {
     if (ImGui::Button("Refresh")) {
         RefreshProcesses();
     }
     ImGui::Separator();
-    ImGui::BeginChild("ProcessList", ImVec2(0, 300), true);
+    const ImVec2 available = ImGui::GetContentRegionAvail();
+    const float line_height = ImGui::GetTextLineHeightWithSpacing();
+    float list_height = available.y - line_height * 3.0f;
+    if (list_height < line_height * 4.0f) {
+        list_height = line_height * 4.0f;
+    }
+    ImGui::BeginChild("ProcessList", ImVec2(0.0f, list_height), true);
     for (std::size_t i = 0; i < processes.size(); ++i) {
         const ProcessInfo& info = processes[i];
         std::string label = std::to_string(info.pid) + " - " + info.name;
@@ -156,16 +219,14 @@ void Application::Impl::RenderProcessList() {
     ImGui::EndChild();
 
     if (!process.is_open()) {
-        ImGui::TextWrapped("Select a process to begin scanning. Reading another process's memory usually requires elevated privileges.");
+        ImGui::TextWrapped(
+            "Select a process to begin scanning. Reading another process's memory usually requires elevated privileges.");
     } else {
         ImGui::Text("Attached to PID %d", process.pid());
     }
-
-    ImGui::End();
 }
 
-void Application::Impl::RenderScanner() {
-    ImGui::Begin("Scanner");
+void Application::Impl::RenderScannerPanel() {
     static const char* value_labels[] = {"Int32", "UInt32", "Float", "Double"};
     int current_type = static_cast<int>(value_type);
     if (ImGui::Combo("Value Type", &current_type, value_labels, IM_ARRAYSIZE(value_labels))) {
@@ -189,7 +250,9 @@ void Application::Impl::RenderScanner() {
     ImGui::Separator();
     ImGui::Text("Results: %zu", results.size());
 
-    if (ImGui::BeginTable("ResultsTable", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
+    if (ImGui::BeginTable("ResultsTable", 3,
+                          ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable |
+                              ImGuiTableFlags_ScrollY)) {
         ImGui::TableSetupColumn("Address", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("Bytes", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableSetupColumn("Region", ImGuiTableColumnFlags_WidthStretch);
@@ -227,8 +290,6 @@ void Application::Impl::RenderScanner() {
         }
         ImGui::EndTable();
     }
-
-    ImGui::End();
 }
 
 void Application::Impl::RefreshProcesses() {
