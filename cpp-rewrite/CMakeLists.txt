@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
 
+set(DOWNLOAD_EXTRACT_TIMESTAMP ON)
 FetchContent_Declare(
     imgui
     URL https://github.com/ocornut/imgui/archive/refs/tags/v1.89.9.zip
@@ -37,6 +38,12 @@ target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/
 
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
+
+target_link_libraries(imgui
+    PUBLIC
+        SDL2::SDL2
+        OpenGL::GL
+)
 
 add_executable(cheat-engine-rewrite
     src/main.cpp
