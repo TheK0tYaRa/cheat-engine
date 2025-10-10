@@ -7,6 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
 
+set(CMAKE_DOWNLOAD_EXTRACT_TIMESTAMP ON)
 FetchContent_Declare(
     imgui
     URL https://github.com/ocornut/imgui/archive/refs/tags/v1.89.9.zip
