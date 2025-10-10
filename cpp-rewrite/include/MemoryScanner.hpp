@@ -41,6 +41,7 @@ private:
     static std::optional<ValueVariant> ParseValue(ValueType type, const std::string& text);
     static std::size_t ValueSize(ValueType type);
     static bool CompareValue(ValueType type, const std::uint8_t* data, const ValueVariant& value);
+    static bool IsFinite(ValueType type, const ValueVariant& value);
 
     ProcessMemory& process_;
 };

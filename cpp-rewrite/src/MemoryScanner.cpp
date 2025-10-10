@@ -9,16 +9,6 @@ namespace cpprewrite {
 
 namespace {
 constexpr std::size_t kReadChunk = 1 << 16;
-
-bool IsFinite(ValueType type, const MemoryScanner::ValueVariant& value) {
-    if (type == ValueType::Float) {
-        return std::isfinite(std::get<float>(value));
-    }
-    if (type == ValueType::Double) {
-        return std::isfinite(std::get<double>(value));
-    }
-    return true;
-}
 }  // namespace
 
 MemoryScanner::MemoryScanner(ProcessMemory& process) : process_(process) {}
@@ -126,6 +116,16 @@ bool MemoryScanner::CompareValue(ValueType type, const std::uint8_t* data, const
         }
     }
     return false;
+}
+
+bool MemoryScanner::IsFinite(ValueType type, const ValueVariant& value) {
+    if (type == ValueType::Float) {
+        return std::isfinite(std::get<float>(value));
+    }
+    if (type == ValueType::Double) {
+        return std::isfinite(std::get<double>(value));
+    }
+    return true;
 }
 
 }  // namespace cpprewrite
