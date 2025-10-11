@@ -16,6 +16,7 @@ struct MemoryRegion {
     [[nodiscard]] std::size_t size() const { return end - start; }
     [[nodiscard]] bool readable() const { return !permissions.empty() && permissions[0] == 'r'; }
     [[nodiscard]] bool writable() const { return permissions.size() > 1 && permissions[1] == 'w'; }
+    [[nodiscard]] bool executable() const { return permissions.size() > 2 && permissions[2] == 'x'; }
 };
 
 struct ProcessInfo {
@@ -40,11 +41,19 @@ public:
 
     [[nodiscard]] bool is_open() const { return mem_fd_ >= 0; }
     [[nodiscard]] int pid() const { return pid_; }
+    [[nodiscard]] bool can_write() const { return writable_; }
     [[nodiscard]] const std::vector<MemoryRegion>& regions() const { return regions_; }
 
     bool refresh_regions();
 
     bool read(std::uintptr_t address, void* buffer, std::size_t size) const;
+
+    bool write(std::uintptr_t address, const void* buffer, std::size_t size) const;
+
+    template <typename T>
+    bool write_value(std::uintptr_t address, const T& value) const {
+        return write(address, &value, sizeof(T));
+    }
 
     template <typename T>
     std::optional<T> read_value(std::uintptr_t address) const {
@@ -58,6 +67,7 @@ public:
 private:
     int pid_ = -1;
     int mem_fd_ = -1;
+    bool writable_ = false;
     std::vector<MemoryRegion> regions_;
 };
 

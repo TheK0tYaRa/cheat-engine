@@ -63,9 +63,11 @@ ProcessMemory& ProcessMemory::operator=(ProcessMemory&& other) noexcept {
     close();
     pid_ = other.pid_;
     mem_fd_ = other.mem_fd_;
+    writable_ = other.writable_;
     regions_ = std::move(other.regions_);
     other.pid_ = -1;
     other.mem_fd_ = -1;
+    other.writable_ = false;
     return *this;
 }
 
@@ -107,13 +109,19 @@ bool ProcessMemory::open(int pid) {
     close();
 
     std::string mem_path = "/proc/" + std::to_string(pid) + "/mem";
-    int fd = ::open(mem_path.c_str(), O_RDONLY);
+    int fd = ::open(mem_path.c_str(), O_RDWR);
+    bool writable = true;
     if (fd < 0) {
-        return false;
+        fd = ::open(mem_path.c_str(), O_RDONLY);
+        writable = false;
+        if (fd < 0) {
+            return false;
+        }
     }
 
     pid_ = pid;
     mem_fd_ = fd;
+    writable_ = writable;
     return refresh_regions();
 }
 
@@ -123,6 +131,7 @@ void ProcessMemory::close() {
     }
     mem_fd_ = -1;
     pid_ = -1;
+    writable_ = false;
     regions_.clear();
 }
 
@@ -154,6 +163,15 @@ bool ProcessMemory::read(std::uintptr_t address, void* buffer, std::size_t size)
     }
 
     ssize_t result = pread(mem_fd_, buffer, size, static_cast<off_t>(address));
+    return result == static_cast<ssize_t>(size);
+}
+
+bool ProcessMemory::write(std::uintptr_t address, const void* buffer, std::size_t size) const {
+    if (mem_fd_ < 0 || !writable_) {
+        return false;
+    }
+
+    ssize_t result = pwrite(mem_fd_, buffer, size, static_cast<off_t>(address));
     return result == static_cast<ssize_t>(size);
 }
 
