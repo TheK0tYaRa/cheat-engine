@@ -1,0 +1,4 @@
+[submodule "cpp-rewrite/submodules/imgui"]
+	path = cpp-rewrite/submodules/imgui
+	url = https://github.com/ocornut/imgui
+	branch = v1.92.3
