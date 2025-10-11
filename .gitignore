@@ -4,3 +4,4 @@ Cheat Engine/bin
 **/build
 .vscode
 **/imgui.ini
+.cache
